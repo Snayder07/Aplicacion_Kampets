@@ -1,0 +1,51 @@
+package org.example.model;
+
+import jakarta.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
+
+@Entity
+@Table(name = "CITAS")
+public class Citas {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @ManyToOne
+    @JoinColumn(name = "id_mascota", nullable = false)
+    private Mascotas mascota;
+
+    @ManyToOne
+    @JoinColumn(name = "id_empleado", nullable = false)
+    private Empleados empleado;
+
+    @Column(name = "fecha_cita", nullable = false)
+    private LocalDate fechaCita;
+
+    @Column(name = "hora_cita", nullable = false)
+    private LocalTime horaCita;
+
+    @Column(name = "estado_cita", length = 50)
+    private String estadoCita;
+
+    public Citas() {}
+
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+
+    public Mascotas getMascota() { return mascota; }
+    public void setMascota(Mascotas mascota) { this.mascota = mascota; }
+
+    public Empleados getEmpleado() { return empleado; }
+    public void setEmpleado(Empleados empleado) { this.empleado = empleado; }
+
+    public LocalDate getFechaCita() { return fechaCita; }
+    public void setFechaCita(LocalDate fechaCita) { this.fechaCita = fechaCita; }
+
+    public LocalTime getHoraCita() { return horaCita; }
+    public void setHoraCita(LocalTime horaCita) { this.horaCita = horaCita; }
+
+    public String getEstadoCita() { return estadoCita; }
+    public void setEstadoCita(String estadoCita) { this.estadoCita = estadoCita; }
+}

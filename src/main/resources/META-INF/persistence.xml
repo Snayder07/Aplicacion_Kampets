@@ -1,0 +1,32 @@
+
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd" version="3.0">
+    <persistence-unit name="KampetsPU" transaction-type="RESOURCE_LOCAL">
+        <!--  Modelos que mapean las tablas de BD_Kampets  -->
+        <class>org.example.model.Cliente</class>
+        <class>org.example.model.Empleados</class>
+        <class>org.example.model.Mascotas</class>
+        <class>org.example.model.Citas</class>
+        <class>org.example.model.Especies</class>
+        <class>org.example.model.Servicios</class>
+        <class>org.example.model.Productos</class>
+        <class>org.example.model.Vacunas</class>
+        <class>org.example.model.Pedidos</class>
+        <class>org.example.model.DetallePedido</class>
+        <class>org.example.model.ControlVacunas</class>
+        <class>org.example.model.Cita_servicio</class>
+        <properties>
+            <!--  Conexión a PostgreSQL local  -->
+            <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/BD_Kampets"/>
+            <property name="jakarta.persistence.jdbc.user" value="postgres"/>
+            <property name="jakarta.persistence.jdbc.password" value="0724"/>
+            <!--  Hibernate config  -->
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <!--  Muestra el SQL en consola para ver qué consultas hace  -->
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+            <!--  NO cambia las tablas existentes, solo las usa  -->
+            <property name="hibernate.hbm2ddl.auto" value="validate"/>
+        </properties>
+    </persistence-unit>
+</persistence>
