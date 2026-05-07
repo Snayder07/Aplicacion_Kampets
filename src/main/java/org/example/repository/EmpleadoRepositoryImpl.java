@@ -1,6 +1,7 @@
 package org.example.repository;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import org.example.model.Empleados;
 import org.example.util.JPAUtil;
 import java.util.List;
@@ -25,9 +26,25 @@ public class EmpleadoRepositoryImpl implements EmpleadoRepository {
     }
 
     @Override
+    public Empleados buscarPorCorreo(String correo) {
+        EntityManager em = JPAUtil.getEntityManager();
+        try {
+            return em.createQuery(
+                            "SELECT e FROM Empleados e WHERE e.correo = :correo", Empleados.class)
+                    .setParameter("correo", correo)
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
     public List<Empleados> buscarTodos() {
         EntityManager em = JPAUtil.getEntityManager();
-        List<Empleados> empleados = em.createQuery("SELECT e FROM Empleados e", Empleados.class).getResultList();
+        List<Empleados> empleados = em.createQuery(
+                "SELECT e FROM Empleados e", Empleados.class).getResultList();
         em.close();
         return empleados;
     }

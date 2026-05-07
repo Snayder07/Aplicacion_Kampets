@@ -19,6 +19,12 @@ public class Empleados {
     @Column(name = "cargo", length = 50)
     private String cargo;
 
+    @Column(name = "correo_emp", length = 100)
+    private String correo;
+
+    @Column(name = "contrasena_emp", length = 255)
+    private String contrasena;
+
     public Empleados() {}
 
     public Integer getId() { return id; }
@@ -32,4 +38,10 @@ public class Empleados {
 
     public String getCargo() { return cargo; }
     public void setCargo(String cargo) { this.cargo = cargo; }
+
+    public String getCorreo() { return correo; }
+    public void setCorreo(String correo) { this.correo = correo; }
+
+    public String getContrasena() { return contrasena; }
+    public void setContrasena(String contrasena) { this.contrasena = contrasena; }
 }

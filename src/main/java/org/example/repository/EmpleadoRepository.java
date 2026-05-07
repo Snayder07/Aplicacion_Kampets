@@ -6,6 +6,7 @@ import java.util.List;
 public interface EmpleadoRepository {
     void guardar(Empleados empleado);
     Empleados buscarPorId(Integer id);
+    Empleados buscarPorCorreo(String correo);
     List<Empleados> buscarTodos();
     void eliminar(Integer id);
 }

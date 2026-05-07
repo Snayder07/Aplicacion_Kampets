@@ -1,8 +1,11 @@
 package org.example.view;
 
+import org.example.controller.LoginController;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class Interfaz_Grafica_Kampets {
     public JPanel panel;
@@ -11,6 +14,9 @@ public class Interfaz_Grafica_Kampets {
     private JButton entrarButton;
     private JButton entrarAdminButton;
     private JButton crearCuentaButton;
+
+    // ── Conectado al LoginController ──────────────────────
+    private final LoginController loginController = new LoginController();
 
     public Interfaz_Grafica_Kampets() {
 
@@ -84,7 +90,7 @@ public class Interfaz_Grafica_Kampets {
         entrarButton.setBounds(40, 265, 340, 40);
         panel.add(entrarButton);
 
-        // ── Botón Entrar como Administrador ───────────────
+        // ── Botón Entrar como Administrador ──────────────
         entrarAdminButton = new JButton("Entrar como administrador");
         entrarAdminButton.setFont(new Font("Arial", Font.PLAIN, 13));
         entrarAdminButton.setBackground(new Color(15, 110, 86));
@@ -115,32 +121,45 @@ public class Interfaz_Grafica_Kampets {
         panel.add(crearCuentaButton);
 
         // ── Acciones de los botones ───────────────────────
-        entrarButton.addActionListener(e -> {
-            String correo = textField1.getText();
-            String clave = new String(passwordField1.getPassword());
-            if (correo.equals("cliente@kampets.com") && clave.equals("1234")) {
-                Main.expandirVentana(); // ← expande la ventana
-                Main.cambiarPantalla("panelCliente");
-            } else {
-                JOptionPane.showMessageDialog(panel, "Correo o contraseña incorrectos",
-                        "Error", JOptionPane.ERROR_MESSAGE);
+
+        // Botón Entrar cliente — consulta la BD
+        entrarButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String correo = textField1.getText().trim();
+                String clave  = new String(passwordField1.getPassword());
+                if (correo.isEmpty() || clave.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel,
+                            "Por favor ingresa correo y contraseña.",
+                            "Campos vacíos", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                // LoginController busca el cliente en la BD
+                loginController.loginCliente(correo, clave, panel);
             }
         });
 
-        entrarAdminButton.addActionListener(e -> {
-            String correo = textField1.getText();
-            String clave = new String(passwordField1.getPassword());
-            if (Main.esAdmin(correo, clave)) {
-                Main.expandirVentana();
-                Main.cambiarPantalla("panelAdmin");
-            } else {
-                JOptionPane.showMessageDialog(panel, "Credenciales de administrador incorrectas",
-                        "Error", JOptionPane.ERROR_MESSAGE);
+        // Botón Entrar admin — consulta la BD
+        entrarAdminButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String correo = textField1.getText().trim();
+                String clave  = new String(passwordField1.getPassword());
+                if (correo.isEmpty() || clave.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel,
+                            "Por favor ingresa correo y contraseña.",
+                            "Campos vacíos", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                // LoginController busca el empleado en la BD
+                loginController.loginAdmin(correo, clave, panel);
             }
         });
 
-        crearCuentaButton.addActionListener(e ->
-                Main.cambiarPantalla("crearCuenta"));
+        // Botón Crear cuenta
+        crearCuentaButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Main.cambiarPantalla("crearCuenta");
+            }
+        });
     }
 
     public static void main(String[] args) {
@@ -152,4 +171,3 @@ public class Interfaz_Grafica_Kampets {
         frame.setVisible(true);
     }
 }
-
