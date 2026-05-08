@@ -1,5 +1,7 @@
 package org.example.view;
 
+import org.example.model.Cliente;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -7,20 +9,23 @@ public class Main {
     public static JFrame frame      = new JFrame("Kampets");
     public static JPanel contenedor = new JPanel(new CardLayout());
 
+    // ── Cliente logueado actualmente ──────────────────────
+    public static Cliente clienteActual = null;
+
     // ── Instancias de cada panel ──────────────────────────
-    // Se guardan como variables para poder llamar setTema() en todas
-    private static PanelCliente       panelCliente       = new PanelCliente();
-    private static PanelAdmin         panelAdmin         = new PanelAdmin();
-    private static PanelAdminCitas    panelAdminCitas    = new PanelAdminCitas();
-    private static PanelAdminMascotas panelAdminMascotas = new PanelAdminMascotas();
-    private static PanelAdminVacunas  panelAdminVacunas  = new PanelAdminVacunas();
+    private static PanelCliente         panelCliente         = new PanelCliente();
+    private static PanelAdmin           panelAdmin           = new PanelAdmin();
+    private static PanelAdminCitas      panelAdminCitas      = new PanelAdminCitas();
+    private static PanelAdminMascotas   panelAdminMascotas   = new PanelAdminMascotas();
+    private static PanelAdminVacunas    panelAdminVacunas    = new PanelAdminVacunas();
     private static PanelAdminInventario panelAdminInventario = new PanelAdminInventario();
-    private static PanelAdminReportes panelAdminReportes = new PanelAdminReportes();
-    private static PanelMisCitas      panelMisCitas      = new PanelMisCitas();
-    private static PanelHistorial     panelHistorial     = new PanelHistorial();
-    private static PanelAlimentos     panelAlimentos     = new PanelAlimentos();
-    private static PanelVacunas       panelVacunas       = new PanelVacunas();
-    private static PanelAgendarCita   panelAgendarCita   = new PanelAgendarCita();
+    private static PanelAdminReportes   panelAdminReportes   = new PanelAdminReportes();
+    private static PanelMisCitas        panelMisCitas        = new PanelMisCitas();
+    private static PanelHistorial       panelHistorial       = new PanelHistorial();
+    private static PanelAlimentos       panelAlimentos       = new PanelAlimentos();
+    private static PanelVacunas         panelVacunas         = new PanelVacunas();
+    private static PanelAgendarCita     panelAgendarCita     = new PanelAgendarCita();
+    private static PanelMisMascotas     panelMisMascotas     = new PanelMisMascotas();
 
     // ── Lista de administradores ──────────────────────────
     private static final String[][] ADMINS = {
@@ -35,7 +40,6 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        // ── Agregar todas las pantallas al contenedor ─────
         contenedor.add(new Interfaz_Grafica_Kampets().panel, "login");
         contenedor.add(new CrearCuenta().panel,              "crearCuenta");
         contenedor.add(panelCliente.panel,                   "panelCliente");
@@ -50,6 +54,7 @@ public class Main {
         contenedor.add(panelAlimentos.panel,                 "alimentos");
         contenedor.add(panelVacunas.panel,                   "vacunas");
         contenedor.add(panelAgendarCita.panel,               "agendarCita");
+        contenedor.add(panelMisMascotas.panel,               "misMascotas");
 
         frame.setContentPane(contenedor);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -64,12 +69,10 @@ public class Main {
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
     }
 
-    // ── Cambiar pantalla ──────────────────────────────────
     public static void cambiarPantalla(String nombre) {
         CardLayout cl = (CardLayout) contenedor.getLayout();
         cl.show(contenedor, nombre);
 
-        // Ajustar tamaño de ventana según la pantalla
         switch (nombre) {
             case "login":
             case "crearCuenta":
@@ -83,8 +86,6 @@ public class Main {
         }
     }
 
-    // ── Sincronizar tema en todos los paneles ─────────────
-    // Llama esto desde PanelAdmin o PanelCliente cuando el usuario cambia el tema
     public static void aplicarTemaGlobal(boolean oscuro) {
         panelCliente.setTema(oscuro);
         panelAdminCitas.setTema(oscuro);
@@ -97,5 +98,6 @@ public class Main {
         panelAlimentos.setTema(oscuro);
         panelVacunas.setTema(oscuro);
         panelAgendarCita.setTema(oscuro);
+        panelMisMascotas.setTema(oscuro);
     }
 }
