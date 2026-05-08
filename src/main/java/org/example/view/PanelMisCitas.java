@@ -1,44 +1,36 @@
 package org.example.view;
 
+import org.example.controller.CitaAdminController;
+import org.example.model.Citas;
+import org.example.model.EstadoCita;
+
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
 
 public class PanelMisCitas {
     public JPanel panel;
     private boolean temaOscuro = false;
 
+    // ── Controlador conectado a BD ────────────────────────
+    private final CitaAdminController ctrl = new CitaAdminController();
+
     private final Color[] CLARO = {
-            new Color(240, 246, 252),  // 0 FONDO
-            new Color(26,  74,  122),  // 1 SIDEBAR_BG
-            Color.WHITE,               // 2 CARD_BG
-            new Color(42,  90,  138),  // 3 AZUL_MEDIO
-            new Color(230, 240, 250),  // 4 AZUL_CLARO
-            Color.WHITE,               // 5 TEXTO_BLANCO
-            new Color(26,  58,   90),  // 6 TEXTO_OSCURO
-            new Color(138, 170, 200),  // 7 TEXTO_GRIS
-            new Color(224, 112,  32),  // 8 NARANJA
-            new Color(208, 228, 244),  // 9 BORDE
-            new Color(15,  53,   96),  // 10 USER_BG
-            new Color(122, 175, 212),  // 11 SIDEBAR_DIM
-            new Color(168, 200, 232),  // 12 BORDE_CERRAR
-            new Color(168, 212, 245),  // 13 AZUL_LABEL
+            new Color(240, 246, 252), new Color(26,  74,  122), Color.WHITE,
+            new Color(42,  90,  138), new Color(230, 240, 250), Color.WHITE,
+            new Color(26,  58,   90), new Color(138, 170, 200), new Color(224, 112,  32),
+            new Color(208, 228, 244), new Color(15,  53,   96), new Color(122, 175, 212),
+            new Color(168, 200, 232), new Color(168, 212, 245),
     };
     private final Color[] OSCURO = {
-            new Color(18,  24,  38),
-            new Color(13,  18,  30),
-            new Color(26,  34,  52),
-            new Color(37,  55,  90),
-            new Color(32,  42,  64),
-            Color.WHITE,
-            new Color(226, 232, 240),
-            new Color(100, 116, 139),
-            new Color(251, 146,  60),
-            new Color(30,  41,  59),
-            new Color(9,   14,  24),
-            new Color(122, 175, 212),
-            new Color(80,  120, 170),
-            new Color(100, 160, 210),
+            new Color(18,  24,  38),  new Color(13,  18,  30),  new Color(26,  34,  52),
+            new Color(37,  55,  90),  new Color(32,  42,  64),  Color.WHITE,
+            new Color(226, 232, 240), new Color(100, 116, 139), new Color(251, 146,  60),
+            new Color(30,  41,  59),  new Color(9,   14,  24),  new Color(122, 175, 212),
+            new Color(80,  120, 170), new Color(100, 160, 210),
     };
     private Color[] C = CLARO;
 
@@ -61,7 +53,6 @@ public class PanelMisCitas {
         panel.repaint();
     }
 
-    // ── Helpers ───────────────────────────────────────────
     private JLabel lbl(String t, int sz, int st, Color c) {
         JLabel l = new JLabel(t); l.setFont(new Font("Arial", st, sz)); l.setForeground(c); return l;
     }
@@ -98,8 +89,12 @@ public class PanelMisCitas {
             b.setAlignmentX(Component.LEFT_ALIGNMENT);
             b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
             b.setHorizontalAlignment(SwingConstants.LEFT);
-            if (i == 0) b.addActionListener(e -> Main.cambiarPantalla("panelCliente"));
-            if (i == 2) b.addActionListener(e -> Main.cambiarPantalla("historial"));
+            if (i == 0) b.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("panelCliente"); }
+            });
+            if (i == 2) b.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("historial"); }
+            });
             sb.add(b); sb.add(Box.createVerticalStrut(3));
         }
         sb.add(Box.createVerticalStrut(12));
@@ -110,8 +105,12 @@ public class PanelMisCitas {
             b.setAlignmentX(Component.LEFT_ALIGNMENT);
             b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
             b.setHorizontalAlignment(SwingConstants.LEFT);
-            if (item.equals("Alimentos")) b.addActionListener(e -> Main.cambiarPantalla("alimentos"));
-            if (item.equals("Vacunas"))   b.addActionListener(e -> Main.cambiarPantalla("vacunas"));
+            if (item.equals("Alimentos")) b.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("alimentos"); }
+            });
+            if (item.equals("Vacunas")) b.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("vacunas"); }
+            });
             sb.add(b); sb.add(Box.createVerticalStrut(3));
         }
         sb.add(Box.createVerticalGlue());
@@ -119,22 +118,25 @@ public class PanelMisCitas {
         JButton cerrar = btn("Cerrar sesion", C[1], C[12], true);
         cerrar.setAlignmentX(Component.LEFT_ALIGNMENT);
         cerrar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
-        cerrar.addActionListener(e -> {
-            if (JOptionPane.showConfirmDialog(panel, "Deseas cerrar sesion?", "Cerrar sesion",
-                    JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                Main.frame.setSize(420, 520); Main.frame.setLocationRelativeTo(null);
-                Main.cambiarPantalla("login");
+        cerrar.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (JOptionPane.showConfirmDialog(panel, "Deseas cerrar sesion?",
+                        "Cerrar sesion", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    Main.frame.setSize(420, 520);
+                    Main.frame.setLocationRelativeTo(null);
+                    Main.cambiarPantalla("login");
+                }
             }
         });
         sb.add(cerrar); sb.add(Box.createVerticalStrut(8));
 
         JPanel up = new JPanel(new BorderLayout(8, 0));
-        up.setBackground(C[10]); up.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+        up.setBackground(C[10]); up.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         up.setMaximumSize(new Dimension(Integer.MAX_VALUE, 55));
         up.setAlignmentX(Component.LEFT_ALIGNMENT);
         JLabel av = lbl("MF", 13, Font.BOLD, C[1]); av.setBackground(C[5]); av.setOpaque(true);
-        av.setPreferredSize(new Dimension(34,34)); av.setHorizontalAlignment(SwingConstants.CENTER);
-        JPanel ui = new JPanel(new GridLayout(2,1)); ui.setBackground(C[10]);
+        av.setPreferredSize(new Dimension(34, 34)); av.setHorizontalAlignment(SwingConstants.CENTER);
+        JPanel ui = new JPanel(new GridLayout(2, 1)); ui.setBackground(C[10]);
         ui.add(lbl("Maria Fernanda", 12, Font.BOLD, C[5]));
         ui.add(lbl("Cliente", 10, Font.PLAIN, C[11]));
         up.add(av, BorderLayout.WEST); up.add(ui, BorderLayout.CENTER);
@@ -151,38 +153,37 @@ public class PanelMisCitas {
         JPanel topbar = new JPanel(new BorderLayout());
         topbar.setBackground(C[2]);
         topbar.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0,0,1,0, C[9]),
-                BorderFactory.createEmptyBorder(16,24,16,24)));
-
-        JPanel topLeft = new JPanel(new GridLayout(2,1));
-        topLeft.setBackground(C[2]);
+                BorderFactory.createMatteBorder(0, 0, 1, 0, C[9]),
+                BorderFactory.createEmptyBorder(16, 24, 16, 24)));
+        JPanel topLeft = new JPanel(new GridLayout(2, 1)); topLeft.setBackground(C[2]);
         topLeft.add(lbl("Mis citas", 20, Font.BOLD, C[6]));
         topLeft.add(lbl("Gestiona y revisa todas tus citas", 12, Font.PLAIN, C[7]));
 
         JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         topRight.setBackground(C[2]);
-
-        String iconoTema = temaOscuro ? "☀  Claro" : "🌙  Oscuro";
-        JButton btnTema = new JButton(iconoTema);
+        JButton btnTema = new JButton(temaOscuro ? "☀  Claro" : "🌙  Oscuro");
         btnTema.setFont(new Font("Arial", Font.PLAIN, 13));
         btnTema.setBackground(C[0]); btnTema.setForeground(C[6]); btnTema.setOpaque(true);
         btnTema.setFocusPainted(false); btnTema.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnTema.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(C[9], 1),
-                BorderFactory.createEmptyBorder(7,14,7,14)));
-        btnTema.addActionListener(e -> { temaOscuro = !temaOscuro; construir(); });
-
+                BorderFactory.createLineBorder(C[9], 1), BorderFactory.createEmptyBorder(7, 14, 7, 14)));
+        btnTema.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                temaOscuro = !temaOscuro; Main.aplicarTemaGlobal(temaOscuro); construir();
+            }
+        });
         JButton btnAgendar = btn("+ Agendar cita", C[1], C[5], false);
         btnAgendar.setFont(new Font("Arial", Font.BOLD, 13));
-        btnAgendar.setBorder(BorderFactory.createEmptyBorder(10,20,10,20));
-        btnAgendar.addActionListener(e -> Main.cambiarPantalla("agendarCita"));
-
+        btnAgendar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        btnAgendar.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("agendarCita"); }
+        });
         topRight.add(btnTema); topRight.add(btnAgendar);
         topbar.add(topLeft, BorderLayout.WEST);
         topbar.add(topRight, BorderLayout.EAST);
         contenido.add(topbar, BorderLayout.NORTH);
 
-        // Cuerpo con scroll
+        // Cuerpo
         JPanel cuerpo = new JPanel(new BorderLayout(0, 20));
         cuerpo.setBackground(C[0]);
         cuerpo.setBorder(BorderFactory.createEmptyBorder(24, 28, 28, 28));
@@ -191,93 +192,118 @@ public class PanelMisCitas {
         JPanel filtros = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         filtros.setBackground(C[0]);
         String[] filtroNombres = {"Todas", "Confirmadas", "Pendientes", "Canceladas"};
-        Color[] filtroColores  = {C[1], new Color(22,163,74), new Color(234,88,12), new Color(220,38,38)};
         for (int i = 0; i < filtroNombres.length; i++) {
             JButton f = new JButton(filtroNombres[i]);
             f.setFont(new Font("Arial", Font.PLAIN, 12));
             f.setBackground(i == 0 ? C[1] : C[2]);
             f.setForeground(i == 0 ? C[5] : C[7]);
-            f.setOpaque(true); f.setFocusPainted(false);
-            f.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            f.setOpaque(true); f.setFocusPainted(false); f.setCursor(new Cursor(Cursor.HAND_CURSOR));
             f.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createLineBorder(i == 0 ? C[1] : C[9], 1),
-                    BorderFactory.createEmptyBorder(6,14,6,14)));
+                    BorderFactory.createEmptyBorder(6, 14, 6, 14)));
             filtros.add(f);
         }
         cuerpo.add(filtros, BorderLayout.NORTH);
 
-        // Lista de citas
-        String[][] citas = {
-                {"Valentin — Chequeo general",  "Mar 6 · 10:30 AM",  "Dr. Ramírez",  "Consulta general", "Confirmada",    "#1a4a7a"},
-                {"Sacha — Vacunación",           "Vie 9 · 3:00 PM",   "Dr. Gómez",    "Vacunación",       "Pendiente",     "#e07020"},
-                {"Mia — Revisión dental",        "Lun 12 · 9:00 AM",  "Dra. Torres",  "Odontología",      "Por confirmar", "#aaaaaa"},
-                {"Valentin — Control de peso",   "Jue 15 · 11:00 AM", "Dr. Ramírez",  "Consulta general", "Confirmada",    "#1a4a7a"},
-                {"Sacha — Desparasitación",      "Mar 20 · 2:00 PM",  "Dr. Gómez",    "Prevención",       "Pendiente",     "#e07020"},
-        };
+        // ── Lista de citas desde BD ───────────────────────
+        List<Citas> citas = ctrl.listarTodas();
 
-        JPanel lista = new JPanel(new GridLayout(citas.length, 1, 0, 10));
+        JPanel lista = new JPanel();
+        lista.setLayout(new BoxLayout(lista, BoxLayout.Y_AXIS));
         lista.setBackground(C[0]);
 
-        for (String[] c : citas) {
-            JPanel card = new JPanel(new BorderLayout(12, 0));
-            card.setBackground(C[2]);
-            card.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createMatteBorder(0, 4, 0, 0, Color.decode(c[5])),
-                    BorderFactory.createCompoundBorder(
-                            BorderFactory.createLineBorder(C[9], 1),
-                            BorderFactory.createEmptyBorder(16, 18, 16, 18))));
+        if (citas.isEmpty()) {
+            JLabel sinCitas = lbl("No tienes citas registradas.", 14, Font.PLAIN, C[7]);
+            sinCitas.setAlignmentX(Component.CENTER_ALIGNMENT);
+            lista.add(Box.createVerticalStrut(40));
+            lista.add(sinCitas);
+        } else {
+            for (Citas cita : citas) {
+                JPanel card = new JPanel(new BorderLayout(12, 0));
+                card.setBackground(C[2]);
+                card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 90));
 
-            // Info izquierda
-            JPanel izq = new JPanel(new GridLayout(3, 1, 0, 3));
-            izq.setBackground(C[2]);
-            izq.add(lbl(c[0], 14, Font.BOLD, C[6]));
-            izq.add(lbl(c[1] + "  ·  " + c[2], 12, Font.PLAIN, C[7]));
-            izq.add(lbl("Tipo: " + c[3], 11, Font.PLAIN, C[11]));
+                // Color según estado
+                Color colorEstado = C[1];
+                if (cita.getEstadoCita() != null) {
+                    switch (cita.getEstadoCita()) {
+                        case CONFIRMADA:  colorEstado = new Color(22, 163, 74);  break;
+                        case PENDIENTE:   colorEstado = new Color(234, 88, 12);  break;
+                        case CANCELADA:   colorEstado = new Color(220, 38, 38);  break;
+                        case COMPLETADA:  colorEstado = new Color(100, 116, 139); break;
+                        default:          colorEstado = C[1];
+                    }
+                }
 
-            // Derecha: badge + botones
-            JPanel der = new JPanel(new GridLayout(3, 1, 0, 4));
-            der.setBackground(C[2]);
+                card.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(0, 4, 0, 0, colorEstado),
+                        BorderFactory.createCompoundBorder(
+                                BorderFactory.createLineBorder(C[9], 1),
+                                BorderFactory.createEmptyBorder(16, 18, 16, 18))));
 
-            JLabel badge = lbl(c[4], 11, Font.BOLD, Color.decode(c[5]));
-            badge.setHorizontalAlignment(SwingConstants.RIGHT);
+                // Info izquierda
+                String nombreMascota  = cita.getMascota()  != null ? cita.getMascota().getNombre()  : "—";
+                String nombreVet      = cita.getEmpleado() != null ? cita.getEmpleado().getNombre() : "—";
+                String fechaHora      = (cita.getFechaCita() != null ? cita.getFechaCita().toString() : "—")
+                        + "  ·  " + (cita.getHoraCita() != null ? cita.getHoraCita().toString() : "—");
+                String estadoTexto    = cita.getEstadoCita() != null ? cita.getEstadoCita().toString() : "—";
 
-            JLabel cancelar = lbl("Cancelar", 11, Font.PLAIN,
-                    temaOscuro ? new Color(80,110,150) : new Color(176,200,224));
-            cancelar.setHorizontalAlignment(SwingConstants.RIGHT);
-            cancelar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                JPanel izq = new JPanel(new GridLayout(3, 1, 0, 3));
+                izq.setBackground(C[2]);
+                izq.add(lbl(nombreMascota, 14, Font.BOLD, C[6]));
+                izq.add(lbl(fechaHora + "  ·  " + nombreVet, 12, Font.PLAIN, C[7]));
+                izq.add(lbl("Estado: " + estadoTexto, 11, Font.PLAIN, C[11]));
 
-            JLabel reprogramar = lbl("Reprogramar", 11, Font.PLAIN,
-                    temaOscuro ? new Color(59,130,200) : C[1]);
-            reprogramar.setHorizontalAlignment(SwingConstants.RIGHT);
-            reprogramar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                // Derecha: badge + cancelar
+                JPanel der = new JPanel(new GridLayout(2, 1, 0, 6));
+                der.setBackground(C[2]);
 
-            der.add(badge); der.add(reprogramar); der.add(cancelar);
-            card.add(izq, BorderLayout.CENTER);
-            card.add(der, BorderLayout.EAST);
-            lista.add(card);
+                JLabel badge = lbl(estadoTexto, 11, Font.BOLD, colorEstado);
+                badge.setHorizontalAlignment(SwingConstants.RIGHT);
+
+                final Integer idCita = cita.getId();
+                JButton btnCancelar = new JButton("Cancelar");
+                btnCancelar.setFont(new Font("Arial", Font.PLAIN, 11));
+                btnCancelar.setBackground(C[2]);
+                btnCancelar.setForeground(temaOscuro ? new Color(80, 110, 150) : new Color(176, 200, 224));
+                btnCancelar.setBorderPainted(false); btnCancelar.setFocusPainted(false);
+                btnCancelar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                btnCancelar.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        int confirm = JOptionPane.showConfirmDialog(panel,
+                                "¿Cancelar esta cita?", "Confirmar", JOptionPane.YES_NO_OPTION);
+                        if (confirm == JOptionPane.YES_OPTION) {
+                            ctrl.cancelarCita(idCita, panel);
+                            construir(); // recargar lista
+                        }
+                    }
+                });
+
+                der.add(badge); der.add(btnCancelar);
+                card.add(izq, BorderLayout.CENTER);
+                card.add(der, BorderLayout.EAST);
+                lista.add(card);
+                lista.add(Box.createVerticalStrut(10));
+            }
         }
 
         JScrollPane scroll = new JScrollPane(lista);
-        scroll.setBorder(null);
-        scroll.getViewport().setBackground(C[0]);
+        scroll.setBorder(null); scroll.getViewport().setBackground(C[0]);
         scroll.getVerticalScrollBar().setUnitIncrement(12);
         cuerpo.add(scroll, BorderLayout.CENTER);
-
         contenido.add(cuerpo, BorderLayout.CENTER);
         return contenido;
     }
 
     private void agregarSeccion(JPanel p, String t) {
         JLabel l = lbl(t, 10, Font.PLAIN, C[11]);
-        l.setBorder(BorderFactory.createEmptyBorder(8,0,4,0));
+        l.setBorder(BorderFactory.createEmptyBorder(8, 0, 4, 0));
         l.setAlignmentX(Component.LEFT_ALIGNMENT);
-        l.setMaximumSize(new Dimension(Integer.MAX_VALUE, 24));
-        p.add(l);
+        l.setMaximumSize(new Dimension(Integer.MAX_VALUE, 24)); p.add(l);
     }
     private void agregarSep(JPanel p) {
         JSeparator s = new JSeparator(); s.setForeground(C[3]);
-        s.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
-        s.setAlignmentX(Component.LEFT_ALIGNMENT);
+        s.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1)); s.setAlignmentX(Component.LEFT_ALIGNMENT);
         p.add(Box.createVerticalStrut(6)); p.add(s); p.add(Box.createVerticalStrut(6));
     }
 }

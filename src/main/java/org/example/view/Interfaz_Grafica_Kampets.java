@@ -1,7 +1,6 @@
 package org.example.view;
 
 import org.example.controller.LoginController;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;

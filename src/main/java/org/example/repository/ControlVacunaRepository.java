@@ -1,0 +1,11 @@
+package org.example.repository;
+
+import org.example.model.Control_vacunas;
+import java.util.List;
+
+public interface ControlVacunaRepository {
+    void guardar(Control_vacunas cv);
+    Control_vacunas buscarPorId(Integer id);
+    List<Control_vacunas> buscarTodos();
+    void eliminar(Integer id);
+}

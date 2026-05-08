@@ -5,29 +5,29 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "CLIENTES")
-public class Cliente {
+public class Cliente extends Persona {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    // nombre, correo y telefono vienen de Persona
+    // solo mapeamos las columnas específicas de CLIENTES
+
     @Column(name = "nombre_c", nullable = false, length = 100)
-    private String nombre;
+    private String nombreC;
 
     @Column(name = "correo_c", length = 100)
-    private String correo;
+    private String correoC;
+
+    @Column(name = "telefono_c", length = 20)
+    private String telefonoC;
 
     @Column(name = "direccion_c", length = 150)
     private String direccion;
 
-    @Column(name = "telefono_c", length = 20)
-    private String telefono;
-
     @Column(name = "contrasena", length = 255)
     private String contrasena;
-
-    public String getContrasena() { return contrasena; }
-    public void setContrasena(String contrasena) { this.contrasena = contrasena; }
 
     @Column(name = "fecha_registro")
     private LocalDate fechaRegistro;
@@ -37,17 +37,27 @@ public class Cliente {
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    // Sobreescribimos getters/setters para mapear a columnas de BD
+    @Override
+    public String getNombre() { return nombreC; }
+    @Override
+    public void setNombre(String nombre) { this.nombreC = nombre; }
 
-    public String getCorreo() { return correo; }
-    public void setCorreo(String correo) { this.correo = correo; }
+    @Override
+    public String getCorreo() { return correoC; }
+    @Override
+    public void setCorreo(String correo) { this.correoC = correo; }
+
+    @Override
+    public String getTelefono() { return telefonoC; }
+    @Override
+    public void setTelefono(String telefono) { this.telefonoC = telefono; }
 
     public String getDireccion() { return direccion; }
     public void setDireccion(String direccion) { this.direccion = direccion; }
 
-    public String getTelefono() { return telefono; }
-    public void setTelefono(String telefono) { this.telefono = telefono; }
+    public String getContrasena() { return contrasena; }
+    public void setContrasena(String contrasena) { this.contrasena = contrasena; }
 
     public LocalDate getFechaRegistro() { return fechaRegistro; }
     public void setFechaRegistro(LocalDate fechaRegistro) { this.fechaRegistro = fechaRegistro; }

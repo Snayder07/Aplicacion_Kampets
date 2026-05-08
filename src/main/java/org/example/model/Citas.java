@@ -26,8 +26,9 @@ public class Citas {
     @Column(name = "hora_cita", nullable = false)
     private LocalTime horaCita;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "estado_cita", length = 50)
-    private String estadoCita;
+    private EstadoCita estadoCita;
 
     public Citas() {}
 
@@ -46,6 +47,6 @@ public class Citas {
     public LocalTime getHoraCita() { return horaCita; }
     public void setHoraCita(LocalTime horaCita) { this.horaCita = horaCita; }
 
-    public String getEstadoCita() { return estadoCita; }
-    public void setEstadoCita(String estadoCita) { this.estadoCita = estadoCita; }
+    public EstadoCita getEstadoCita() { return estadoCita; }
+    public void setEstadoCita(EstadoCita estadoCita) { this.estadoCita = estadoCita; }
 }
