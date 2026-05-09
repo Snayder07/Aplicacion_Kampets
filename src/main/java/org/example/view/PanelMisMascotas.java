@@ -43,6 +43,8 @@ public class PanelMisMascotas {
         if (oscuro != temaOscuro) { temaOscuro = oscuro; construir(); }
     }
 
+    public void recargar() { construir(); }
+
     private void construir() {
         panel.removeAll();
         C = temaOscuro ? OSCURO : CLARO;

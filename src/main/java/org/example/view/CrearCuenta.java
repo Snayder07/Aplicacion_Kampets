@@ -1,7 +1,11 @@
 package org.example.view;
 
+import org.example.controller.RegistroController;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class CrearCuenta {
     public JPanel panel;
@@ -14,15 +18,17 @@ public class CrearCuenta {
     private JButton registrarButton;
     private JButton volverButton;
 
+    // ── Conectado al RegistroController ──────────────────
+    private final RegistroController registroController = new RegistroController();
+
     public CrearCuenta() {
 
-        // ── Panel principal ──────────────────────────────
         panel = new JPanel();
         panel.setLayout(null);
         panel.setBackground(new Color(240, 248, 244));
         panel.setPreferredSize(new Dimension(420, 520));
 
-        // ── Título ───────────────────────────────────────
+        // Título
         JLabel titulo = new JLabel("Crear cuenta");
         titulo.setFont(new Font("Comic Sans MS", Font.BOLD, 28));
         titulo.setForeground(new Color(29, 158, 117));
@@ -42,7 +48,7 @@ public class CrearCuenta {
         sep.setForeground(new Color(29, 158, 117));
         panel.add(sep);
 
-        // ── Nombre ───────────────────────────────────────
+        // Nombre
         JLabel labelNombre = new JLabel("Nombre");
         labelNombre.setFont(new Font("Arial", Font.PLAIN, 12));
         labelNombre.setForeground(new Color(80, 80, 80));
@@ -53,12 +59,11 @@ public class CrearCuenta {
         nombreField.setFont(new Font("Arial", Font.PLAIN, 13));
         nombreField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(180, 220, 200), 1),
-                BorderFactory.createEmptyBorder(4, 8, 4, 8)
-        ));
+                BorderFactory.createEmptyBorder(4, 8, 4, 8)));
         nombreField.setBounds(40, 122, 160, 35);
         panel.add(nombreField);
 
-        // ── Apellido ─────────────────────────────────────
+        // Apellido
         JLabel labelApellido = new JLabel("Apellido");
         labelApellido.setFont(new Font("Arial", Font.PLAIN, 12));
         labelApellido.setForeground(new Color(80, 80, 80));
@@ -69,12 +74,11 @@ public class CrearCuenta {
         apellidoField.setFont(new Font("Arial", Font.PLAIN, 13));
         apellidoField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(180, 220, 200), 1),
-                BorderFactory.createEmptyBorder(4, 8, 4, 8)
-        ));
+                BorderFactory.createEmptyBorder(4, 8, 4, 8)));
         apellidoField.setBounds(220, 122, 160, 35);
         panel.add(apellidoField);
 
-        // ── Correo ───────────────────────────────────────
+        // Correo
         JLabel labelCorreo = new JLabel("Correo electrónico");
         labelCorreo.setFont(new Font("Arial", Font.PLAIN, 12));
         labelCorreo.setForeground(new Color(80, 80, 80));
@@ -85,12 +89,11 @@ public class CrearCuenta {
         correoField.setFont(new Font("Arial", Font.PLAIN, 13));
         correoField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(180, 220, 200), 1),
-                BorderFactory.createEmptyBorder(4, 8, 4, 8)
-        ));
+                BorderFactory.createEmptyBorder(4, 8, 4, 8)));
         correoField.setBounds(40, 192, 340, 35);
         panel.add(correoField);
 
-        // ── Teléfono ─────────────────────────────────────
+        // Teléfono
         JLabel labelTelefono = new JLabel("Teléfono");
         labelTelefono.setFont(new Font("Arial", Font.PLAIN, 12));
         labelTelefono.setForeground(new Color(80, 80, 80));
@@ -101,12 +104,11 @@ public class CrearCuenta {
         telefonoField.setFont(new Font("Arial", Font.PLAIN, 13));
         telefonoField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(180, 220, 200), 1),
-                BorderFactory.createEmptyBorder(4, 8, 4, 8)
-        ));
+                BorderFactory.createEmptyBorder(4, 8, 4, 8)));
         telefonoField.setBounds(40, 262, 340, 35);
         panel.add(telefonoField);
 
-        // ── Contraseña ───────────────────────────────────
+        // Contraseña
         JLabel labelPass = new JLabel("Contraseña");
         labelPass.setFont(new Font("Arial", Font.PLAIN, 12));
         labelPass.setForeground(new Color(80, 80, 80));
@@ -117,12 +119,11 @@ public class CrearCuenta {
         passwordField.setFont(new Font("Arial", Font.PLAIN, 13));
         passwordField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(180, 220, 200), 1),
-                BorderFactory.createEmptyBorder(4, 8, 4, 8)
-        ));
+                BorderFactory.createEmptyBorder(4, 8, 4, 8)));
         passwordField.setBounds(40, 332, 160, 35);
         panel.add(passwordField);
 
-        // ── Confirmar contraseña ──────────────────────────
+        // Confirmar contraseña
         JLabel labelConfirmar = new JLabel("Confirmar contraseña");
         labelConfirmar.setFont(new Font("Arial", Font.PLAIN, 12));
         labelConfirmar.setForeground(new Color(80, 80, 80));
@@ -133,12 +134,11 @@ public class CrearCuenta {
         confirmarPasswordField.setFont(new Font("Arial", Font.PLAIN, 13));
         confirmarPasswordField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(180, 220, 200), 1),
-                BorderFactory.createEmptyBorder(4, 8, 4, 8)
-        ));
+                BorderFactory.createEmptyBorder(4, 8, 4, 8)));
         confirmarPasswordField.setBounds(220, 332, 160, 35);
         panel.add(confirmarPasswordField);
 
-        // ── Botón Crear cuenta ────────────────────────────
+        // Botón Crear cuenta
         registrarButton = new JButton("Crear cuenta");
         registrarButton.setFont(new Font("Arial", Font.BOLD, 14));
         registrarButton.setBackground(new Color(29, 158, 117));
@@ -149,7 +149,7 @@ public class CrearCuenta {
         registrarButton.setBounds(40, 395, 340, 40);
         panel.add(registrarButton);
 
-        // ── Botón Volver ──────────────────────────────────
+        // Botón Volver
         volverButton = new JButton("Volver al login");
         volverButton.setFont(new Font("Arial", Font.PLAIN, 13));
         volverButton.setBackground(new Color(240, 248, 244));
@@ -161,25 +161,25 @@ public class CrearCuenta {
         panel.add(volverButton);
 
         // ── Acciones ──────────────────────────────────────
-        registrarButton.addActionListener(e -> {
-            String nombre = nombreField.getText();
-            String correo = correoField.getText();
-            String pass = new String(passwordField.getPassword());
-            String confirmar = new String(confirmarPasswordField.getPassword());
+        registrarButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String nombre    = nombreField.getText().trim();
+                String apellido  = apellidoField.getText().trim();
+                String correo    = correoField.getText().trim();
+                String telefono  = telefonoField.getText().trim();
+                String pass      = new String(passwordField.getPassword());
+                String confirmar = new String(confirmarPasswordField.getPassword());
 
-            if (nombre.isEmpty() || correo.isEmpty() || pass.isEmpty()) {
-                JOptionPane.showMessageDialog(panel, "Por favor completa todos los campos",
-                        "Campos vacíos", JOptionPane.WARNING_MESSAGE);
-            } else if (!pass.equals(confirmar)) {
-                JOptionPane.showMessageDialog(panel, "Las contraseñas no coinciden",
-                        "Error", JOptionPane.ERROR_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(panel, "¡Cuenta creada exitosamente!");
-                Main.cambiarPantalla("login");
+                // ← Llama al RegistroController que guarda en BD
+                registroController.registrar(
+                        nombre, apellido, correo, telefono, pass, confirmar, panel);
             }
         });
 
-        volverButton.addActionListener(e ->
-                Main.cambiarPantalla("login"));
+        volverButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Main.cambiarPantalla("login");
+            }
+        });
     }
 }

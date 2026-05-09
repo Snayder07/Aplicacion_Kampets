@@ -44,6 +44,8 @@ public class PanelCliente {
         if (oscuro != temaOscuro) { temaOscuro = oscuro; construir(); }
     }
 
+    public void recargar() { construir(); }
+
     private void construir() {
         panel.removeAll();
         C = temaOscuro ? OSCURO : CLARO;
@@ -112,7 +114,7 @@ public class PanelCliente {
         sidebar.add(btnInicio); sidebar.add(Box.createVerticalStrut(3));
 
         // Mis mascotas
-        JButton btnMisMascotas = crearBoton(" Mis mascotas", C[1], C[5], false);
+        JButton btnMisMascotas = crearBoton("Mis mascotas", C[1], C[5], false);
         btnMisMascotas.setAlignmentX(Component.LEFT_ALIGNMENT);
         btnMisMascotas.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
         btnMisMascotas.setHorizontalAlignment(SwingConstants.LEFT);
@@ -238,7 +240,7 @@ public class PanelCliente {
         JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         topRight.setBackground(C[2]);
 
-        JButton btnTema = new JButton(temaOscuro ? "☀  Claro" : "  Oscuro");
+        JButton btnTema = new JButton(temaOscuro ? "☀  Claro" : "🌙  Oscuro");
         btnTema.setFont(new Font("Arial", Font.PLAIN, 13));
         btnTema.setBackground(C[0]); btnTema.setForeground(C[6]); btnTema.setOpaque(true);
         btnTema.setFocusPainted(false); btnTema.setCursor(new Cursor(Cursor.HAND_CURSOR));

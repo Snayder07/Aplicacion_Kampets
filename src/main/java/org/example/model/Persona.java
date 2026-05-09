@@ -1,9 +1,20 @@
 package org.example.model;
 
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Transient;
+
+@MappedSuperclass
 public abstract class Persona {
 
+    // Campos transient — Hibernate los ignora
+    // Las subclases los sobreescriben con sus propias columnas
+    @Transient
     private String nombre;
+
+    @Transient
     private String telefono;
+
+    @Transient
     private String correo;
 
     public Persona() {}

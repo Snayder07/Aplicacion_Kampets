@@ -80,6 +80,22 @@ public class Main {
                 frame.setSize(420, 520);
                 frame.setLocationRelativeTo(null);
                 break;
+            case "misCitas":
+                panelMisCitas.recargar();
+                expandirVentana();
+                break;
+            case "misMascotas":
+                panelMisMascotas.recargar();
+                expandirVentana();
+                break;
+            case "agendarCita":
+                panelAgendarCita.recargar();
+                expandirVentana();
+                break;
+            case "panelCliente":
+                panelCliente.recargar();
+                expandirVentana();
+                break;
             default:
                 expandirVentana();
                 break;
