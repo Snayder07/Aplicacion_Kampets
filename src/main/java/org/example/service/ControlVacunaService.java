@@ -13,6 +13,10 @@ public class ControlVacunaService {
         return repositorio.buscarTodos();
     }
 
+    public List<Control_vacunas> listarPorCliente(Integer clienteId) {
+        return repositorio.buscarPorCliente(clienteId);
+    }
+
     public void guardar(Control_vacunas cv) throws Exception {
         if (cv == null) throw new Exception("El registro de vacuna no puede estar vacío.");
         if (cv.getMascota() == null) throw new Exception("Debe seleccionar una mascota.");

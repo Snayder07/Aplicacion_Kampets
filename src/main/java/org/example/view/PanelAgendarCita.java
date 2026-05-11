@@ -14,6 +14,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.List;
 
 public class PanelAgendarCita {
@@ -321,9 +322,15 @@ public class PanelAgendarCita {
                             "Campos incompletos", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
+                String fechaStr = new SimpleDateFormat("yyyy-MM-dd").format(dateChooser.getDate());
+                if (LocalDate.parse(fechaStr).isBefore(LocalDate.now())) {
+                    JOptionPane.showMessageDialog(panel,
+                            "La fecha no puede ser en el pasado.",
+                            "Fecha invalida", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
                 Mascotas mascota = (Mascotas) cbMascota.getSelectedItem();
                 String hora = (String) cbHora.getSelectedItem();
-                String fecha = new SimpleDateFormat("yyyy-MM-dd").format(dateChooser.getDate());
 
                 // El veterinario se asigna automáticamente (primer disponible)
                 List<Empleados> vets = ctrl.listarVeterinarios();
@@ -335,7 +342,7 @@ public class PanelAgendarCita {
                 }
                 Empleados empleado = vets.get(0);
 
-                boolean ok = ctrl.guardarCita(mascota, empleado, fecha, hora, panel);
+                boolean ok = ctrl.guardarCita(mascota, empleado, fechaStr, hora, panel);
                 if (ok) Main.cambiarPantalla("misCitas");
             }
         });

@@ -33,6 +33,28 @@ public class CitaRepositoryImpl implements CitaRepository {
     }
 
     @Override
+    public List<Citas> buscarPorCliente(Integer clienteId) {
+        EntityManager em = JPAUtil.getEntityManager();
+        List<Citas> citas = em.createQuery(
+                "SELECT c FROM Citas c WHERE c.mascota.cliente.id = :clienteId", Citas.class)
+                .setParameter("clienteId", clienteId)
+                .getResultList();
+        em.close();
+        return citas;
+    }
+
+    @Override
+    public List<Citas> buscarPasadasPorCliente(Integer clienteId) {
+        EntityManager em = JPAUtil.getEntityManager();
+        List<Citas> citas = em.createQuery(
+                "SELECT c FROM Citas c WHERE c.mascota.cliente.id = :clienteId AND c.fechaCita < CURRENT_DATE ORDER BY c.fechaCita DESC", Citas.class)
+                .setParameter("clienteId", clienteId)
+                .getResultList();
+        em.close();
+        return citas;
+    }
+
+    @Override
     public void eliminar(Integer id) {
         EntityManager em = JPAUtil.getEntityManager();
         em.getTransaction().begin();

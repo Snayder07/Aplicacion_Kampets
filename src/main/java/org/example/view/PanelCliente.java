@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -266,7 +267,9 @@ public class PanelCliente {
         centro.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
 
         // Próxima cita
-        List<Citas> citas = ctrl.listarTodas();
+        List<Citas> citas = Main.clienteActual != null
+                ? ctrl.listarPorCliente(Main.clienteActual.getId())
+                : Collections.emptyList();
         JPanel proximaCard = new JPanel(new BorderLayout());
         proximaCard.setBackground(C[1]);
         proximaCard.setBorder(BorderFactory.createEmptyBorder(20, 24, 20, 24));
@@ -356,10 +359,21 @@ public class PanelCliente {
                 derecha.setBackground(C[2]);
                 JLabel badge = crearLabel(estado, 11, Font.BOLD, colorEstado);
                 badge.setHorizontalAlignment(SwingConstants.RIGHT);
+                final Integer idCita = c.getId();
                 JLabel cancelar = crearLabel("Cancelar cita", 11, Font.PLAIN,
                         temaOscuro ? new Color(80, 110, 150) : new Color(176, 200, 224));
                 cancelar.setHorizontalAlignment(SwingConstants.RIGHT);
                 cancelar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                cancelar.addMouseListener(new java.awt.event.MouseAdapter() {
+                    public void mouseClicked(java.awt.event.MouseEvent e) {
+                        int conf = JOptionPane.showConfirmDialog(panel,
+                                "¿Cancelar esta cita?", "Confirmar", JOptionPane.YES_NO_OPTION);
+                        if (conf == JOptionPane.YES_OPTION) {
+                            ctrl.cancelarCita(idCita, panel);
+                            construir();
+                        }
+                    }
+                });
                 derecha.add(badge); derecha.add(cancelar);
                 card.add(info, BorderLayout.CENTER); card.add(derecha, BorderLayout.EAST);
                 listaCitas.add(card);

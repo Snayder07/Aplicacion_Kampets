@@ -8,11 +8,13 @@ import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collections;
 import java.util.List;
 
 public class PanelMisCitas {
     public JPanel panel;
     private boolean temaOscuro = false;
+    private String filtroEstado = null;
 
     private final CitaAdminController ctrl = new CitaAdminController();
 
@@ -196,21 +198,39 @@ public class PanelMisCitas {
 
         JPanel filtros = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         filtros.setBackground(C[0]);
-        String[] filtroNombres = {"Todas", "Confirmadas", "Pendientes", "Canceladas"};
+        String[] filtroNombres  = {"Todas", "Confirmadas", "Pendientes", "Canceladas"};
+        String[] filtroEstados  = {null,    "CONFIRMADA",  "PENDIENTE",  "CANCELADA"};
         for (int i = 0; i < filtroNombres.length; i++) {
+            final String estadoFiltro = filtroEstados[i];
+            boolean activo = (filtroEstado == null && estadoFiltro == null)
+                    || (filtroEstado != null && filtroEstado.equals(estadoFiltro));
             JButton f = new JButton(filtroNombres[i]);
             f.setFont(new Font("Arial", Font.PLAIN, 12));
-            f.setBackground(i == 0 ? C[1] : C[2]);
-            f.setForeground(i == 0 ? C[5] : C[7]);
+            f.setBackground(activo ? C[1] : C[2]);
+            f.setForeground(activo ? C[5] : C[7]);
             f.setOpaque(true); f.setFocusPainted(false); f.setCursor(new Cursor(Cursor.HAND_CURSOR));
             f.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(i == 0 ? C[1] : C[9], 1),
+                    BorderFactory.createLineBorder(activo ? C[1] : C[9], 1),
                     BorderFactory.createEmptyBorder(6, 14, 6, 14)));
+            f.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    filtroEstado = estadoFiltro;
+                    construir();
+                }
+            });
             filtros.add(f);
         }
         cuerpo.add(filtros, BorderLayout.NORTH);
 
-        List<Citas> citas = ctrl.listarTodas();
+        List<Citas> todasCitas = Main.clienteActual != null
+                ? ctrl.listarPorCliente(Main.clienteActual.getId())
+                : Collections.emptyList();
+
+        List<Citas> citas = new java.util.ArrayList<>();
+        for (Citas c : todasCitas) {
+            if (filtroEstado == null) { citas.add(c); }
+            else if (c.getEstadoCita() != null && c.getEstadoCita().name().equals(filtroEstado)) { citas.add(c); }
+        }
         JPanel lista = new JPanel();
         lista.setLayout(new BoxLayout(lista, BoxLayout.Y_AXIS));
         lista.setBackground(C[0]);

@@ -1,12 +1,21 @@
 package org.example.view;
 
+import org.example.model.Control_vacunas;
+import org.example.model.Mascotas;
+import org.example.service.ControlVacunaService;
+
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PanelVacunas {
     public JPanel panel;
     private boolean temaOscuro = false;
+    private Mascotas mascotaSeleccionada = null;
+    private final ControlVacunaService vacunaService = new ControlVacunaService();
 
     private final Color[] CLARO = {
             new Color(240, 246, 252), new Color(26, 74, 122), Color.WHITE,
@@ -62,7 +71,7 @@ public class PanelVacunas {
         agregarSep(sb);
 
         agregarSeccion(sb, "PRINCIPAL");
-        String[] mp = {"Inicio","Mis citas","Historial"};
+        String[] mp = {"Inicio","Mis mascotas","Mis citas","Historial"};
         for (int i = 0; i < mp.length; i++) {
             JButton b = btn(mp[i], C[1], C[5], false);
             b.setFont(new Font("Arial", Font.PLAIN, 13));
@@ -70,8 +79,9 @@ public class PanelVacunas {
             b.setMaximumSize(new Dimension(Integer.MAX_VALUE,38));
             b.setHorizontalAlignment(SwingConstants.LEFT);
             if (i == 0) b.addActionListener(e -> Main.cambiarPantalla("panelCliente"));
-            if (i == 1) b.addActionListener(e -> Main.cambiarPantalla("misCitas"));
-            if (i == 2) b.addActionListener(e -> Main.cambiarPantalla("historial"));
+            if (i == 1) b.addActionListener(e -> Main.cambiarPantalla("misMascotas"));
+            if (i == 2) b.addActionListener(e -> Main.cambiarPantalla("misCitas"));
+            if (i == 3) b.addActionListener(e -> Main.cambiarPantalla("historial"));
             sb.add(b); sb.add(Box.createVerticalStrut(3));
         }
         sb.add(Box.createVerticalStrut(12));
@@ -100,13 +110,18 @@ public class PanelVacunas {
         });
         sb.add(cerrar); sb.add(Box.createVerticalStrut(8));
 
+        String nombreCliente = Main.clienteActual != null ? Main.clienteActual.getNombre() : "Cliente";
+        String[] partesV = nombreCliente.split(" ");
+        String inicialesV = partesV.length >= 2 ?
+                String.valueOf(partesV[0].charAt(0)) + String.valueOf(partesV[1].charAt(0)) :
+                String.valueOf(nombreCliente.charAt(0));
         JPanel up = new JPanel(new BorderLayout(8,0));
         up.setBackground(C[10]); up.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
         up.setMaximumSize(new Dimension(Integer.MAX_VALUE,55)); up.setAlignmentX(Component.LEFT_ALIGNMENT);
-        JLabel av = lbl("MF",13,Font.BOLD,C[1]); av.setBackground(C[5]); av.setOpaque(true);
+        JLabel av = lbl(inicialesV,13,Font.BOLD,C[1]); av.setBackground(C[5]); av.setOpaque(true);
         av.setPreferredSize(new Dimension(34,34)); av.setHorizontalAlignment(SwingConstants.CENTER);
         JPanel ui = new JPanel(new GridLayout(2,1)); ui.setBackground(C[10]);
-        ui.add(lbl("Maria Fernanda",12,Font.BOLD,C[5]));
+        ui.add(lbl(nombreCliente,12,Font.BOLD,C[5]));
         ui.add(lbl("Cliente",10,Font.PLAIN,C[11]));
         up.add(av,BorderLayout.WEST); up.add(ui,BorderLayout.CENTER);
         sb.add(up);
@@ -125,7 +140,7 @@ public class PanelVacunas {
                 BorderFactory.createEmptyBorder(16,24,16,24)));
         JPanel topLeft = new JPanel(new GridLayout(2,1)); topLeft.setBackground(C[2]);
         topLeft.add(lbl("Vacunas de mis mascotas", 20, Font.BOLD, C[6]));
-        topLeft.add(lbl("Estado y calendario de vacunación", 12, Font.PLAIN, C[7]));
+        topLeft.add(lbl("Estado y registro de vacunacion", 12, Font.PLAIN, C[7]));
 
         JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         topRight.setBackground(C[2]);
@@ -135,14 +150,9 @@ public class PanelVacunas {
         btnTema.setFocusPainted(false); btnTema.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnTema.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(C[9],1), BorderFactory.createEmptyBorder(7,14,7,14)));
-        btnTema.addActionListener(e -> { temaOscuro = !temaOscuro; construir(); });
+        btnTema.addActionListener(e -> { temaOscuro = !temaOscuro; Main.aplicarTemaGlobal(temaOscuro); construir(); });
 
-        JButton btnAgendar = btn("+ Agendar cita", C[1], C[5], false);
-        btnAgendar.setFont(new Font("Arial", Font.BOLD, 13));
-        btnAgendar.setBorder(BorderFactory.createEmptyBorder(10,20,10,20));
-        btnAgendar.addActionListener(e -> Main.cambiarPantalla("agendarCita"));
-
-        topRight.add(btnTema); topRight.add(btnAgendar);
+        topRight.add(btnTema);
         topbar.add(topLeft, BorderLayout.WEST);
         topbar.add(topRight, BorderLayout.EAST);
         contenido.add(topbar, BorderLayout.NORTH);
@@ -152,90 +162,123 @@ public class PanelVacunas {
         cuerpo.setBackground(C[0]);
         cuerpo.setBorder(BorderFactory.createEmptyBorder(24,28,28,28));
 
-        // Selector de mascota
-        JPanel selectorWrap = new JPanel(new BorderLayout(0,8));
-        selectorWrap.setBackground(C[0]);
-        selectorWrap.add(lbl("Selecciona tu mascota:", 12, Font.PLAIN, C[7]), BorderLayout.NORTH);
-        JPanel selector = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        selector.setBackground(C[0]);
-        String[][] mascotas = {{"🐶","Valentin","Perro"},{"🐶","Sacha","Perro"},{"🐱","Mia","Gato"}};
-        for (int i = 0; i < mascotas.length; i++) {
-            JPanel mc = new JPanel(new BorderLayout(0,4));
-            mc.setBackground(i == 0 ? C[1] : C[2]);
-            mc.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(i == 0 ? C[1] : C[9], 2),
-                    BorderFactory.createEmptyBorder(12,16,12,16)));
-            mc.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            JLabel icoM = lbl(mascotas[i][0], 22, Font.PLAIN, C[6]);
-            icoM.setHorizontalAlignment(SwingConstants.CENTER);
-            JLabel nmM = lbl(mascotas[i][1], 12, Font.BOLD, i == 0 ? C[5] : C[6]);
-            nmM.setHorizontalAlignment(SwingConstants.CENTER);
-            JLabel tipM = lbl(mascotas[i][2], 10, Font.PLAIN, i == 0 ? C[13] : C[7]);
-            tipM.setHorizontalAlignment(SwingConstants.CENTER);
-            mc.add(icoM, BorderLayout.NORTH);
-            mc.add(nmM,  BorderLayout.CENTER);
-            mc.add(tipM, BorderLayout.SOUTH);
-            selector.add(mc);
+        // Obtener vacunas del cliente
+        List<Control_vacunas> todos = new ArrayList<>();
+        if (Main.clienteActual != null) {
+            try { todos = vacunaService.listarPorCliente(Main.clienteActual.getId()); }
+            catch (Exception ignored) {}
         }
-        selectorWrap.add(selector, BorderLayout.CENTER);
-        cuerpo.add(selectorWrap, BorderLayout.NORTH);
 
-        // Tabla de vacunas de la mascota seleccionada
+        // Armar lista de mascotas únicas
+        List<Mascotas> mascotasUnicas = new ArrayList<>();
+        for (Control_vacunas cv : todos) {
+            Mascotas m = cv.getMascota();
+            boolean yaEsta = false;
+            for (Mascotas mu : mascotasUnicas) {
+                if (mu.getId().equals(m.getId())) { yaEsta = true; break; }
+            }
+            if (!yaEsta) mascotasUnicas.add(m);
+        }
+
+        // Si no hay mascota seleccionada aún, tomar la primera
+        if (mascotaSeleccionada == null && !mascotasUnicas.isEmpty())
+            mascotaSeleccionada = mascotasUnicas.get(0);
+
+        // Selector de mascota
+        if (!mascotasUnicas.isEmpty()) {
+            JPanel selectorWrap = new JPanel(new BorderLayout(0,8));
+            selectorWrap.setBackground(C[0]);
+            selectorWrap.add(lbl("Selecciona tu mascota:", 12, Font.PLAIN, C[7]), BorderLayout.NORTH);
+            JPanel selector = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+            selector.setBackground(C[0]);
+
+            for (Mascotas m : mascotasUnicas) {
+                boolean seleccionada = mascotaSeleccionada != null && m.getId().equals(mascotaSeleccionada.getId());
+                JPanel mc = new JPanel(new GridLayout(2,1,0,4));
+                mc.setBackground(seleccionada ? C[1] : C[2]);
+                mc.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(seleccionada ? C[1] : C[9], 2),
+                        BorderFactory.createEmptyBorder(12,20,12,20)));
+                mc.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                JLabel nmM = lbl(m.getNombre(), 12, Font.BOLD, seleccionada ? C[5] : C[6]);
+                nmM.setHorizontalAlignment(SwingConstants.CENTER);
+                String espNombre = m.getEspecie() != null ? m.getEspecie().getNombre() : "";
+                JLabel tipM = lbl(espNombre, 10, Font.PLAIN, seleccionada ? C[13] : C[7]);
+                tipM.setHorizontalAlignment(SwingConstants.CENTER);
+                mc.add(nmM); mc.add(tipM);
+                mc.addMouseListener(new java.awt.event.MouseAdapter() {
+                    public void mouseClicked(java.awt.event.MouseEvent e) {
+                        mascotaSeleccionada = m; construir();
+                    }
+                });
+                selector.add(mc);
+            }
+            selectorWrap.add(selector, BorderLayout.CENTER);
+            cuerpo.add(selectorWrap, BorderLayout.NORTH);
+        }
+
+        // Lista de vacunas de la mascota seleccionada
         JPanel vacunasPanel = new JPanel(new BorderLayout(0,10));
         vacunasPanel.setBackground(C[0]);
 
-        JLabel tituloV = lbl("Vacunas de Valentin", 14, Font.BOLD, C[6]);
-        tituloV.setBorder(BorderFactory.createEmptyBorder(4,0,8,0));
-        vacunasPanel.add(tituloV, BorderLayout.NORTH);
+        if (mascotaSeleccionada != null) {
+            JLabel tituloV = lbl("Vacunas de " + mascotaSeleccionada.getNombre(), 14, Font.BOLD, C[6]);
+            tituloV.setBorder(BorderFactory.createEmptyBorder(4,0,8,0));
+            vacunasPanel.add(tituloV, BorderLayout.NORTH);
+        }
 
-        String[][] vacunas = {
-                {"Antirrábica",    "15 Mar 2024", "15 Mar 2025", "Dr. Ramírez",  "Vencida",   "#dc2626"},
-                {"Polivalente",    "01 Abr 2025", "01 Abr 2026", "Dr. Gómez",    "Al día",    "#16a34a"},
-                {"Leptospirosis",  "10 Ene 2025", "10 Jul 2025", "Dr. Ramírez",  "Vencida",   "#dc2626"},
-                {"Bordetella",     "20 Feb 2025", "20 Feb 2026", "Dra. Torres",  "Al día",    "#16a34a"},
-                {"Influenza canina","05 Jun 2025","05 Jun 2026", "Dr. Gómez",    "Próxima",   "#ea580c"},
-        };
+        List<Control_vacunas> vacunasMascota = new ArrayList<>();
+        for (Control_vacunas cv : todos) {
+            if (mascotaSeleccionada != null && cv.getMascota().getId().equals(mascotaSeleccionada.getId()))
+                vacunasMascota.add(cv);
+        }
 
-        JPanel lista = new JPanel(new GridLayout(vacunas.length, 1, 0, 10));
+        JPanel lista = new JPanel();
+        lista.setLayout(new BoxLayout(lista, BoxLayout.Y_AXIS));
         lista.setBackground(C[0]);
 
-        for (String[] v : vacunas) {
-            JPanel card = new JPanel(new BorderLayout(12,0));
-            card.setBackground(C[2]);
-            Color estadoColor = Color.decode(v[5]);
-            card.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createMatteBorder(0,4,0,0, estadoColor),
-                    BorderFactory.createCompoundBorder(
-                            BorderFactory.createLineBorder(C[9],1),
-                            BorderFactory.createEmptyBorder(14,18,14,18))));
+        if (vacunasMascota.isEmpty()) {
+            JLabel sinVac = lbl("No hay vacunas registradas para esta mascota.", 13, Font.PLAIN, C[7]);
+            sinVac.setAlignmentX(Component.CENTER_ALIGNMENT);
+            lista.add(Box.createVerticalStrut(30));
+            lista.add(sinVac);
+        } else {
+            LocalDate hoy = LocalDate.now();
+            for (Control_vacunas cv : vacunasMascota) {
+                String nombreVac    = cv.getVacuna() != null ? cv.getVacuna().getNombre() : "—";
+                String fechaAplic   = cv.getFechaAplicacion() != null ? cv.getFechaAplicacion().toString() : "—";
+                String proximaDosis = cv.getProximaDosis()    != null ? cv.getProximaDosis().toString()    : "—";
+                String estado       = vacunaService.calcularEstado(cv.getProximaDosis());
 
-            // Icono vacuna
-            JLabel icoV = lbl("💉", 22, Font.PLAIN, C[6]);
-            icoV.setHorizontalAlignment(SwingConstants.CENTER);
-            icoV.setPreferredSize(new Dimension(40,40));
+                Color estadoColor;
+                switch (estado) {
+                    case "Vencida":  estadoColor = new Color(220, 38, 38);  break;
+                    case "Proxima":  estadoColor = new Color(234, 88, 12);  break;
+                    default:         estadoColor = new Color(22, 163, 74);  break;
+                }
 
-            // Info centro
-            JPanel info = new JPanel(new GridLayout(2,1,0,4));
-            info.setBackground(C[2]);
-            info.add(lbl(v[0], 14, Font.BOLD, C[6]));
-            info.add(lbl("Aplicada: " + v[1] + "  ·  Vence: " + v[2] + "  ·  " + v[3], 12, Font.PLAIN, C[7]));
+                JPanel card = new JPanel(new BorderLayout(12,0));
+                card.setBackground(C[2]);
+                card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 70));
+                card.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(0,4,0,0, estadoColor),
+                        BorderFactory.createCompoundBorder(
+                                BorderFactory.createLineBorder(C[9],1),
+                                BorderFactory.createEmptyBorder(14,18,14,18))));
 
-            // Derecha: estado + botón
-            JPanel der = new JPanel(new GridLayout(2,1,0,6));
-            der.setBackground(C[2]);
-            JLabel badge = lbl(v[4], 11, Font.BOLD, estadoColor);
-            badge.setHorizontalAlignment(SwingConstants.RIGHT);
+                JPanel info = new JPanel(new GridLayout(2,1,0,4));
+                info.setBackground(C[2]);
+                info.add(lbl(nombreVac, 13, Font.BOLD, C[6]));
+                info.add(lbl("Aplicada: " + fechaAplic + "  ·  Proxima dosis: " + proximaDosis, 11, Font.PLAIN, C[7]));
 
-            JButton btnAg = btn("Agendar", C[1], C[5], false);
-            btnAg.setFont(new Font("Arial", Font.PLAIN, 11));
-            btnAg.setBorder(BorderFactory.createEmptyBorder(4,10,4,10));
-            btnAg.addActionListener(e -> Main.cambiarPantalla("agendarCita"));
+                JLabel badge = lbl(estado, 11, Font.BOLD, estadoColor);
+                badge.setHorizontalAlignment(SwingConstants.RIGHT);
 
-            der.add(badge); der.add(btnAg);
-            card.add(icoV, BorderLayout.WEST);
-            card.add(info, BorderLayout.CENTER);
-            card.add(der,  BorderLayout.EAST);
-            lista.add(card);
+                card.add(info, BorderLayout.CENTER);
+                card.add(badge, BorderLayout.EAST);
+                lista.add(card);
+                lista.add(Box.createVerticalStrut(10));
+            }
         }
 
         JScrollPane scroll = new JScrollPane(lista);

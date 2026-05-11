@@ -29,6 +29,22 @@ public class CitaAdminController {
         }
     }
 
+    public List<Citas> listarPorCliente(Integer clienteId) {
+        try {
+            return citaService.listarPorCliente(clienteId);
+        } catch (Exception e) {
+            return Collections.emptyList();
+        }
+    }
+
+    public List<Citas> listarPasadasPorCliente(Integer clienteId) {
+        try {
+            return citaService.listarPasadasPorCliente(clienteId);
+        } catch (Exception e) {
+            return Collections.emptyList();
+        }
+    }
+
     public void cancelarCita(Integer id, JPanel panel) {
         try {
             citaService.cancelarCita(id);

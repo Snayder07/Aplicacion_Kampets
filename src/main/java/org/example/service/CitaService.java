@@ -32,6 +32,14 @@ public class CitaService {
         return repositorio.buscarTodos();
     }
 
+    public List<Citas> listarPorCliente(Integer clienteId) {
+        return repositorio.buscarPorCliente(clienteId);
+    }
+
+    public List<Citas> listarPasadasPorCliente(Integer clienteId) {
+        return repositorio.buscarPasadasPorCliente(clienteId);
+    }
+
     // ─────────────────────────────────────────────────────────
     // BUSCAR CITA POR ID
     // ─────────────────────────────────────────────────────────

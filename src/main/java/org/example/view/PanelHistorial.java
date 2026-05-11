@@ -1,12 +1,18 @@
 package org.example.view;
 
+import org.example.controller.CitaAdminController;
+import org.example.model.Citas;
+
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collections;
+import java.util.List;
 
 public class PanelHistorial {
+    private final CitaAdminController ctrl = new CitaAdminController();
     public JPanel panel;
     private boolean temaOscuro = false;
 
@@ -176,9 +182,19 @@ public class PanelHistorial {
         cuerpo.setBackground(C[0]);
         cuerpo.setBorder(BorderFactory.createEmptyBorder(24, 28, 28, 28));
 
-        JPanel stats = new JPanel(new GridLayout(1, 3, 16, 0));
+        // Cargar citas pasadas del cliente
+        List<Citas> pasadas = Main.clienteActual != null
+                ? ctrl.listarPasadasPorCliente(Main.clienteActual.getId())
+                : Collections.emptyList();
+
+        // Stats reales
+        String totalStr = String.valueOf(pasadas.size());
+        String ultimaStr = pasadas.isEmpty() ? "—"
+                : pasadas.get(0).getFechaCita().toString();
+
+        JPanel stats = new JPanel(new GridLayout(1, 2, 16, 0));
         stats.setBackground(C[0]);
-        String[][] st = {{"Total de citas", "18"}, {"Última visita", "6 Mar 2026"}, {"Mascotas", "3"}};
+        String[][] st = {{"Total de citas pasadas", totalStr}, {"Ultima visita", ultimaStr}};
         for (String[] s : st) {
             JPanel card = new JPanel(new BorderLayout(0, 4));
             card.setBackground(C[2]);
@@ -191,36 +207,54 @@ public class PanelHistorial {
         }
         cuerpo.add(stats, BorderLayout.NORTH);
 
-        String[][] historial = {
-                {"Valentin — Chequeo general",    "06 Mar 2026", "Dr. Ramírez", "Consulta general", "Todo en orden. Próxima cita en 6 meses."},
-                {"Sacha — Vacunación antirrábica", "20 Feb 2026", "Dr. Gómez",   "Vacunación",       "Vacuna aplicada. Refuerzo en 1 año."},
-                {"Mia — Revisión dental",          "10 Ene 2026", "Dra. Torres", "Odontología",      "Limpieza realizada. Sin caries."},
-                {"Valentin — Desparasitación",     "15 Nov 2025", "Dr. Ramírez", "Prevención",       "Tratamiento completo aplicado."},
-                {"Sacha — Control de peso",        "03 Oct 2025", "Dr. Gómez",   "Consulta general", "Peso estable. Dieta balanceada recomendada."},
-        };
-
-        JPanel lista = new JPanel(new GridLayout(historial.length, 1, 0, 10));
+        JPanel lista = new JPanel();
+        lista.setLayout(new BoxLayout(lista, BoxLayout.Y_AXIS));
         lista.setBackground(C[0]);
 
-        for (String[] h : historial) {
-            JPanel card = new JPanel(new BorderLayout(12, 0));
-            card.setBackground(C[2]);
-            card.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createMatteBorder(0, 4, 0, 0, new Color(22, 163, 74)),
-                    BorderFactory.createCompoundBorder(
-                            BorderFactory.createLineBorder(C[9], 1),
-                            BorderFactory.createEmptyBorder(14, 18, 14, 18))));
-            JPanel izq = new JPanel(new GridLayout(3, 1, 0, 3));
-            izq.setBackground(C[2]);
-            izq.add(lbl(h[0], 14, Font.BOLD, C[6]));
-            izq.add(lbl(h[1] + "  ·  " + h[2] + "  ·  " + h[3], 12, Font.PLAIN, C[7]));
-            izq.add(lbl(h[4], 11, Font.PLAIN, C[11]));
-            JPanel der = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-            der.setBackground(C[2]);
-            der.add(lbl("Completada", 11, Font.BOLD, new Color(22, 163, 74)));
-            card.add(izq, BorderLayout.CENTER);
-            card.add(der, BorderLayout.EAST);
-            lista.add(card);
+        if (pasadas.isEmpty()) {
+            JLabel sinH = lbl("No tienes citas anteriores registradas.", 13, Font.PLAIN, C[7]);
+            sinH.setAlignmentX(Component.CENTER_ALIGNMENT);
+            lista.add(Box.createVerticalStrut(30));
+            lista.add(sinH);
+        } else {
+            for (Citas c : pasadas) {
+                String mascota = c.getMascota()  != null ? c.getMascota().getNombre()  : "—";
+                String vet     = c.getEmpleado() != null ? c.getEmpleado().getNombre() : "—";
+                String fecha   = c.getFechaCita() != null ? c.getFechaCita().toString() : "—";
+                String hora    = c.getHoraCita()  != null ? c.getHoraCita().toString()  : "—";
+                String estado  = c.getEstadoCita() != null ? c.getEstadoCita().toString() : "—";
+
+                Color colorEstado;
+                if (c.getEstadoCita() != null) {
+                    switch (c.getEstadoCita()) {
+                        case COMPLETADA: colorEstado = new Color(22, 163, 74);  break;
+                        case CANCELADA:  colorEstado = new Color(220, 38, 38);  break;
+                        default:         colorEstado = new Color(100,116,139);  break;
+                    }
+                } else { colorEstado = new Color(100, 116, 139); }
+
+                JPanel card = new JPanel(new BorderLayout(12, 0));
+                card.setBackground(C[2]);
+                card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 72));
+                card.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(0, 4, 0, 0, colorEstado),
+                        BorderFactory.createCompoundBorder(
+                                BorderFactory.createLineBorder(C[9], 1),
+                                BorderFactory.createEmptyBorder(14, 18, 14, 18))));
+
+                JPanel izq = new JPanel(new GridLayout(2, 1, 0, 4));
+                izq.setBackground(C[2]);
+                izq.add(lbl(mascota, 13, Font.BOLD, C[6]));
+                izq.add(lbl(fecha + "  ·  " + hora + "  ·  " + vet, 11, Font.PLAIN, C[7]));
+
+                JLabel badge = lbl(estado, 11, Font.BOLD, colorEstado);
+                badge.setHorizontalAlignment(SwingConstants.RIGHT);
+
+                card.add(izq, BorderLayout.CENTER);
+                card.add(badge, BorderLayout.EAST);
+                lista.add(card);
+                lista.add(Box.createVerticalStrut(10));
+            }
         }
 
         JScrollPane scroll = new JScrollPane(lista);

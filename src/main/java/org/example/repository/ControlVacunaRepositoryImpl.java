@@ -35,6 +35,17 @@ public class ControlVacunaRepositoryImpl implements ControlVacunaRepository {
     }
 
     @Override
+    public List<Control_vacunas> buscarPorCliente(Integer clienteId) {
+        EntityManager em = JPAUtil.getEntityManager();
+        List<Control_vacunas> lista = em.createQuery(
+                "SELECT cv FROM Control_vacunas cv WHERE cv.mascota.cliente.id = :clienteId", Control_vacunas.class)
+                .setParameter("clienteId", clienteId)
+                .getResultList();
+        em.close();
+        return lista;
+    }
+
+    @Override
     public void eliminar(Integer id) {
         EntityManager em = JPAUtil.getEntityManager();
         em.getTransaction().begin();

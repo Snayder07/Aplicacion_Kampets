@@ -62,7 +62,7 @@ public class PanelAlimentos {
         agregarSep(sb);
 
         agregarSeccion(sb, "PRINCIPAL");
-        String[] mp = {"Inicio","Mis citas","Historial"};
+        String[] mp = {"Inicio","Mis mascotas","Mis citas","Historial"};
         for (int i = 0; i < mp.length; i++) {
             JButton b = btn(mp[i], C[1], C[5], false);
             b.setFont(new Font("Arial", Font.PLAIN, 13));
@@ -70,8 +70,9 @@ public class PanelAlimentos {
             b.setMaximumSize(new Dimension(Integer.MAX_VALUE,38));
             b.setHorizontalAlignment(SwingConstants.LEFT);
             if (i == 0) b.addActionListener(e -> Main.cambiarPantalla("panelCliente"));
-            if (i == 1) b.addActionListener(e -> Main.cambiarPantalla("misCitas"));
-            if (i == 2) b.addActionListener(e -> Main.cambiarPantalla("historial"));
+            if (i == 1) b.addActionListener(e -> Main.cambiarPantalla("misMascotas"));
+            if (i == 2) b.addActionListener(e -> Main.cambiarPantalla("misCitas"));
+            if (i == 3) b.addActionListener(e -> Main.cambiarPantalla("historial"));
             sb.add(b); sb.add(Box.createVerticalStrut(3));
         }
         sb.add(Box.createVerticalStrut(12));
@@ -100,13 +101,18 @@ public class PanelAlimentos {
         });
         sb.add(cerrar); sb.add(Box.createVerticalStrut(8));
 
+        String nombreCliente = Main.clienteActual != null ? Main.clienteActual.getNombre() : "Cliente";
+        String[] partesA = nombreCliente.split(" ");
+        String inicialesA = partesA.length >= 2 ?
+                String.valueOf(partesA[0].charAt(0)) + String.valueOf(partesA[1].charAt(0)) :
+                String.valueOf(nombreCliente.charAt(0));
         JPanel up = new JPanel(new BorderLayout(8,0));
         up.setBackground(C[10]); up.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
         up.setMaximumSize(new Dimension(Integer.MAX_VALUE,55)); up.setAlignmentX(Component.LEFT_ALIGNMENT);
-        JLabel av = lbl("MF",13,Font.BOLD,C[1]); av.setBackground(C[5]); av.setOpaque(true);
+        JLabel av = lbl(inicialesA,13,Font.BOLD,C[1]); av.setBackground(C[5]); av.setOpaque(true);
         av.setPreferredSize(new Dimension(34,34)); av.setHorizontalAlignment(SwingConstants.CENTER);
         JPanel ui = new JPanel(new GridLayout(2,1)); ui.setBackground(C[10]);
-        ui.add(lbl("Maria Fernanda",12,Font.BOLD,C[5]));
+        ui.add(lbl(nombreCliente,12,Font.BOLD,C[5]));
         ui.add(lbl("Cliente",10,Font.PLAIN,C[11]));
         up.add(av,BorderLayout.WEST); up.add(ui,BorderLayout.CENTER);
         sb.add(up);
@@ -146,73 +152,80 @@ public class PanelAlimentos {
         cuerpo.setBackground(C[0]);
         cuerpo.setBorder(BorderFactory.createEmptyBorder(24,28,28,28));
 
-        // Categorías
-        JPanel cats = new JPanel(new FlowLayout(FlowLayout.LEFT,10,0));
-        cats.setBackground(C[0]);
-        String[] categorias = {"Todos", "Perros", "Gatos", "Aves", "Peces"};
-        for (int i = 0; i < categorias.length; i++) {
-            JButton f = new JButton(categorias[i]);
-            f.setFont(new Font("Arial", Font.PLAIN, 12));
-            f.setBackground(i == 0 ? C[1] : C[2]);
-            f.setForeground(i == 0 ? C[5] : C[7]);
-            f.setOpaque(true); f.setFocusPainted(false); f.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            f.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(i == 0 ? C[1] : C[9],1),
-                    BorderFactory.createEmptyBorder(6,14,6,14)));
-            cats.add(f);
-        }
-        cuerpo.add(cats, BorderLayout.NORTH);
-
         // Grid de productos
-        String[][] productos = {
-                {"🐶", "Royal Canin Adulto",      "Perros · 15kg",     "$185.000", "★ 4.8", "Para perros adultos de razas medianas."},
-                {"🐶", "Purina Pro Plan",          "Perros · 3kg",      "$62.000",  "★ 4.6", "Alto contenido proteico para razas pequeñas."},
-                {"🐱", "Whiskas Adulto",           "Gatos · 1.5kg",     "$28.000",  "★ 4.5", "Nutrición completa para gatos adultos."},
-                {"🐱", "Hill's Science Diet",      "Gatos · 2kg",       "$74.000",  "★ 4.9", "Apoya la salud renal y urinaria."},
-                {"🐦", "Vitakraft Periquitos",     "Aves · 500g",       "$18.000",  "★ 4.4", "Mezcla de semillas enriquecidas con vitaminas."},
-                {"🐟", "Tetra Goldfish",           "Peces · 250ml",     "$22.000",  "★ 4.3", "Alimento en escamas para peces de agua fría."},
+        // { categoria, color badge, nombre, detalle, descripcion, precio, rating }
+        Object[][] productos = {
+            {"PERROS", new Color(59,130,246),  "Royal Canin Adulto",  "15 kg",  "Para perros adultos de razas medianas.",          "$185.000", "4.8"},
+            {"PERROS", new Color(59,130,246),  "Purina Pro Plan",     "3 kg",   "Alto contenido proteico para razas pequeñas.",    "$62.000",  "4.6"},
+            {"GATOS",  new Color(168,85,247),  "Whiskas Adulto",      "1.5 kg", "Nutricion completa para gatos adultos.",           "$28.000",  "4.5"},
+            {"GATOS",  new Color(168,85,247),  "Hill's Science Diet", "2 kg",   "Apoya la salud renal y urinaria.",                "$74.000",  "4.9"},
+            {"AVES",   new Color(34,197,94),   "Vitakraft Periquitos","500 g",  "Mezcla de semillas enriquecidas con vitaminas.",   "$18.000",  "4.4"},
+            {"PECES",  new Color(20,184,166),  "Tetra Goldfish",      "250 ml", "Alimento en escamas para peces de agua fria.",    "$22.000",  "4.3"},
         };
 
         JPanel grid = new JPanel(new GridLayout(2, 3, 16, 16));
         grid.setBackground(C[0]);
 
-        for (String[] p : productos) {
-            JPanel card = new JPanel(new BorderLayout(0, 8));
+        for (Object[] p : productos) {
+            String  cat    = (String)  p[0];
+            Color   color  = (Color)   p[1];
+            String  nombre = (String)  p[2];
+            String  detalle= (String)  p[3];
+            String  desc   = (String)  p[4];
+            String  precio = (String)  p[5];
+            String  rating = (String)  p[6];
+
+            JPanel card = new JPanel(new BorderLayout(0, 10));
             card.setBackground(C[2]);
             card.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(C[9],1),
-                    BorderFactory.createEmptyBorder(18,18,18,18)));
+                    BorderFactory.createMatteBorder(0, 4, 0, 0, color),
+                    BorderFactory.createCompoundBorder(
+                            BorderFactory.createLineBorder(C[9], 1),
+                            BorderFactory.createEmptyBorder(16, 16, 16, 16))));
 
-            // Ícono grande
-            JLabel ico = new JLabel(p[0], SwingConstants.CENTER);
-            ico.setFont(new Font("Arial", Font.PLAIN, 38));
-            ico.setBackground(C[4]); ico.setOpaque(true);
-            ico.setPreferredSize(new Dimension(0, 60));
+            // Badge categoría
+            JLabel badge = new JLabel(cat);
+            badge.setFont(new Font("Arial", Font.BOLD, 10));
+            badge.setForeground(color);
+            badge.setBackground(new Color(color.getRed(), color.getGreen(), color.getBlue(), 30));
+            badge.setOpaque(true);
+            badge.setBorder(BorderFactory.createEmptyBorder(3, 8, 3, 8));
 
-            JPanel info = new JPanel(new GridLayout(4,1,0,3));
+            JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+            top.setBackground(C[2]);
+            top.add(badge);
+
+            // Info central
+            JPanel info = new JPanel();
+            info.setLayout(new BoxLayout(info, BoxLayout.Y_AXIS));
             info.setBackground(C[2]);
-            info.add(lbl(p[1], 13, Font.BOLD, C[6]));
-            info.add(lbl(p[2], 11, Font.PLAIN, C[7]));
-            info.add(lbl(p[5], 10, Font.PLAIN, C[11]));
+            info.setBorder(BorderFactory.createEmptyBorder(6, 0, 6, 0));
 
-            JPanel bottom = new JPanel(new BorderLayout());
-            bottom.setBackground(C[2]);
-            bottom.add(lbl(p[3], 14, Font.BOLD, C[1]), BorderLayout.WEST);
-            bottom.add(lbl(p[4], 11, Font.PLAIN, new Color(234,179,8)), BorderLayout.EAST);
+            JLabel lblNombre = lbl(nombre, 13, Font.BOLD, C[6]);
+            JLabel lblDetalle = lbl(detalle, 11, Font.PLAIN, C[7]);
+            JLabel lblDesc   = lbl(desc, 10, Font.PLAIN, C[11]);
+            lblNombre.setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
+            lblDetalle.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
 
-            JButton agregar = btn("Agregar al carrito", C[1], C[5], false);
-            agregar.setFont(new Font("Arial", Font.BOLD, 12));
-            agregar.setBorder(BorderFactory.createEmptyBorder(8,12,8,12));
+            info.add(lblNombre);
+            info.add(lblDetalle);
+            info.add(lblDesc);
 
-            card.add(ico,     BorderLayout.NORTH);
-            card.add(info,    BorderLayout.CENTER);
-            card.add(bottom,  BorderLayout.SOUTH);
+            // Footer precio + rating
+            JPanel footer = new JPanel(new BorderLayout());
+            footer.setBackground(C[2]);
+            footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, C[9]));
+            footer.add(lbl(precio, 14, Font.BOLD, C[1]), BorderLayout.WEST);
 
-            JPanel wrap = new JPanel(new BorderLayout(0,8));
-            wrap.setBackground(C[2]);
-            wrap.add(card,    BorderLayout.CENTER);
-            wrap.add(agregar, BorderLayout.SOUTH);
-            grid.add(wrap);
+            JLabel lblRating = new JLabel("★ " + rating);
+            lblRating.setFont(new Font("Arial", Font.BOLD, 12));
+            lblRating.setForeground(new Color(234, 179, 8));
+            footer.add(lblRating, BorderLayout.EAST);
+
+            card.add(top,    BorderLayout.NORTH);
+            card.add(info,   BorderLayout.CENTER);
+            card.add(footer, BorderLayout.SOUTH);
+            grid.add(card);
         }
 
         JScrollPane scroll = new JScrollPane(grid);

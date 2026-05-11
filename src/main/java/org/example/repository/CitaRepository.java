@@ -7,5 +7,7 @@ public interface CitaRepository {
     void guardar(Citas cita);
     Citas buscarPorId(Integer id);
     List<Citas> buscarTodos();
+    List<Citas> buscarPorCliente(Integer clienteId);
+    List<Citas> buscarPasadasPorCliente(Integer clienteId);
     void eliminar(Integer id);
 }

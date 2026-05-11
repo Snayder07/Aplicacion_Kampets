@@ -7,5 +7,6 @@ public interface ControlVacunaRepository {
     void guardar(Control_vacunas cv);
     Control_vacunas buscarPorId(Integer id);
     List<Control_vacunas> buscarTodos();
+    List<Control_vacunas> buscarPorCliente(Integer clienteId);
     void eliminar(Integer id);
 }
