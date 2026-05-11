@@ -1,5 +1,6 @@
 package org.example.view;
 
+import com.toedter.calendar.JDateChooser;
 import org.example.controller.MascotaAdminController;
 import org.example.model.Cliente;
 import org.example.model.Especies;
@@ -10,6 +11,7 @@ import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class PanelMisMascotas {
@@ -66,7 +68,6 @@ public class PanelMisMascotas {
         return b;
     }
 
-    // ── Sidebar ───────────────────────────────────────────
     private JPanel crearSidebar() {
         JPanel sb = new JPanel();
         sb.setLayout(new BoxLayout(sb, BoxLayout.Y_AXIS));
@@ -83,20 +84,20 @@ public class PanelMisMascotas {
         agregarSep(sb);
 
         agregarSeccion(sb, "PRINCIPAL");
-        String[] mp = {"Inicio","Mis citas","Historial","Mis mascotas"};
+        // Mis mascotas resaltado (idx==1)
+        String[] mp = {"Inicio", "Mis mascotas", "Mis citas", "Historial"};
         for (int i = 0; i < mp.length; i++) {
             final int idx = i;
-            JButton b = btn(mp[i], i==3?C[2]:C[1], i==3?C[1]:C[5], false);
-            b.setFont(new Font("Arial", i==3?Font.BOLD:Font.PLAIN, 13));
+            JButton b = btn(mp[i], i==1?C[2]:C[1], i==1?C[1]:C[5], false);
+            b.setFont(new Font("Arial", i==1?Font.BOLD:Font.PLAIN, 13));
             b.setAlignmentX(Component.LEFT_ALIGNMENT);
             b.setMaximumSize(new Dimension(Integer.MAX_VALUE,38));
             b.setHorizontalAlignment(SwingConstants.LEFT);
             b.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     if (idx==0) Main.cambiarPantalla("panelCliente");
-                    if (idx==1) Main.cambiarPantalla("misCitas");
-                    if (idx==2) Main.cambiarPantalla("historial");
-                    if (idx==3) Main.cambiarPantalla("misMascotas");
+                    if (idx==2) Main.cambiarPantalla("misCitas");
+                    if (idx==3) Main.cambiarPantalla("historial");
                 }
             });
             sb.add(b); sb.add(Box.createVerticalStrut(3));
@@ -136,15 +137,16 @@ public class PanelMisMascotas {
         });
         sb.add(cerrar); sb.add(Box.createVerticalStrut(8));
 
-        JPanel up = new JPanel(new BorderLayout(8,0));
-        up.setBackground(C[10]); up.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
-        up.setMaximumSize(new Dimension(Integer.MAX_VALUE,55));
-        up.setAlignmentX(Component.LEFT_ALIGNMENT);
         String nombreCliente = Main.clienteActual != null ? Main.clienteActual.getNombre() : "Cliente";
         String[] partes = nombreCliente.split(" ");
         String iniciales = partes.length >= 2 ?
                 String.valueOf(partes[0].charAt(0)) + String.valueOf(partes[1].charAt(0)) :
                 String.valueOf(nombreCliente.charAt(0));
+
+        JPanel up = new JPanel(new BorderLayout(8,0));
+        up.setBackground(C[10]); up.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+        up.setMaximumSize(new Dimension(Integer.MAX_VALUE,55));
+        up.setAlignmentX(Component.LEFT_ALIGNMENT);
         JLabel av = lbl(iniciales,13,Font.BOLD,C[1]); av.setBackground(C[5]); av.setOpaque(true);
         av.setPreferredSize(new Dimension(34,34)); av.setHorizontalAlignment(SwingConstants.CENTER);
         JPanel ui = new JPanel(new GridLayout(2,1)); ui.setBackground(C[10]);
@@ -155,12 +157,10 @@ public class PanelMisMascotas {
         return sb;
     }
 
-    // ── Contenido ─────────────────────────────────────────
     private JPanel crearContenido() {
         JPanel contenido = new JPanel(new BorderLayout());
         contenido.setBackground(C[0]);
 
-        // Topbar
         JPanel topbar = new JPanel(new BorderLayout());
         topbar.setBackground(C[2]);
         topbar.setBorder(BorderFactory.createCompoundBorder(
@@ -195,12 +195,10 @@ public class PanelMisMascotas {
         topbar.add(topLeft,BorderLayout.WEST); topbar.add(topRight,BorderLayout.EAST);
         contenido.add(topbar,BorderLayout.NORTH);
 
-        // Lista de mascotas
         JPanel cuerpo = new JPanel(new BorderLayout(0,20));
         cuerpo.setBackground(C[0]);
         cuerpo.setBorder(BorderFactory.createEmptyBorder(24,28,28,28));
 
-        // Filtrar mascotas del cliente logueado
         List<Mascotas> todas = ctrl.listarTodas();
         JPanel lista = new JPanel();
         lista.setLayout(new BoxLayout(lista, BoxLayout.Y_AXIS));
@@ -222,17 +220,43 @@ public class PanelMisMascotas {
                                 BorderFactory.createLineBorder(C[9],1),
                                 BorderFactory.createEmptyBorder(14,18,14,18))));
 
-                String especie = m.getEspecie() != null ? m.getEspecie().getNombre() : "—";
-                String fechaNac = m.getFechaNac() != null ? m.getFechaNac().toString() : "—";
-                String sexo = m.getSexo() != null ? m.getSexo() : "—";
+                String especie  = m.getEspecie()  != null ? m.getEspecie().getNombre() : "—";
+                String fechaNac = m.getFechaNac() != null ? m.getFechaNac().toString()  : "—";
+                String sexo     = m.getSexo()     != null ? m.getSexo()                : "—";
 
                 JPanel izq = new JPanel(new GridLayout(2,1,0,4));
                 izq.setBackground(C[2]);
-                izq.add(lbl("🐾  " + m.getNombre(),15,Font.BOLD,C[6]));
+                izq.add(lbl(m.getNombre(),15,Font.BOLD,C[6]));
                 izq.add(lbl(especie + "  ·  Nacimiento: " + fechaNac + "  ·  Sexo: " + sexo,
                         12,Font.PLAIN,C[7]));
 
+                // Botón eliminar
+                final Integer idMascota = m.getId();
+                JPanel der = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+                der.setBackground(C[2]);
+                JButton btnEliminar = new JButton("Eliminar");
+                btnEliminar.setFont(new Font("Arial", Font.PLAIN, 11));
+                btnEliminar.setBackground(new Color(220,38,38));
+                btnEliminar.setForeground(Color.WHITE);
+                btnEliminar.setOpaque(true);
+                btnEliminar.setBorderPainted(false);
+                btnEliminar.setFocusPainted(false);
+                btnEliminar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                btnEliminar.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        int confirm = JOptionPane.showConfirmDialog(panel,
+                                "¿Eliminar esta mascota? Esta acción no se puede deshacer.",
+                                "Confirmar", JOptionPane.YES_NO_OPTION);
+                        if (confirm == JOptionPane.YES_OPTION) {
+                            ctrl.eliminarMascota(idMascota, panel);
+                            construir();
+                        }
+                    }
+                });
+                der.add(btnEliminar);
+
                 card.add(izq,BorderLayout.CENTER);
+                card.add(der,BorderLayout.EAST);
                 lista.add(card);
                 lista.add(Box.createVerticalStrut(10));
             }
@@ -244,14 +268,10 @@ public class PanelMisMascotas {
             JPanel inner = new JPanel();
             inner.setLayout(new BoxLayout(inner,BoxLayout.Y_AXIS));
             inner.setBackground(C[0]);
-            JLabel ico = lbl("🐾",48,Font.PLAIN,C[7]);
-            ico.setAlignmentX(Component.CENTER_ALIGNMENT);
             JLabel msg = lbl("No tienes mascotas registradas",16,Font.PLAIN,C[7]);
             msg.setAlignmentX(Component.CENTER_ALIGNMENT);
-            JLabel sub = lbl("Haz clic en '+ Agregar mascota' para registrar tu primera mascota",
-                    12,Font.PLAIN,C[11]);
+            JLabel sub = lbl("Haz clic en '+ Agregar mascota' para comenzar",12,Font.PLAIN,C[11]);
             sub.setAlignmentX(Component.CENTER_ALIGNMENT);
-            inner.add(ico); inner.add(Box.createVerticalStrut(12));
             inner.add(msg); inner.add(Box.createVerticalStrut(8)); inner.add(sub);
             sinMascotas.add(inner);
             cuerpo.add(sinMascotas,BorderLayout.CENTER);
@@ -266,18 +286,17 @@ public class PanelMisMascotas {
         return contenido;
     }
 
-    // ── Formulario agregar mascota ────────────────────────
     private void mostrarFormularioAgregar() {
         if (Main.clienteActual == null) {
             JOptionPane.showMessageDialog(panel,
-                    "Debes iniciar sesión para agregar mascotas.",
+                    "Debes iniciar sesion para agregar mascotas.",
                     "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         JDialog dlg = new JDialog((Frame) SwingUtilities.getWindowAncestor(panel),
                 "Agregar mascota", true);
-        dlg.setSize(400, 350);
+        dlg.setSize(420, 400);
         dlg.setLocationRelativeTo(panel);
 
         JPanel form = new JPanel();
@@ -296,7 +315,7 @@ public class PanelMisMascotas {
                 BorderFactory.createEmptyBorder(6,10,6,10)));
         form.add(tfNombre); form.add(Box.createVerticalStrut(14));
 
-        // Especie
+        // Especie — cargada una sola vez sin duplicados
         form.add(lbl("Especie", 12, Font.BOLD, C[6]));
         form.add(Box.createVerticalStrut(6));
         JComboBox<Especies> cbEspecie = new JComboBox<>();
@@ -314,16 +333,15 @@ public class PanelMisMascotas {
         });
         form.add(cbEspecie); form.add(Box.createVerticalStrut(14));
 
-        // Fecha nacimiento
-        form.add(lbl("Fecha de nacimiento (yyyy-MM-dd)", 12, Font.BOLD, C[6]));
+        // Fecha con JDateChooser
+        form.add(lbl("Fecha de nacimiento", 12, Font.BOLD, C[6]));
         form.add(Box.createVerticalStrut(6));
-        JTextField tfFecha = new JTextField();
-        tfFecha.setFont(new Font("Arial",Font.PLAIN,13));
-        tfFecha.setMaximumSize(new Dimension(Integer.MAX_VALUE,38));
-        tfFecha.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(C[9],1),
-                BorderFactory.createEmptyBorder(6,10,6,10)));
-        form.add(tfFecha); form.add(Box.createVerticalStrut(14));
+        JDateChooser dateChooser = new JDateChooser();
+        dateChooser.setFont(new Font("Arial",Font.PLAIN,13));
+        dateChooser.setMaximumSize(new Dimension(Integer.MAX_VALUE,38));
+        dateChooser.setDateFormatString("yyyy-MM-dd");
+        dateChooser.setBorder(BorderFactory.createLineBorder(C[9],1));
+        form.add(dateChooser); form.add(Box.createVerticalStrut(14));
 
         // Sexo
         form.add(lbl("Sexo", 12, Font.BOLD, C[6]));
@@ -336,9 +354,11 @@ public class PanelMisMascotas {
         // Botones
         JPanel bots = new JPanel(new FlowLayout(FlowLayout.RIGHT,10,0));
         bots.setBackground(C[2]);
+
         JButton btnCancel = btn("Cancelar",C[4],C[1],true);
         btnCancel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(C[9],1), BorderFactory.createEmptyBorder(8,16,8,16)));
+                BorderFactory.createLineBorder(C[9],1),
+                BorderFactory.createEmptyBorder(8,16,8,16)));
         btnCancel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { dlg.dispose(); }
         });
@@ -348,16 +368,22 @@ public class PanelMisMascotas {
         btnGuardar.setBorder(BorderFactory.createEmptyBorder(8,16,8,16));
         btnGuardar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String nombre = tfNombre.getText().trim();
+                String nombre  = tfNombre.getText().trim();
                 Especies especie = (Especies) cbEspecie.getSelectedItem();
-                String fecha = tfFecha.getText().trim();
-                String sexo = (String) cbSexo.getSelectedItem();
+                String sexo    = (String) cbSexo.getSelectedItem();
                 Cliente cliente = Main.clienteActual;
+
+                // Obtener fecha del calendario
+                String fecha = "";
+                if (dateChooser.getDate() != null) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    fecha = sdf.format(dateChooser.getDate());
+                }
 
                 boolean ok = ctrl.registrarMascota(nombre, especie, cliente, fecha, sexo, panel);
                 if (ok) {
                     dlg.dispose();
-                    construir(); // recargar lista
+                    construir();
                 }
             }
         });

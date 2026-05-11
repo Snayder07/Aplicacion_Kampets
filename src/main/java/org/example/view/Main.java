@@ -71,7 +71,7 @@ public class Main {
 
     public static void cambiarPantalla(String nombre) {
         CardLayout cl = (CardLayout) contenedor.getLayout();
-        cl.show(contenedor, nombre);
+        cl.show(contenedor, nombre); 
 
         switch (nombre) {
             case "login":

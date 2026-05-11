@@ -1,26 +1,26 @@
 package org.example.view;
 
+import com.toedter.calendar.JDateChooser;
 import org.example.controller.AgendarCitaController;
 import org.example.model.Empleados;
 import org.example.model.Mascotas;
+import org.example.model.Servicio;
+import org.example.repository.EspecieRepositoryImpl;
+import org.example.service.CitaService;
 
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class PanelAgendarCita {
     public JPanel panel;
     private boolean temaOscuro = false;
 
-    // ── Controlador conectado a BD ────────────────────────
     private final AgendarCitaController ctrl = new AgendarCitaController();
-
-    // ── ComboBox con objetos reales de BD ─────────────────
-    private JComboBox<Mascotas>  cbMascota;
-    private JComboBox<Empleados> cbVet;
 
     private final Color[] CLARO = {
             new Color(240, 246, 252), new Color(26,  74,  122), Color.WHITE,
@@ -59,7 +59,6 @@ public class PanelAgendarCita {
         panel.repaint();
     }
 
-    // ── Helpers ───────────────────────────────────────────
     private JLabel lbl(String t, int sz, int st, Color c) {
         JLabel l = new JLabel(t); l.setFont(new Font("Arial", st, sz)); l.setForeground(c); return l;
     }
@@ -71,27 +70,8 @@ public class PanelAgendarCita {
         else b.setBorderPainted(false);
         return b;
     }
-    private JTextField campo(String placeholder) {
-        JTextField tf = new JTextField(placeholder);
-        tf.setFont(new Font("Arial", Font.PLAIN, 13));
-        tf.setForeground(C[7]); tf.setBackground(C[2]); tf.setCaretColor(C[6]);
-        tf.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(C[9], 1),
-                BorderFactory.createEmptyBorder(8, 12, 8, 12)));
-        tf.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent e) {
-                if (tf.getText().equals(placeholder)) { tf.setText(""); tf.setForeground(C[6]); }
-            }
-            public void focusLost(java.awt.event.FocusEvent e) {
-                if (tf.getText().isEmpty()) { tf.setText(placeholder); tf.setForeground(C[7]); }
-            }
-        });
-        return tf;
-    }
 
-    // ════════════════════════════════════════════════════
-    // SIDEBAR
-    // ════════════════════════════════════════════════════
+    // ── Sidebar ───────────────────────────────────────────
     private JPanel crearSidebar() {
         JPanel sb = new JPanel();
         sb.setLayout(new BoxLayout(sb, BoxLayout.Y_AXIS));
@@ -108,21 +88,21 @@ public class PanelAgendarCita {
         agregarSep(sb);
 
         agregarSeccion(sb, "PRINCIPAL");
-        String[] mp = {"Inicio", "Mis citas", "Historial"};
+        String[] mp = {"Inicio", "Mis mascotas", "Mis citas", "Historial"};
         for (int i = 0; i < mp.length; i++) {
+            final int idx = i;
             JButton b = btn(mp[i], C[1], C[5], false);
             b.setFont(new Font("Arial", Font.PLAIN, 13));
             b.setAlignmentX(Component.LEFT_ALIGNMENT);
             b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
             b.setHorizontalAlignment(SwingConstants.LEFT);
-            if (i == 0) b.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("panelCliente"); }
-            });
-            if (i == 1) b.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("misCitas"); }
-            });
-            if (i == 2) b.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("historial"); }
+            b.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    if (idx == 0) Main.cambiarPantalla("panelCliente");
+                    if (idx == 1) Main.cambiarPantalla("misMascotas");
+                    if (idx == 2) Main.cambiarPantalla("misCitas");
+                    if (idx == 3) Main.cambiarPantalla("historial");
+                }
             });
             sb.add(b); sb.add(Box.createVerticalStrut(3));
         }
@@ -152,6 +132,7 @@ public class PanelAgendarCita {
             public void actionPerformed(ActionEvent e) {
                 if (JOptionPane.showConfirmDialog(panel, "Deseas cerrar sesion?",
                         "Cerrar sesion", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    Main.clienteActual = null;
                     Main.frame.setSize(420, 520);
                     Main.frame.setLocationRelativeTo(null);
                     Main.cambiarPantalla("login");
@@ -160,23 +141,26 @@ public class PanelAgendarCita {
         });
         sb.add(cerrar); sb.add(Box.createVerticalStrut(8));
 
+        String nombreCliente = Main.clienteActual != null ? Main.clienteActual.getNombre() : "Cliente";
+        String[] partes = nombreCliente.split(" ");
+        String iniciales = partes.length >= 2 ?
+                String.valueOf(partes[0].charAt(0)) + String.valueOf(partes[1].charAt(0)) : "C";
+
         JPanel up = new JPanel(new BorderLayout(8, 0));
         up.setBackground(C[10]); up.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         up.setMaximumSize(new Dimension(Integer.MAX_VALUE, 55));
         up.setAlignmentX(Component.LEFT_ALIGNMENT);
-        JLabel av = lbl("MF", 13, Font.BOLD, C[1]); av.setBackground(C[5]); av.setOpaque(true);
+        JLabel av = lbl(iniciales, 13, Font.BOLD, C[1]); av.setBackground(C[5]); av.setOpaque(true);
         av.setPreferredSize(new Dimension(34, 34)); av.setHorizontalAlignment(SwingConstants.CENTER);
         JPanel ui = new JPanel(new GridLayout(2, 1)); ui.setBackground(C[10]);
-        ui.add(lbl("Maria Fernanda", 12, Font.BOLD, C[5]));
+        ui.add(lbl(nombreCliente, 12, Font.BOLD, C[5]));
         ui.add(lbl("Cliente", 10, Font.PLAIN, C[11]));
         up.add(av, BorderLayout.WEST); up.add(ui, BorderLayout.CENTER);
         sb.add(up);
         return sb;
     }
 
-    // ════════════════════════════════════════════════════
-    // CONTENIDO
-    // ════════════════════════════════════════════════════
+    // ── Contenido ─────────────────────────────────────────
     private JPanel crearContenido() {
         JPanel contenido = new JPanel(new BorderLayout());
         contenido.setBackground(C[0]);
@@ -224,21 +208,26 @@ public class PanelAgendarCita {
 
         JLabel tituloForm = lbl("Nueva cita", 18, Font.BOLD, C[6]);
         tituloForm.setAlignmentX(Component.LEFT_ALIGNMENT);
-        JLabel subForm = lbl("Selecciona mascota, veterinario, fecha y hora", 12, Font.PLAIN, C[7]);
+        JLabel subForm = lbl("Selecciona tu mascota, servicio, fecha y hora", 12, Font.PLAIN, C[7]);
         subForm.setAlignmentX(Component.LEFT_ALIGNMENT);
         form.add(tituloForm); form.add(Box.createVerticalStrut(4)); form.add(subForm);
         form.add(Box.createVerticalStrut(24));
 
-        // ── Mascota — cargada desde BD ────────────────────
+        // ── Mascota — solo las del cliente logueado ───────
         agregarCampoLabel(form, "Mascota");
-        cbMascota = new JComboBox<>();
+        JComboBox<Mascotas> cbMascota = new JComboBox<>();
         cbMascota.setFont(new Font("Arial", Font.PLAIN, 13));
         cbMascota.setBackground(C[2]); cbMascota.setForeground(C[6]);
         cbMascota.setBorder(BorderFactory.createLineBorder(C[9], 1));
-        cbMascota.addItem(null); // opción vacía
-        List<Mascotas> mascotas = ctrl.listarMascotas();
-        for (Mascotas m : mascotas) cbMascota.addItem(m);
-        // Mostrar nombre de mascota en el combo
+        cbMascota.addItem(null);
+        List<Mascotas> todasMascotas = ctrl.listarMascotas();
+        for (Mascotas m : todasMascotas) {
+            // Solo mostrar mascotas del cliente logueado
+            if (Main.clienteActual != null && m.getCliente() != null &&
+                    m.getCliente().getId().equals(Main.clienteActual.getId())) {
+                cbMascota.addItem(m);
+            }
+        }
         cbMascota.setRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(JList<?> list, Object value,
                                                           int index, boolean isSelected, boolean cellHasFocus) {
@@ -252,45 +241,48 @@ public class PanelAgendarCita {
         cbMascota.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
         form.add(cbMascota); form.add(Box.createVerticalStrut(16));
 
-        // ── Veterinario — cargado desde BD ───────────────
-        agregarCampoLabel(form, "Veterinario");
-        cbVet = new JComboBox<>();
-        cbVet.setFont(new Font("Arial", Font.PLAIN, 13));
-        cbVet.setBackground(C[2]); cbVet.setForeground(C[6]);
-        cbVet.setBorder(BorderFactory.createLineBorder(C[9], 1));
-        cbVet.addItem(null);
-        List<Empleados> vets = ctrl.listarVeterinarios();
-        for (Empleados emp : vets) cbVet.addItem(emp);
-        cbVet.setRenderer(new DefaultListCellRenderer() {
+        // ── Servicio — desde BD ───────────────────────────
+        agregarCampoLabel(form, "Tipo de servicio");
+        JComboBox<Servicio> cbServicio = new JComboBox<>();
+        cbServicio.setFont(new Font("Arial", Font.PLAIN, 13));
+        cbServicio.setBackground(C[2]); cbServicio.setForeground(C[6]);
+        cbServicio.setBorder(BorderFactory.createLineBorder(C[9], 1));
+        cbServicio.addItem(null);
+        List<Servicio> servicios = ctrl.listarServicios();
+        for (Servicio s : servicios) cbServicio.addItem(s);
+        cbServicio.setRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(JList<?> list, Object value,
                                                           int index, boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof Empleados)
-                    setText(((Empleados) value).getNombre() + " — " + ((Empleados) value).getCargo());
-                else setText("Selecciona un veterinario...");
+                if (value instanceof Servicio) {
+                        setText(((Servicio) value).getNombre());
+                } else setText("Selecciona un servicio...");
                 return this;
             }
         });
-        cbVet.setAlignmentX(Component.LEFT_ALIGNMENT);
-        cbVet.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
-        form.add(cbVet); form.add(Box.createVerticalStrut(16));
+        cbServicio.setAlignmentX(Component.LEFT_ALIGNMENT);
+        cbServicio.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        form.add(cbServicio); form.add(Box.createVerticalStrut(16));
 
-        // ── Fecha y Hora ──────────────────────────────────
+        // ── Fecha con JDateChooser y Hora ─────────────────
         JPanel filaFechaHora = new JPanel(new GridLayout(1, 2, 16, 0));
         filaFechaHora.setBackground(C[2]); filaFechaHora.setAlignmentX(Component.LEFT_ALIGNMENT);
         filaFechaHora.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
 
         JPanel colFecha = new JPanel(); colFecha.setLayout(new BoxLayout(colFecha, BoxLayout.Y_AXIS));
         colFecha.setBackground(C[2]);
-        agregarCampoLabel(colFecha, "Fecha (yyyy-MM-dd)");
-        JTextField tfFecha = campo("2026-05-15");
-        tfFecha.setAlignmentX(Component.LEFT_ALIGNMENT);
-        tfFecha.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
-        colFecha.add(tfFecha);
+        agregarCampoLabel(colFecha, "Fecha");
+        JDateChooser dateChooser = new JDateChooser();
+        dateChooser.setFont(new Font("Arial", Font.PLAIN, 13));
+        dateChooser.setDateFormatString("yyyy-MM-dd");
+        dateChooser.setBorder(BorderFactory.createLineBorder(C[9], 1));
+        dateChooser.setAlignmentX(Component.LEFT_ALIGNMENT);
+        dateChooser.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        colFecha.add(dateChooser);
 
         JPanel colHora = new JPanel(); colHora.setLayout(new BoxLayout(colHora, BoxLayout.Y_AXIS));
         colHora.setBackground(C[2]);
-        agregarCampoLabel(colHora, "Hora (HH:mm)");
+        agregarCampoLabel(colHora, "Hora");
         String[] horas = {"Selecciona hora...","08:00","08:30","09:00","09:30",
                 "10:00","10:30","11:00","11:30","14:00","14:30","15:00","15:30","16:00","16:30"};
         JComboBox<String> cbHora = new JComboBox<>(horas);
@@ -320,23 +312,29 @@ public class PanelAgendarCita {
         btnConfirmar.setBorder(BorderFactory.createEmptyBorder(10, 22, 10, 22));
         btnConfirmar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // Validar selecciones
-                if (cbMascota.getSelectedItem() == null ||
-                        cbVet.getSelectedItem()     == null ||
-                        cbHora.getSelectedIndex()   == 0    ||
-                        tfFecha.getText().equals("2026-05-15") ||
-                        tfFecha.getText().isEmpty()) {
+                if (cbMascota.getSelectedItem()  == null ||
+                        cbServicio.getSelectedItem() == null ||
+                        cbHora.getSelectedIndex()    == 0    ||
+                        dateChooser.getDate()        == null) {
                     JOptionPane.showMessageDialog(panel,
                             "Por favor completa todos los campos.",
                             "Campos incompletos", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-                Mascotas  mascota  = (Mascotas)  cbMascota.getSelectedItem();
-                Empleados empleado = (Empleados) cbVet.getSelectedItem();
-                String    fecha    = tfFecha.getText().trim();
-                String    hora     = (String) cbHora.getSelectedItem();
+                Mascotas mascota = (Mascotas) cbMascota.getSelectedItem();
+                String hora = (String) cbHora.getSelectedItem();
+                String fecha = new SimpleDateFormat("yyyy-MM-dd").format(dateChooser.getDate());
 
-                // Guardar en BD
+                // El veterinario se asigna automáticamente (primer disponible)
+                List<Empleados> vets = ctrl.listarVeterinarios();
+                if (vets.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel,
+                            "No hay veterinarios disponibles.",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                Empleados empleado = vets.get(0);
+
                 boolean ok = ctrl.guardarCita(mascota, empleado, fecha, hora, panel);
                 if (ok) Main.cambiarPantalla("misCitas");
             }

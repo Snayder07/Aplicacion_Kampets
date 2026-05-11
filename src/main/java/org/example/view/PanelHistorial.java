@@ -3,6 +3,8 @@ package org.example.view;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class PanelHistorial {
     public JPanel panel;
@@ -26,7 +28,11 @@ public class PanelHistorial {
 
     public PanelHistorial() { panel = new JPanel(new BorderLayout()); construir(); }
 
-    public void setTema(boolean oscuro) { if (oscuro != temaOscuro) { temaOscuro = oscuro; construir(); } }
+    public void setTema(boolean oscuro) {
+        if (oscuro != temaOscuro) { temaOscuro = oscuro; construir(); }
+    }
+
+    public void recargar() { construir(); }
 
     private void construir() {
         panel.removeAll(); C = temaOscuro ? OSCURO : CLARO;
@@ -54,26 +60,35 @@ public class PanelHistorial {
         sb.setBorder(BorderFactory.createEmptyBorder(20, 12, 20, 12));
 
         JLabel logo;
-        try { ImageIcon ic = new ImageIcon(getClass().getResource("/logo.png"));
-            logo = new JLabel(new ImageIcon(ic.getImage().getScaledInstance(160,55,Image.SCALE_SMOOTH)));
+        try {
+            ImageIcon ic = new ImageIcon(getClass().getResource("/logo.png"));
+            logo = new JLabel(new ImageIcon(ic.getImage().getScaledInstance(160, 55, Image.SCALE_SMOOTH)));
         } catch (Exception e) { logo = lbl("Kampets", 18, Font.BOLD, C[5]); }
         logo.setAlignmentX(Component.LEFT_ALIGNMENT);
         sb.add(logo); sb.add(Box.createVerticalStrut(16));
         agregarSep(sb);
 
         agregarSeccion(sb, "PRINCIPAL");
-        String[] mp = {"Inicio", "Mis citas", "Historial"};
+        // Historial resaltado (idx==3)
+        String[] mp = {"Inicio", "Mis mascotas", "Mis citas", "Historial"};
         for (int i = 0; i < mp.length; i++) {
-            JButton b = btn(mp[i], i == 2 ? C[2] : C[1], i == 2 ? C[1] : C[5], false);
-            b.setFont(new Font("Arial", i == 2 ? Font.BOLD : Font.PLAIN, 13));
+            final int idx = i;
+            JButton b = btn(mp[i], i == 3 ? C[2] : C[1], i == 3 ? C[1] : C[5], false);
+            b.setFont(new Font("Arial", i == 3 ? Font.BOLD : Font.PLAIN, 13));
             b.setAlignmentX(Component.LEFT_ALIGNMENT);
             b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
             b.setHorizontalAlignment(SwingConstants.LEFT);
-            if (i == 0) b.addActionListener(e -> Main.cambiarPantalla("panelCliente"));
-            if (i == 1) b.addActionListener(e -> Main.cambiarPantalla("misCitas"));
+            b.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    if (idx == 0) Main.cambiarPantalla("panelCliente");
+                    if (idx == 1) Main.cambiarPantalla("misMascotas");
+                    if (idx == 2) Main.cambiarPantalla("misCitas");
+                }
+            });
             sb.add(b); sb.add(Box.createVerticalStrut(3));
         }
         sb.add(Box.createVerticalStrut(12));
+
         agregarSeccion(sb, "SERVICIOS");
         String[] ms = {"Alimentos", "Vacunas"};
         for (String item : ms) {
@@ -81,8 +96,12 @@ public class PanelHistorial {
             b.setAlignmentX(Component.LEFT_ALIGNMENT);
             b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
             b.setHorizontalAlignment(SwingConstants.LEFT);
-            if (item.equals("Alimentos")) b.addActionListener(e -> Main.cambiarPantalla("alimentos"));
-            if (item.equals("Vacunas"))   b.addActionListener(e -> Main.cambiarPantalla("vacunas"));
+            if (item.equals("Alimentos")) b.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("alimentos"); }
+            });
+            if (item.equals("Vacunas")) b.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("vacunas"); }
+            });
             sb.add(b); sb.add(Box.createVerticalStrut(3));
         }
         sb.add(Box.createVerticalGlue());
@@ -90,23 +109,32 @@ public class PanelHistorial {
         JButton cerrar = btn("Cerrar sesion", C[1], C[12], true);
         cerrar.setAlignmentX(Component.LEFT_ALIGNMENT);
         cerrar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
-        cerrar.addActionListener(e -> {
-            if (JOptionPane.showConfirmDialog(panel, "Deseas cerrar sesion?", "Cerrar sesion",
-                    JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                Main.frame.setSize(420,520); Main.frame.setLocationRelativeTo(null);
-                Main.cambiarPantalla("login");
+        cerrar.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (JOptionPane.showConfirmDialog(panel, "Deseas cerrar sesion?",
+                        "Cerrar sesion", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    Main.clienteActual = null;
+                    Main.frame.setSize(420, 520);
+                    Main.frame.setLocationRelativeTo(null);
+                    Main.cambiarPantalla("login");
+                }
             }
         });
         sb.add(cerrar); sb.add(Box.createVerticalStrut(8));
 
+        String nombreCliente = Main.clienteActual != null ? Main.clienteActual.getNombre() : "Cliente";
+        String[] partes = nombreCliente.split(" ");
+        String iniciales = partes.length >= 2 ?
+                String.valueOf(partes[0].charAt(0)) + String.valueOf(partes[1].charAt(0)) : "C";
+
         JPanel up = new JPanel(new BorderLayout(8, 0));
-        up.setBackground(C[10]); up.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+        up.setBackground(C[10]); up.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         up.setMaximumSize(new Dimension(Integer.MAX_VALUE, 55));
         up.setAlignmentX(Component.LEFT_ALIGNMENT);
-        JLabel av = lbl("MF", 13, Font.BOLD, C[1]); av.setBackground(C[5]); av.setOpaque(true);
-        av.setPreferredSize(new Dimension(34,34)); av.setHorizontalAlignment(SwingConstants.CENTER);
-        JPanel ui = new JPanel(new GridLayout(2,1)); ui.setBackground(C[10]);
-        ui.add(lbl("Maria Fernanda", 12, Font.BOLD, C[5]));
+        JLabel av = lbl(iniciales, 13, Font.BOLD, C[1]); av.setBackground(C[5]); av.setOpaque(true);
+        av.setPreferredSize(new Dimension(34, 34)); av.setHorizontalAlignment(SwingConstants.CENTER);
+        JPanel ui = new JPanel(new GridLayout(2, 1)); ui.setBackground(C[10]);
+        ui.add(lbl(nombreCliente, 12, Font.BOLD, C[5]));
         ui.add(lbl("Cliente", 10, Font.PLAIN, C[11]));
         up.add(av, BorderLayout.WEST); up.add(ui, BorderLayout.CENTER);
         sb.add(up);
@@ -117,13 +145,12 @@ public class PanelHistorial {
         JPanel contenido = new JPanel(new BorderLayout());
         contenido.setBackground(C[0]);
 
-        // Topbar
         JPanel topbar = new JPanel(new BorderLayout());
         topbar.setBackground(C[2]);
         topbar.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0,0,1,0,C[9]),
-                BorderFactory.createEmptyBorder(16,24,16,24)));
-        JPanel topLeft = new JPanel(new GridLayout(2,1)); topLeft.setBackground(C[2]);
+                BorderFactory.createMatteBorder(0, 0, 1, 0, C[9]),
+                BorderFactory.createEmptyBorder(16, 24, 16, 24)));
+        JPanel topLeft = new JPanel(new GridLayout(2, 1)); topLeft.setBackground(C[2]);
         topLeft.add(lbl("Historial médico", 20, Font.BOLD, C[6]));
         topLeft.add(lbl("Registro de citas y tratamientos anteriores", 12, Font.PLAIN, C[7]));
 
@@ -134,46 +161,42 @@ public class PanelHistorial {
         btnTema.setBackground(C[0]); btnTema.setForeground(C[6]); btnTema.setOpaque(true);
         btnTema.setFocusPainted(false); btnTema.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnTema.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(C[9], 1), BorderFactory.createEmptyBorder(7,14,7,14)));
-        btnTema.addActionListener(e -> { temaOscuro = !temaOscuro; construir(); });
+                BorderFactory.createLineBorder(C[9], 1), BorderFactory.createEmptyBorder(7, 14, 7, 14)));
+        btnTema.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                temaOscuro = !temaOscuro; Main.aplicarTemaGlobal(temaOscuro); construir();
+            }
+        });
         topRight.add(btnTema);
         topbar.add(topLeft, BorderLayout.WEST);
         topbar.add(topRight, BorderLayout.EAST);
         contenido.add(topbar, BorderLayout.NORTH);
 
-        // Cuerpo
         JPanel cuerpo = new JPanel(new BorderLayout(0, 20));
         cuerpo.setBackground(C[0]);
         cuerpo.setBorder(BorderFactory.createEmptyBorder(24, 28, 28, 28));
 
-        // Stats resumen
         JPanel stats = new JPanel(new GridLayout(1, 3, 16, 0));
         stats.setBackground(C[0]);
-        Object[][] st = {
-                {"Total de citas", "18", C[1]},
-                {"Última visita",  "6 Mar 2026", C[1]},
-                {"Mascotas",       "3", C[1]},
-        };
-        for (Object[] s : st) {
-            JPanel card = new JPanel(new BorderLayout(0,4));
+        String[][] st = {{"Total de citas", "18"}, {"Última visita", "6 Mar 2026"}, {"Mascotas", "3"}};
+        for (String[] s : st) {
+            JPanel card = new JPanel(new BorderLayout(0, 4));
             card.setBackground(C[2]);
             card.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(C[9],1),
-                    BorderFactory.createEmptyBorder(18,20,18,20)));
-            JLabel t = lbl((String)s[0], 11, Font.PLAIN, C[7]);
-            JLabel v = lbl((String)s[1], 26, Font.BOLD, C[6]);
-            card.add(t, BorderLayout.NORTH); card.add(v, BorderLayout.CENTER);
+                    BorderFactory.createLineBorder(C[9], 1),
+                    BorderFactory.createEmptyBorder(18, 20, 18, 20)));
+            card.add(lbl(s[0], 11, Font.PLAIN, C[7]), BorderLayout.NORTH);
+            card.add(lbl(s[1], 26, Font.BOLD, C[6]), BorderLayout.CENTER);
             stats.add(card);
         }
         cuerpo.add(stats, BorderLayout.NORTH);
 
-        // Historial de citas
         String[][] historial = {
-                {"Valentin — Chequeo general",   "06 Mar 2026", "Dr. Ramírez",  "Consulta general", "Completada",  "Todo en orden. Próxima cita en 6 meses."},
-                {"Sacha — Vacunación antirrábica","20 Feb 2026", "Dr. Gómez",    "Vacunación",       "Completada",  "Vacuna aplicada. Refuerzo en 1 año."},
-                {"Mia — Revisión dental",         "10 Ene 2026", "Dra. Torres",  "Odontología",      "Completada",  "Limpieza realizada. Sin caries."},
-                {"Valentin — Desparasitación",    "15 Nov 2025", "Dr. Ramírez",  "Prevención",       "Completada",  "Tratamiento completo aplicado."},
-                {"Sacha — Control de peso",       "03 Oct 2025", "Dr. Gómez",    "Consulta general", "Completada",  "Peso estable. Dieta balanceada recomendada."},
+                {"Valentin — Chequeo general",    "06 Mar 2026", "Dr. Ramírez", "Consulta general", "Todo en orden. Próxima cita en 6 meses."},
+                {"Sacha — Vacunación antirrábica", "20 Feb 2026", "Dr. Gómez",   "Vacunación",       "Vacuna aplicada. Refuerzo en 1 año."},
+                {"Mia — Revisión dental",          "10 Ene 2026", "Dra. Torres", "Odontología",      "Limpieza realizada. Sin caries."},
+                {"Valentin — Desparasitación",     "15 Nov 2025", "Dr. Ramírez", "Prevención",       "Tratamiento completo aplicado."},
+                {"Sacha — Control de peso",        "03 Oct 2025", "Dr. Gómez",   "Consulta general", "Peso estable. Dieta balanceada recomendada."},
         };
 
         JPanel lista = new JPanel(new GridLayout(historial.length, 1, 0, 10));
@@ -183,23 +206,18 @@ public class PanelHistorial {
             JPanel card = new JPanel(new BorderLayout(12, 0));
             card.setBackground(C[2]);
             card.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createMatteBorder(0, 4, 0, 0, new Color(22,163,74)),
+                    BorderFactory.createMatteBorder(0, 4, 0, 0, new Color(22, 163, 74)),
                     BorderFactory.createCompoundBorder(
-                            BorderFactory.createLineBorder(C[9],1),
-                            BorderFactory.createEmptyBorder(14,18,14,18))));
-
-            JPanel izq = new JPanel(new GridLayout(3,1,0,3));
+                            BorderFactory.createLineBorder(C[9], 1),
+                            BorderFactory.createEmptyBorder(14, 18, 14, 18))));
+            JPanel izq = new JPanel(new GridLayout(3, 1, 0, 3));
             izq.setBackground(C[2]);
             izq.add(lbl(h[0], 14, Font.BOLD, C[6]));
             izq.add(lbl(h[1] + "  ·  " + h[2] + "  ·  " + h[3], 12, Font.PLAIN, C[7]));
-            izq.add(lbl("📋 " + h[5], 11, Font.PLAIN, C[11]));
-
+            izq.add(lbl(h[4], 11, Font.PLAIN, C[11]));
             JPanel der = new JPanel(new FlowLayout(FlowLayout.RIGHT));
             der.setBackground(C[2]);
-            JLabel badge = lbl(h[4], 11, Font.BOLD, new Color(22,163,74));
-            badge.setHorizontalAlignment(SwingConstants.RIGHT);
-            der.add(badge);
-
+            der.add(lbl("Completada", 11, Font.BOLD, new Color(22, 163, 74)));
             card.add(izq, BorderLayout.CENTER);
             card.add(der, BorderLayout.EAST);
             lista.add(card);
@@ -215,13 +233,13 @@ public class PanelHistorial {
 
     private void agregarSeccion(JPanel p, String t) {
         JLabel l = lbl(t, 10, Font.PLAIN, C[11]);
-        l.setBorder(BorderFactory.createEmptyBorder(8,0,4,0));
+        l.setBorder(BorderFactory.createEmptyBorder(8, 0, 4, 0));
         l.setAlignmentX(Component.LEFT_ALIGNMENT);
         l.setMaximumSize(new Dimension(Integer.MAX_VALUE, 24)); p.add(l);
     }
     private void agregarSep(JPanel p) {
         JSeparator s = new JSeparator(); s.setForeground(C[3]);
-        s.setMaximumSize(new Dimension(Integer.MAX_VALUE,1)); s.setAlignmentX(Component.LEFT_ALIGNMENT);
+        s.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1)); s.setAlignmentX(Component.LEFT_ALIGNMENT);
         p.add(Box.createVerticalStrut(6)); p.add(s); p.add(Box.createVerticalStrut(6));
     }
 }

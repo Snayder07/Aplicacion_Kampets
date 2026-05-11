@@ -2,7 +2,6 @@ package org.example.view;
 
 import org.example.controller.CitaAdminController;
 import org.example.model.Citas;
-import org.example.model.EstadoCita;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -15,7 +14,6 @@ public class PanelMisCitas {
     public JPanel panel;
     private boolean temaOscuro = false;
 
-    // ── Controlador conectado a BD ────────────────────────
     private final CitaAdminController ctrl = new CitaAdminController();
 
     private final Color[] CLARO = {
@@ -66,7 +64,6 @@ public class PanelMisCitas {
         return b;
     }
 
-    // ── Sidebar ───────────────────────────────────────────
     private JPanel crearSidebar() {
         JPanel sb = new JPanel();
         sb.setLayout(new BoxLayout(sb, BoxLayout.Y_AXIS));
@@ -84,22 +81,26 @@ public class PanelMisCitas {
         agregarSep(sb);
 
         agregarSeccion(sb, "PRINCIPAL");
-        String[] mp = {"Inicio", "Mis citas", "Historial"};
+        String[] mp = {"Inicio", "Mis mascotas", "Mis citas", "Historial"};
         for (int i = 0; i < mp.length; i++) {
-            JButton b = btn(mp[i], i == 1 ? C[2] : C[1], i == 1 ? C[1] : C[5], false);
-            b.setFont(new Font("Arial", i == 1 ? Font.BOLD : Font.PLAIN, 13));
+            final int idx = i;
+            // Mis citas (idx==2) resaltado
+            JButton b = btn(mp[i], i == 2 ? C[2] : C[1], i == 2 ? C[1] : C[5], false);
+            b.setFont(new Font("Arial", i == 2 ? Font.BOLD : Font.PLAIN, 13));
             b.setAlignmentX(Component.LEFT_ALIGNMENT);
             b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
             b.setHorizontalAlignment(SwingConstants.LEFT);
-            if (i == 0) b.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("panelCliente"); }
-            });
-            if (i == 2) b.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("historial"); }
+            b.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    if (idx == 0) Main.cambiarPantalla("panelCliente");
+                    if (idx == 1) Main.cambiarPantalla("misMascotas");
+                    if (idx == 3) Main.cambiarPantalla("historial");
+                }
             });
             sb.add(b); sb.add(Box.createVerticalStrut(3));
         }
         sb.add(Box.createVerticalStrut(12));
+
         agregarSeccion(sb, "SERVICIOS");
         String[] ms = {"Alimentos", "Vacunas"};
         for (String item : ms) {
@@ -124,6 +125,7 @@ public class PanelMisCitas {
             public void actionPerformed(ActionEvent e) {
                 if (JOptionPane.showConfirmDialog(panel, "Deseas cerrar sesion?",
                         "Cerrar sesion", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    Main.clienteActual = null;
                     Main.frame.setSize(420, 520);
                     Main.frame.setLocationRelativeTo(null);
                     Main.cambiarPantalla("login");
@@ -132,26 +134,29 @@ public class PanelMisCitas {
         });
         sb.add(cerrar); sb.add(Box.createVerticalStrut(8));
 
+        String nombreCliente = Main.clienteActual != null ? Main.clienteActual.getNombre() : "Cliente";
+        String[] partes = nombreCliente.split(" ");
+        String iniciales = partes.length >= 2 ?
+                String.valueOf(partes[0].charAt(0)) + String.valueOf(partes[1].charAt(0)) : "C";
+
         JPanel up = new JPanel(new BorderLayout(8, 0));
         up.setBackground(C[10]); up.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         up.setMaximumSize(new Dimension(Integer.MAX_VALUE, 55));
         up.setAlignmentX(Component.LEFT_ALIGNMENT);
-        JLabel av = lbl("MF", 13, Font.BOLD, C[1]); av.setBackground(C[5]); av.setOpaque(true);
+        JLabel av = lbl(iniciales, 13, Font.BOLD, C[1]); av.setBackground(C[5]); av.setOpaque(true);
         av.setPreferredSize(new Dimension(34, 34)); av.setHorizontalAlignment(SwingConstants.CENTER);
         JPanel ui = new JPanel(new GridLayout(2, 1)); ui.setBackground(C[10]);
-        ui.add(lbl("Maria Fernanda", 12, Font.BOLD, C[5]));
+        ui.add(lbl(nombreCliente, 12, Font.BOLD, C[5]));
         ui.add(lbl("Cliente", 10, Font.PLAIN, C[11]));
         up.add(av, BorderLayout.WEST); up.add(ui, BorderLayout.CENTER);
         sb.add(up);
         return sb;
     }
 
-    // ── Contenido ─────────────────────────────────────────
     private JPanel crearContenido() {
         JPanel contenido = new JPanel(new BorderLayout());
         contenido.setBackground(C[0]);
 
-        // Topbar
         JPanel topbar = new JPanel(new BorderLayout());
         topbar.setBackground(C[2]);
         topbar.setBorder(BorderFactory.createCompoundBorder(
@@ -185,12 +190,10 @@ public class PanelMisCitas {
         topbar.add(topRight, BorderLayout.EAST);
         contenido.add(topbar, BorderLayout.NORTH);
 
-        // Cuerpo
         JPanel cuerpo = new JPanel(new BorderLayout(0, 20));
         cuerpo.setBackground(C[0]);
         cuerpo.setBorder(BorderFactory.createEmptyBorder(24, 28, 28, 28));
 
-        // Filtros
         JPanel filtros = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         filtros.setBackground(C[0]);
         String[] filtroNombres = {"Todas", "Confirmadas", "Pendientes", "Canceladas"};
@@ -207,9 +210,7 @@ public class PanelMisCitas {
         }
         cuerpo.add(filtros, BorderLayout.NORTH);
 
-        // ── Lista de citas desde BD ───────────────────────
         List<Citas> citas = ctrl.listarTodas();
-
         JPanel lista = new JPanel();
         lista.setLayout(new BoxLayout(lista, BoxLayout.Y_AXIS));
         lista.setBackground(C[0]);
@@ -225,13 +226,12 @@ public class PanelMisCitas {
                 card.setBackground(C[2]);
                 card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 90));
 
-                // Color según estado
                 Color colorEstado = C[1];
                 if (cita.getEstadoCita() != null) {
                     switch (cita.getEstadoCita()) {
-                        case CONFIRMADA:  colorEstado = new Color(22, 163, 74);  break;
-                        case PENDIENTE:   colorEstado = new Color(234, 88, 12);  break;
-                        case CANCELADA:   colorEstado = new Color(220, 38, 38);  break;
+                        case CONFIRMADA:  colorEstado = new Color(22, 163, 74);   break;
+                        case PENDIENTE:   colorEstado = new Color(234, 88, 12);   break;
+                        case CANCELADA:   colorEstado = new Color(220, 38, 38);   break;
                         case COMPLETADA:  colorEstado = new Color(100, 116, 139); break;
                         default:          colorEstado = C[1];
                     }
@@ -243,12 +243,11 @@ public class PanelMisCitas {
                                 BorderFactory.createLineBorder(C[9], 1),
                                 BorderFactory.createEmptyBorder(16, 18, 16, 18))));
 
-                // Info izquierda
-                String nombreMascota  = cita.getMascota()  != null ? cita.getMascota().getNombre()  : "—";
-                String nombreVet      = cita.getEmpleado() != null ? cita.getEmpleado().getNombre() : "—";
-                String fechaHora      = (cita.getFechaCita() != null ? cita.getFechaCita().toString() : "—")
+                String nombreMascota = cita.getMascota()  != null ? cita.getMascota().getNombre()  : "—";
+                String nombreVet     = cita.getEmpleado() != null ? cita.getEmpleado().getNombre() : "—";
+                String fechaHora     = (cita.getFechaCita() != null ? cita.getFechaCita().toString() : "—")
                         + "  ·  " + (cita.getHoraCita() != null ? cita.getHoraCita().toString() : "—");
-                String estadoTexto    = cita.getEstadoCita() != null ? cita.getEstadoCita().toString() : "—";
+                String estadoTexto   = cita.getEstadoCita() != null ? cita.getEstadoCita().toString() : "—";
 
                 JPanel izq = new JPanel(new GridLayout(3, 1, 0, 3));
                 izq.setBackground(C[2]);
@@ -256,10 +255,8 @@ public class PanelMisCitas {
                 izq.add(lbl(fechaHora + "  ·  " + nombreVet, 12, Font.PLAIN, C[7]));
                 izq.add(lbl("Estado: " + estadoTexto, 11, Font.PLAIN, C[11]));
 
-                // Derecha: badge + cancelar
                 JPanel der = new JPanel(new GridLayout(2, 1, 0, 6));
                 der.setBackground(C[2]);
-
                 JLabel badge = lbl(estadoTexto, 11, Font.BOLD, colorEstado);
                 badge.setHorizontalAlignment(SwingConstants.RIGHT);
 
@@ -276,7 +273,7 @@ public class PanelMisCitas {
                                 "¿Cancelar esta cita?", "Confirmar", JOptionPane.YES_NO_OPTION);
                         if (confirm == JOptionPane.YES_OPTION) {
                             ctrl.cancelarCita(idCita, panel);
-                            construir(); // recargar lista
+                            construir();
                         }
                     }
                 });

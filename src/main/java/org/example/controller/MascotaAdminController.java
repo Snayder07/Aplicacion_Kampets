@@ -59,6 +59,7 @@ public class MascotaAdminController {
                 }
             }
 
+
             Mascotas m = new Mascotas();
             m.setNombre(nombre.trim());
             m.setEspecie(especie);
@@ -71,6 +72,15 @@ public class MascotaAdminController {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(panel, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             return false;
+        }
+    }
+
+    public void eliminarMascota(Integer id, JPanel panel) {
+        try {
+            mascotaService.eliminarMascota(id);
+            JOptionPane.showMessageDialog(panel, "Mascota eliminada exitosamente.");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(panel, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

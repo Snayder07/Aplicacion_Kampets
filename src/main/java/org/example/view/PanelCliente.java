@@ -74,9 +74,6 @@ public class PanelCliente {
         return lbl;
     }
 
-    // ════════════════════════════════════════════════════
-    // SIDEBAR
-    // ════════════════════════════════════════════════════
     private JPanel crearSidebar() {
         JPanel sidebar = new JPanel();
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
@@ -97,12 +94,11 @@ public class PanelCliente {
         sep.setAlignmentX(Component.LEFT_ALIGNMENT);
         sidebar.add(sep); sidebar.add(Box.createVerticalStrut(12));
 
-        // ── PRINCIPAL ─────────────────────────────────────
         JLabel secPrincipal = crearLabel("PRINCIPAL", 10, Font.PLAIN, C[11]);
         secPrincipal.setAlignmentX(Component.LEFT_ALIGNMENT);
         sidebar.add(secPrincipal); sidebar.add(Box.createVerticalStrut(5));
 
-        // Inicio
+        // Inicio — resaltado
         JButton btnInicio = crearBoton("Inicio", C[2], C[1], false);
         btnInicio.setFont(new Font("Arial", Font.BOLD, 13));
         btnInicio.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -143,7 +139,6 @@ public class PanelCliente {
         });
         sidebar.add(btnHistorial); sidebar.add(Box.createVerticalStrut(12));
 
-        // ── SERVICIOS ─────────────────────────────────────
         JLabel secServicios = crearLabel("SERVICIOS", 10, Font.PLAIN, C[11]);
         secServicios.setAlignmentX(Component.LEFT_ALIGNMENT);
         sidebar.add(secServicios); sidebar.add(Box.createVerticalStrut(5));
@@ -167,7 +162,6 @@ public class PanelCliente {
         sidebar.add(btnVacunas); sidebar.add(Box.createVerticalStrut(3));
         sidebar.add(Box.createVerticalGlue());
 
-        // Cerrar sesión
         JButton btnCerrar = crearBoton("Cerrar sesion", C[1], C[12], true);
         btnCerrar.setAlignmentX(Component.LEFT_ALIGNMENT);
         btnCerrar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
@@ -186,7 +180,6 @@ public class PanelCliente {
         });
         sidebar.add(btnCerrar); sidebar.add(Box.createVerticalStrut(8));
 
-        // Usuario — muestra el cliente logueado
         String nombreCliente = Main.clienteActual != null ? Main.clienteActual.getNombre() : "Cliente";
         String[] partes = nombreCliente.split(" ");
         String iniciales = partes.length >= 2 ?
@@ -197,26 +190,20 @@ public class PanelCliente {
         userPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         userPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 55));
         userPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
         JLabel avatarLbl = crearLabel(iniciales, 13, Font.BOLD, C[1]);
         avatarLbl.setBackground(C[5]); avatarLbl.setOpaque(true);
         avatarLbl.setPreferredSize(new Dimension(34, 34));
         avatarLbl.setHorizontalAlignment(SwingConstants.CENTER);
-
         JPanel userInfo = new JPanel(new GridLayout(2, 1));
         userInfo.setBackground(C[10]);
         userInfo.add(crearLabel(nombreCliente, 12, Font.BOLD, C[5]));
         userInfo.add(crearLabel("Cliente", 10, Font.PLAIN, C[11]));
-
         userPanel.add(avatarLbl, BorderLayout.WEST);
         userPanel.add(userInfo,  BorderLayout.CENTER);
         sidebar.add(userPanel);
         return sidebar;
     }
 
-    // ════════════════════════════════════════════════════
-    // CONTENIDO PRINCIPAL
-    // ════════════════════════════════════════════════════
     private JPanel crearContenido() {
         JPanel contenido = new JPanel(new BorderLayout());
         contenido.setBackground(C[0]);
@@ -234,7 +221,7 @@ public class PanelCliente {
         String fechaHoy = LocalDate.now().format(
                 DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM 'de' yyyy", new Locale("es")));
         fechaHoy = Character.toUpperCase(fechaHoy.charAt(0)) + fechaHoy.substring(1);
-        topLeft.add(crearLabel("Bienvenida, " + nombreCliente.split(" ")[0], 20, Font.PLAIN, C[6]));
+        topLeft.add(crearLabel("Bienvenido, " + nombreCliente.split(" ")[0], 20, Font.PLAIN, C[6]));
         topLeft.add(crearLabel(fechaHoy, 12, Font.PLAIN, C[7]));
 
         JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
@@ -252,6 +239,16 @@ public class PanelCliente {
             }
         });
 
+        // ── Botón Mis mascotas ────────────────────────────
+        JButton btnMascotas = crearBoton("Mis mascotas", C[4], C[1], true);
+        btnMascotas.setFont(new Font("Arial", Font.PLAIN, 13));
+        btnMascotas.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(C[9], 1), BorderFactory.createEmptyBorder(7, 14, 7, 14)));
+        btnMascotas.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("misMascotas"); }
+        });
+
+        // ── Botón Agendar cita ────────────────────────────
         JButton btnAgendar = crearBoton("+ Agendar cita", C[1], C[5], false);
         btnAgendar.setFont(new Font("Arial", Font.BOLD, 13));
         btnAgendar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
@@ -259,7 +256,7 @@ public class PanelCliente {
             public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("agendarCita"); }
         });
 
-        topRight.add(btnTema); topRight.add(btnAgendar);
+        topRight.add(btnTema); topRight.add(btnMascotas); topRight.add(btnAgendar);
         topbar.add(topLeft, BorderLayout.WEST); topbar.add(topRight, BorderLayout.EAST);
         contenido.add(topbar, BorderLayout.NORTH);
 
@@ -268,7 +265,7 @@ public class PanelCliente {
         centro.setBackground(C[0]);
         centro.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
 
-        // Próxima cita — desde BD
+        // Próxima cita
         List<Citas> citas = ctrl.listarTodas();
         JPanel proximaCard = new JPanel(new BorderLayout());
         proximaCard.setBackground(C[1]);
@@ -278,10 +275,10 @@ public class PanelCliente {
 
         if (!citas.isEmpty()) {
             Citas primera = citas.get(0);
-            String mascota  = primera.getMascota()  != null ? primera.getMascota().getNombre()  : "—";
-            String vet      = primera.getEmpleado() != null ? primera.getEmpleado().getNombre() : "—";
-            String fecha    = primera.getFechaCita() != null ? primera.getFechaCita().toString() : "—";
-            String horaStr  = primera.getHoraCita()  != null ? primera.getHoraCita().toString()  : "—";
+            String mascota = primera.getMascota()  != null ? primera.getMascota().getNombre()  : "—";
+            String vet     = primera.getEmpleado() != null ? primera.getEmpleado().getNombre() : "—";
+            String fecha   = primera.getFechaCita() != null ? primera.getFechaCita().toString() : "—";
+            String hora    = primera.getHoraCita()  != null ? primera.getHoraCita().toString()  : "—";
             proximaIzq.add(crearLabel("PROXIMA CITA", 10, Font.PLAIN, C[13]));
             proximaIzq.add(crearLabel(mascota, 17, Font.BOLD, C[5]));
             proximaIzq.add(crearLabel(vet, 12, Font.PLAIN, C[12]));
@@ -289,7 +286,7 @@ public class PanelCliente {
             proximaDer.setBackground(C[1]);
             JLabel lFecha = crearLabel(fecha, 12, Font.BOLD, C[5]);
             lFecha.setHorizontalAlignment(SwingConstants.RIGHT);
-            JLabel lHora = crearLabel(horaStr, 12, Font.PLAIN, C[13]);
+            JLabel lHora = crearLabel(hora, 12, Font.PLAIN, C[13]);
             lHora.setHorizontalAlignment(SwingConstants.RIGHT);
             proximaDer.add(lFecha); proximaDer.add(lHora);
             proximaCard.add(proximaIzq, BorderLayout.CENTER);
@@ -315,7 +312,6 @@ public class PanelCliente {
         citasHeader.add(verTodo, BorderLayout.EAST);
         citasPanel.add(citasHeader, BorderLayout.NORTH);
 
-        // Mostrar máximo 3 citas
         int max = Math.min(citas.size(), 3);
         JPanel listaCitas = new JPanel(new GridLayout(max > 0 ? max : 1, 1, 0, 8));
         listaCitas.setBackground(C[0]);
@@ -336,9 +332,9 @@ public class PanelCliente {
                 Color colorEstado = C[1];
                 if (c.getEstadoCita() != null) {
                     switch (c.getEstadoCita()) {
-                        case CONFIRMADA: colorEstado = new Color(22,163,74); break;
-                        case PENDIENTE:  colorEstado = new Color(234,88,12); break;
-                        case CANCELADA:  colorEstado = new Color(220,38,38); break;
+                        case CONFIRMADA: colorEstado = new Color(22, 163, 74); break;
+                        case PENDIENTE:  colorEstado = new Color(234, 88, 12); break;
+                        case CANCELADA:  colorEstado = new Color(220, 38, 38); break;
                         default: colorEstado = C[1];
                     }
                 }
@@ -361,7 +357,7 @@ public class PanelCliente {
                 JLabel badge = crearLabel(estado, 11, Font.BOLD, colorEstado);
                 badge.setHorizontalAlignment(SwingConstants.RIGHT);
                 JLabel cancelar = crearLabel("Cancelar cita", 11, Font.PLAIN,
-                        temaOscuro ? new Color(80,110,150) : new Color(176,200,224));
+                        temaOscuro ? new Color(80, 110, 150) : new Color(176, 200, 224));
                 cancelar.setHorizontalAlignment(SwingConstants.RIGHT);
                 cancelar.setCursor(new Cursor(Cursor.HAND_CURSOR));
                 derecha.add(badge); derecha.add(cancelar);

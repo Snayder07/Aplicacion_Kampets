@@ -26,7 +26,10 @@ public class MascotaService {
         }
         repositorio.guardar(mascota);
     }
-
+    public void eliminarMascota(Integer id) throws Exception {
+        if (id == null) throw new Exception("ID invalido.");
+        repositorio.eliminar(id);
+    }
     // ─────────────────────────────────────────────────────────
     // LISTAR TODAS LAS MASCOTAS
     // ─────────────────────────────────────────────────────────
@@ -43,4 +46,5 @@ public class MascotaService {
         }
         return repositorio.buscarPorId(id);
     }
+
 }

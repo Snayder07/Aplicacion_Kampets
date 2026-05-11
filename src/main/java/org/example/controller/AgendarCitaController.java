@@ -7,7 +7,8 @@ import org.example.model.Mascotas;
 import org.example.service.CitaService;
 import org.example.service.EmpleadoService;
 import org.example.service.MascotaService;
-
+import org.example.model.Servicio;
+import org.example.repository.EspecieRepositoryImpl;
 import javax.swing.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -29,7 +30,16 @@ public class AgendarCitaController {
             return Collections.emptyList();
         }
     }
-
+    public List<Servicio> listarServicios() {
+        try {
+            jakarta.persistence.EntityManager em = org.example.util.JPAUtil.getEntityManager();
+            List<Servicio> lista = em.createQuery("SELECT s FROM Servicio s", Servicio.class).getResultList();
+            em.close();
+            return lista;
+        } catch (Exception e) {
+            return java.util.Collections.emptyList();
+        }
+    }
     // ── Listar veterinarios para el combo ─────────────────
     public List<Empleados> listarVeterinarios() {
         try {
