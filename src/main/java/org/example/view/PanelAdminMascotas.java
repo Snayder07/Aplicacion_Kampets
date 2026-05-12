@@ -126,9 +126,14 @@ public class PanelAdminMascotas {
         int[] anchos = {140, 120, 180, 110, 80};
         for(int i=0;i<anchos.length;i++) tabla.getColumnModel().getColumn(i).setPreferredWidth(anchos[i]);
 
-        JScrollPane sp = new JScrollPane(tabla); sp.setBorder(null); sp.getViewport().setBackground(C[2]);
+        JScrollPane sp = new JScrollPane(tabla); sp.setBorder(null); sp.getViewport().setBackground(C[2]); sp.getVerticalScrollBar().setUnitIncrement(16);
         JPanel wrapper = new JPanel(new BorderLayout()); wrapper.setBackground(C[2]); wrapper.add(sp,BorderLayout.CENTER);
-        body.add(wrapper,BorderLayout.CENTER); c.add(body,BorderLayout.CENTER); return c;
+        body.add(wrapper,BorderLayout.CENTER);
+        JScrollPane outerScroll = new JScrollPane(body);
+        outerScroll.setBorder(null); outerScroll.getViewport().setBackground(C[0]);
+        outerScroll.getVerticalScrollBar().setUnitIncrement(16);
+        outerScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        c.add(outerScroll,BorderLayout.CENTER); return c;
     }
 
     private void estilizarTema(JButton b){

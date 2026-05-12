@@ -116,8 +116,13 @@ public class PanelAdminReportes {
         grid.add(crearTarjetaReporte("👤","Reporte de usuarios",  "Clientes registrados y actividad reciente",     "reporte_usuarios"));
         grid.add(crearTarjetaReporte("📊","Reporte general",      "Resumen ejecutivo completo del sistema",        "reporte_general"));
 
-        JScrollPane scroll = new JScrollPane(grid); scroll.setBorder(null); scroll.getViewport().setBackground(C[0]);
-        body.add(scroll,BorderLayout.CENTER); c.add(body,BorderLayout.CENTER); return c;
+        JScrollPane scroll = new JScrollPane(grid); scroll.setBorder(null); scroll.getViewport().setBackground(C[0]); scroll.getVerticalScrollBar().setUnitIncrement(16);
+        body.add(scroll,BorderLayout.CENTER);
+        JScrollPane outerScroll = new JScrollPane(body);
+        outerScroll.setBorder(null); outerScroll.getViewport().setBackground(C[0]);
+        outerScroll.getVerticalScrollBar().setUnitIncrement(16);
+        outerScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        c.add(outerScroll,BorderLayout.CENTER); return c;
     }
 
     private JPanel crearTarjetaReporte(String icono, String nombre, String descripcion, String tipo) {
@@ -187,7 +192,7 @@ public class PanelAdminReportes {
             Citas ci = citas.get(i);
             String masc = ci.getMascota() != null ? ci.getMascota().getNombre() : "—";
             String dueno = (ci.getMascota() != null && ci.getMascota().getCliente() != null)
-                            ? ci.getMascota().getCliente().getNombre() : "—";
+                    ? ci.getMascota().getCliente().getNombre() : "—";
             String vet  = ci.getEmpleado() != null ? ci.getEmpleado().getNombre() : "—";
             String fecha = ci.getFechaCita() != null ? ci.getFechaCita().format(FMT) : "—";
             String hora  = ci.getHoraCita() != null ? ci.getHoraCita().toString() : "—";
@@ -208,7 +213,7 @@ public class PanelAdminReportes {
             Control_vacunas cv = lista.get(i);
             String masc  = cv.getMascota() != null ? cv.getMascota().getNombre() : "—";
             String dueno = (cv.getMascota() != null && cv.getMascota().getCliente() != null)
-                            ? cv.getMascota().getCliente().getNombre() : "—";
+                    ? cv.getMascota().getCliente().getNombre() : "—";
             String vac   = cv.getVacuna() != null ? cv.getVacuna().getNombre() : "—";
             String fa    = cv.getFechaAplicacion() != null ? cv.getFechaAplicacion().format(FMT) : "—";
             String fp    = cv.getProximaDosis()     != null ? cv.getProximaDosis().format(FMT)  : "—";
@@ -252,7 +257,7 @@ public class PanelAdminReportes {
             String precio = p.getPrecio() != null ? "$" + p.getPrecio().toPlainString() : "—";
             String stock  = p.getStock()  != null ? String.valueOf(p.getStock()) : "0";
             String estado = (p.getStock() == null || p.getStock() == 0) ? "Sin stock"
-                          : (p.getStock() < 10) ? "Stock bajo" : "OK";
+                    : (p.getStock() < 10) ? "Stock bajo" : "OK";
             filas[i] = new Object[]{nombre, tipo, marca, precio, stock, estado};
         }
         generarPDF(archivo, "REPORTE DE INVENTARIO", cols, anchos, filas);
@@ -375,8 +380,8 @@ public class PanelAdminReportes {
             // ── Encabezado ──────────────────────────────────────────
             texto(cs, PDType1Font.HELVETICA_BOLD, 16, margin, y, titulo); y -= 20;
             texto(cs, PDType1Font.HELVETICA, 10, margin, y,
-                  "Fecha de generacion: " + LocalDate.now().format(FMT)
-                  + "     Total registros: " + filas.length);
+                    "Fecha de generacion: " + LocalDate.now().format(FMT)
+                            + "     Total registros: " + filas.length);
             y -= 12;
             linea(cs, margin, y, pageW - margin); y -= 16;
 
@@ -443,7 +448,7 @@ public class PanelAdminReportes {
     private void piePagina(PDPageContentStream cs, float margin, int num) throws IOException {
         linea(cs, margin, 45, 550);
         texto(cs, PDType1Font.HELVETICA, 8, margin, 32,
-              "Pag. " + num + " — Generado por Kampets Sistema de Gestion Veterinaria");
+                "Pag. " + num + " — Generado por Kampets Sistema de Gestion Veterinaria");
     }
 
     /**

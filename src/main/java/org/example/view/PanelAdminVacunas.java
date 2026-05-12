@@ -97,7 +97,7 @@ public class PanelAdminVacunas {
             Control_vacunas cv = lista.get(i);
             String mascNombre  = cv.getMascota() != null ? cv.getMascota().getNombre() : "—";
             String duenio      = (cv.getMascota() != null && cv.getMascota().getCliente() != null)
-                                 ? cv.getMascota().getCliente().getNombre() : "—";
+                    ? cv.getMascota().getCliente().getNombre() : "—";
             String vacunaNom   = cv.getVacuna() != null ? cv.getVacuna().getNombre() : "—";
             String fechaAplic  = cv.getFechaAplicacion()  != null ? cv.getFechaAplicacion().format(FMT)  : "—";
             String fechaProx   = cv.getProximaDosis()      != null ? cv.getProximaDosis().format(FMT)   : "—";
@@ -140,9 +140,14 @@ public class PanelAdminVacunas {
         };
         for(int i=0;i<5;i++) tabla.getColumnModel().getColumn(i).setCellRenderer(base);
 
-        JScrollPane sp = new JScrollPane(tabla); sp.setBorder(null); sp.getViewport().setBackground(C[2]);
+        JScrollPane sp = new JScrollPane(tabla); sp.setBorder(null); sp.getViewport().setBackground(C[2]); sp.getVerticalScrollBar().setUnitIncrement(16);
         JPanel wrapper = new JPanel(new BorderLayout()); wrapper.setBackground(C[2]); wrapper.add(sp,BorderLayout.CENTER);
-        body.add(wrapper,BorderLayout.CENTER); c.add(body,BorderLayout.CENTER); return c;
+        body.add(wrapper,BorderLayout.CENTER);
+        JScrollPane outerScroll = new JScrollPane(body);
+        outerScroll.setBorder(null); outerScroll.getViewport().setBackground(C[0]);
+        outerScroll.getVerticalScrollBar().setUnitIncrement(16);
+        outerScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        c.add(outerScroll,BorderLayout.CENTER); return c;
     }
 
     private void estilizarTema(JButton b){

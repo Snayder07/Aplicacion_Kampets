@@ -388,7 +388,11 @@ public class PanelCliente {
         citasPanel.add(listaCitas, BorderLayout.CENTER);
         centro.add(proximaCard, BorderLayout.NORTH);
         centro.add(citasPanel,  BorderLayout.CENTER);
-        contenido.add(centro,   BorderLayout.CENTER);
+        JScrollPane outerScroll = new JScrollPane(centro);
+        outerScroll.setBorder(null); outerScroll.getViewport().setBackground(C[0]);
+        outerScroll.getVerticalScrollBar().setUnitIncrement(16);
+        outerScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        contenido.add(outerScroll, BorderLayout.CENTER);
         return contenido;
     }
 }
