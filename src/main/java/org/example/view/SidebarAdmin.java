@@ -35,19 +35,19 @@ public class SidebarAdmin {
         // ── GENERAL ──────────────────────────────────────
         agregarSeccion(sb, "GENERAL", C);
 
-        JButton btnInicio = crearItem("⊞  Inicio", pantallaActual.equals("panelAdmin"), C);
+        JButton btnInicio = crearItem("▶  Inicio", pantallaActual.equals("panelAdmin"), C);
         btnInicio.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("panelAdmin"); }
         });
         sb.add(btnInicio); sb.add(Box.createVerticalStrut(2));
 
-        JButton btnCitas = crearItem("📅  Todas las citas", pantallaActual.equals("adminCitas"), C);
+        JButton btnCitas = crearItem("≡  Todas las citas", pantallaActual.equals("adminCitas"), C);
         btnCitas.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("adminCitas"); }
         });
         sb.add(btnCitas); sb.add(Box.createVerticalStrut(2));
 
-        JButton btnMascotas = crearItem("🐾  Mascotas registradas", pantallaActual.equals("adminMascotas"), C);
+        JButton btnMascotas = crearItem("♦  Mascotas registradas", pantallaActual.equals("adminMascotas"), C);
         btnMascotas.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("adminMascotas"); }
         });
@@ -58,19 +58,19 @@ public class SidebarAdmin {
         // ── CLÍNICA ───────────────────────────────────────
         agregarSeccion(sb, "CLÍNICA", C);
 
-        JButton btnVacunas = crearItem("💉  Vacunas pendientes", pantallaActual.equals("adminVacunas"), C);
+        JButton btnVacunas = crearItem("+  Vacunas pendientes", pantallaActual.equals("adminVacunas"), C);
         btnVacunas.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("adminVacunas"); }
         });
         sb.add(btnVacunas); sb.add(Box.createVerticalStrut(2));
 
-        JButton btnInventario = crearItem("📦  Inventario", pantallaActual.equals("adminInventario"), C);
+        JButton btnInventario = crearItem("■  Inventario", pantallaActual.equals("adminInventario"), C);
         btnInventario.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("adminInventario"); }
         });
         sb.add(btnInventario); sb.add(Box.createVerticalStrut(2));
 
-        JButton btnReportes = crearItem("📊  Reportes", pantallaActual.equals("adminReportes"), C);
+        JButton btnReportes = crearItem("◆  Reportes", pantallaActual.equals("adminReportes"), C);
         btnReportes.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("adminReportes"); }
         });
