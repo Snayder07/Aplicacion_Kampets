@@ -27,6 +27,7 @@ public class PanelAlimentos {
     public PanelAlimentos() { panel = new JPanel(new BorderLayout()); construir(); }
 
     public void setTema(boolean oscuro) { if (oscuro != temaOscuro) { temaOscuro = oscuro; construir(); } }
+    public void recargar() { construir(); }
 
     private void construir() {
         panel.removeAll(); C = temaOscuro ? OSCURO : CLARO;
@@ -37,10 +38,10 @@ public class PanelAlimentos {
     }
 
     private JLabel lbl(String t, int sz, int st, Color c) {
-        JLabel l = new JLabel(t); l.setFont(new Font("Arial", st, sz)); l.setForeground(c); return l;
+        JLabel l = new JLabel(t); l.setFont(new Font("Arial", st, sz + 2)); l.setForeground(c); return l;
     }
     private JButton btn(String t, Color bg, Color fg, boolean borde) {
-        JButton b = new JButton(t); b.setFont(new Font("Arial", Font.PLAIN, 13));
+        JButton b = new JButton(t); b.setFont(new Font("Arial", Font.PLAIN, 15));
         b.setBackground(bg); b.setForeground(fg); b.setOpaque(true);
         b.setFocusPainted(false); b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         if (borde) b.setBorder(BorderFactory.createLineBorder(fg,1)); else b.setBorderPainted(false);
@@ -50,7 +51,7 @@ public class PanelAlimentos {
     private JPanel crearSidebar() {
         JPanel sb = new JPanel();
         sb.setLayout(new BoxLayout(sb, BoxLayout.Y_AXIS));
-        sb.setBackground(C[1]); sb.setPreferredSize(new Dimension(220,0));
+        sb.setBackground(C[1]); sb.setPreferredSize(new Dimension(240,0));
         sb.setBorder(BorderFactory.createEmptyBorder(20,12,20,12));
 
         JLabel logo;
@@ -67,7 +68,7 @@ public class PanelAlimentos {
             JButton b = btn(mp[i], C[1], C[5], false);
             b.setFont(new Font("Arial", Font.PLAIN, 13));
             b.setAlignmentX(Component.LEFT_ALIGNMENT);
-            b.setMaximumSize(new Dimension(Integer.MAX_VALUE,38));
+            b.setMaximumSize(new Dimension(Integer.MAX_VALUE,46));
             b.setHorizontalAlignment(SwingConstants.LEFT);
             if (i == 0) b.addActionListener(e -> Main.cambiarPantalla("panelCliente"));
             if (i == 1) b.addActionListener(e -> Main.cambiarPantalla("misMascotas"));
@@ -82,7 +83,7 @@ public class PanelAlimentos {
             JButton b = btn(ms[i], i == 0 ? C[2] : C[1], i == 0 ? C[1] : C[5], false);
             b.setFont(new Font("Arial", i == 0 ? Font.BOLD : Font.PLAIN, 13));
             b.setAlignmentX(Component.LEFT_ALIGNMENT);
-            b.setMaximumSize(new Dimension(Integer.MAX_VALUE,38));
+            b.setMaximumSize(new Dimension(Integer.MAX_VALUE,46));
             b.setHorizontalAlignment(SwingConstants.LEFT);
             if (i == 1) b.addActionListener(e -> Main.cambiarPantalla("vacunas"));
             sb.add(b); sb.add(Box.createVerticalStrut(3));
@@ -108,9 +109,9 @@ public class PanelAlimentos {
                 String.valueOf(nombreCliente.charAt(0));
         JPanel up = new JPanel(new BorderLayout(8,0));
         up.setBackground(C[10]); up.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
-        up.setMaximumSize(new Dimension(Integer.MAX_VALUE,55)); up.setAlignmentX(Component.LEFT_ALIGNMENT);
+        up.setMaximumSize(new Dimension(Integer.MAX_VALUE,66)); up.setAlignmentX(Component.LEFT_ALIGNMENT);
         JLabel av = lbl(inicialesA,13,Font.BOLD,C[1]); av.setBackground(C[5]); av.setOpaque(true);
-        av.setPreferredSize(new Dimension(34,34)); av.setHorizontalAlignment(SwingConstants.CENTER);
+        av.setPreferredSize(new Dimension(40,40)); av.setHorizontalAlignment(SwingConstants.CENTER);
         JPanel ui = new JPanel(new GridLayout(2,1)); ui.setBackground(C[10]);
         ui.add(lbl(nombreCliente,12,Font.BOLD,C[5]));
         ui.add(lbl("Cliente",10,Font.PLAIN,C[11]));

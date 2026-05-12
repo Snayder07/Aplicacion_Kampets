@@ -40,6 +40,10 @@ public class CitaService {
         return repositorio.buscarPasadasPorCliente(clienteId);
     }
 
+    public List<Citas> listarDeHoy() {
+        return repositorio.buscarDeHoy();
+    }
+
     // ─────────────────────────────────────────────────────────
     // BUSCAR CITA POR ID
     // ─────────────────────────────────────────────────────────

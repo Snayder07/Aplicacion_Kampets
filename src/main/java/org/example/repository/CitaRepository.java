@@ -9,5 +9,6 @@ public interface CitaRepository {
     List<Citas> buscarTodos();
     List<Citas> buscarPorCliente(Integer clienteId);
     List<Citas> buscarPasadasPorCliente(Integer clienteId);
+    List<Citas> buscarDeHoy();
     void eliminar(Integer id);
 }

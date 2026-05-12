@@ -58,10 +58,10 @@ public class PanelMisMascotas {
     }
 
     private JLabel lbl(String t, int sz, int st, Color c) {
-        JLabel l = new JLabel(t); l.setFont(new Font("Arial",st,sz)); l.setForeground(c); return l;
+        JLabel l = new JLabel(t); l.setFont(new Font("Arial",st,sz + 2)); l.setForeground(c); return l;
     }
     private JButton btn(String t, Color bg, Color fg, boolean borde) {
-        JButton b = new JButton(t); b.setFont(new Font("Arial",Font.PLAIN,13));
+        JButton b = new JButton(t); b.setFont(new Font("Arial",Font.PLAIN,15));
         b.setBackground(bg); b.setForeground(fg); b.setOpaque(true);
         b.setFocusPainted(false); b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         if (borde) b.setBorder(BorderFactory.createLineBorder(fg,1)); else b.setBorderPainted(false);
@@ -71,7 +71,7 @@ public class PanelMisMascotas {
     private JPanel crearSidebar() {
         JPanel sb = new JPanel();
         sb.setLayout(new BoxLayout(sb, BoxLayout.Y_AXIS));
-        sb.setBackground(C[1]); sb.setPreferredSize(new Dimension(220,0));
+        sb.setBackground(C[1]); sb.setPreferredSize(new Dimension(240,0));
         sb.setBorder(BorderFactory.createEmptyBorder(20,12,20,12));
 
         JLabel logo;
@@ -91,7 +91,7 @@ public class PanelMisMascotas {
             JButton b = btn(mp[i], i==1?C[2]:C[1], i==1?C[1]:C[5], false);
             b.setFont(new Font("Arial", i==1?Font.BOLD:Font.PLAIN, 13));
             b.setAlignmentX(Component.LEFT_ALIGNMENT);
-            b.setMaximumSize(new Dimension(Integer.MAX_VALUE,38));
+            b.setMaximumSize(new Dimension(Integer.MAX_VALUE,46));
             b.setHorizontalAlignment(SwingConstants.LEFT);
             b.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -109,7 +109,7 @@ public class PanelMisMascotas {
         for (String item : ms) {
             JButton b = btn(item, C[1], C[5], false);
             b.setAlignmentX(Component.LEFT_ALIGNMENT);
-            b.setMaximumSize(new Dimension(Integer.MAX_VALUE,38));
+            b.setMaximumSize(new Dimension(Integer.MAX_VALUE,46));
             b.setHorizontalAlignment(SwingConstants.LEFT);
             if (item.equals("Alimentos")) b.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("alimentos"); }
@@ -145,10 +145,10 @@ public class PanelMisMascotas {
 
         JPanel up = new JPanel(new BorderLayout(8,0));
         up.setBackground(C[10]); up.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
-        up.setMaximumSize(new Dimension(Integer.MAX_VALUE,55));
+        up.setMaximumSize(new Dimension(Integer.MAX_VALUE,66));
         up.setAlignmentX(Component.LEFT_ALIGNMENT);
         JLabel av = lbl(iniciales,13,Font.BOLD,C[1]); av.setBackground(C[5]); av.setOpaque(true);
-        av.setPreferredSize(new Dimension(34,34)); av.setHorizontalAlignment(SwingConstants.CENTER);
+        av.setPreferredSize(new Dimension(40,40)); av.setHorizontalAlignment(SwingConstants.CENTER);
         JPanel ui = new JPanel(new GridLayout(2,1)); ui.setBackground(C[10]);
         ui.add(lbl(nombreCliente,12,Font.BOLD,C[5]));
         ui.add(lbl("Cliente",10,Font.PLAIN,C[11]));
@@ -309,36 +309,68 @@ public class PanelMisMascotas {
         form.add(Box.createVerticalStrut(6));
         JTextField tfNombre = new JTextField();
         tfNombre.setFont(new Font("Arial",Font.PLAIN,13));
-        tfNombre.setMaximumSize(new Dimension(Integer.MAX_VALUE,38));
+        tfNombre.setMaximumSize(new Dimension(Integer.MAX_VALUE,46));
         tfNombre.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(C[9],1),
                 BorderFactory.createEmptyBorder(6,10,6,10)));
         form.add(tfNombre); form.add(Box.createVerticalStrut(14));
 
-        // Especie — cargada una sola vez sin duplicados
+        // Especie — cargada desde BD + opción "Otro..."
         form.add(lbl("Especie", 12, Font.BOLD, C[6]));
         form.add(Box.createVerticalStrut(6));
-        JComboBox<Especies> cbEspecie = new JComboBox<>();
+        JComboBox<Object> cbEspecie = new JComboBox<>();
         cbEspecie.setFont(new Font("Arial",Font.PLAIN,13));
-        cbEspecie.setMaximumSize(new Dimension(Integer.MAX_VALUE,38));
+        cbEspecie.setMaximumSize(new Dimension(Integer.MAX_VALUE,46));
         List<Especies> especies = ctrl.listarEspecies();
         for (Especies esp : especies) cbEspecie.addItem(esp);
+        cbEspecie.addItem("Otro...");   // sentinel al final
         cbEspecie.setRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(JList<?> list, Object value,
                                                           int index, boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
                 if (value instanceof Especies) setText(((Especies)value).getNombre());
+                // "Otro..." String se muestra tal cual
                 return this;
             }
         });
-        form.add(cbEspecie); form.add(Box.createVerticalStrut(14));
+        form.add(cbEspecie); form.add(Box.createVerticalStrut(6));
+
+        // Campo para escribir la especie/raza cuando se elige "Otro..."
+        JLabel lOtra = lbl("Cual es la especie/raza?", 12, Font.BOLD, C[6]);
+        lOtra.setAlignmentX(Component.LEFT_ALIGNMENT);
+        lOtra.setBorder(BorderFactory.createEmptyBorder(8, 0, 4, 0));
+        lOtra.setVisible(false);
+
+        JTextField tfOtraEspecie = new JTextField();
+        tfOtraEspecie.setFont(new Font("Arial", Font.PLAIN, 13));
+        tfOtraEspecie.setPreferredSize(new Dimension(340, 36));
+        tfOtraEspecie.setMaximumSize(new Dimension(Integer.MAX_VALUE, 46));
+        tfOtraEspecie.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(C[9], 1),
+                BorderFactory.createEmptyBorder(6, 10, 6, 10)));
+        tfOtraEspecie.setAlignmentX(Component.LEFT_ALIGNMENT);
+        tfOtraEspecie.setVisible(false);
+
+        form.add(lOtra);
+        form.add(tfOtraEspecie);
+        form.add(Box.createVerticalStrut(8));
+
+        cbEspecie.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                boolean esOtro = "Otro...".equals(cbEspecie.getSelectedItem());
+                lOtra.setVisible(esOtro);
+                tfOtraEspecie.setVisible(esOtro);
+                dlg.pack();
+                dlg.setLocationRelativeTo(panel);
+            }
+        });
 
         // Fecha con JDateChooser
         form.add(lbl("Fecha de nacimiento", 12, Font.BOLD, C[6]));
         form.add(Box.createVerticalStrut(6));
         JDateChooser dateChooser = new JDateChooser();
         dateChooser.setFont(new Font("Arial",Font.PLAIN,13));
-        dateChooser.setMaximumSize(new Dimension(Integer.MAX_VALUE,38));
+        dateChooser.setMaximumSize(new Dimension(Integer.MAX_VALUE,46));
         dateChooser.setDateFormatString("yyyy-MM-dd");
         dateChooser.setBorder(BorderFactory.createLineBorder(C[9],1));
         form.add(dateChooser); form.add(Box.createVerticalStrut(14));
@@ -348,7 +380,7 @@ public class PanelMisMascotas {
         form.add(Box.createVerticalStrut(6));
         JComboBox<String> cbSexo = new JComboBox<>(new String[]{"Macho","Hembra"});
         cbSexo.setFont(new Font("Arial",Font.PLAIN,13));
-        cbSexo.setMaximumSize(new Dimension(Integer.MAX_VALUE,38));
+        cbSexo.setMaximumSize(new Dimension(Integer.MAX_VALUE,46));
         form.add(cbSexo); form.add(Box.createVerticalStrut(20));
 
         // Botones
@@ -368,10 +400,30 @@ public class PanelMisMascotas {
         btnGuardar.setBorder(BorderFactory.createEmptyBorder(8,16,8,16));
         btnGuardar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String nombre  = tfNombre.getText().trim();
-                Especies especie = (Especies) cbEspecie.getSelectedItem();
-                String sexo    = (String) cbSexo.getSelectedItem();
+                String nombre   = tfNombre.getText().trim();
+                String sexo     = (String) cbSexo.getSelectedItem();
                 Cliente cliente = Main.clienteActual;
+
+                // Resolver especie
+                Especies especie;
+                if ("Otro...".equals(cbEspecie.getSelectedItem())) {
+                    String nombreOtra = tfOtraEspecie.getText().trim();
+                    if (nombreOtra.isEmpty()) {
+                        JOptionPane.showMessageDialog(dlg,
+                                "Escribe el nombre de la especie/raza.",
+                                "Campo vacío", JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+                    especie = ctrl.obtenerOCrearEspecie(nombreOtra);
+                    if (especie == null) {
+                        JOptionPane.showMessageDialog(dlg,
+                                "No se pudo guardar la especie. Intenta de nuevo.",
+                                "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                } else {
+                    especie = (Especies) cbEspecie.getSelectedItem();
+                }
 
                 // Obtener fecha del calendario
                 String fecha = "";

@@ -59,7 +59,7 @@ public class PanelCliente {
 
     private JButton crearBoton(String texto, Color fondo, Color textColor, boolean borde) {
         JButton btn = new JButton(texto);
-        btn.setFont(new Font("Arial", Font.PLAIN, 13));
+        btn.setFont(new Font("Arial", Font.PLAIN, 15));
         btn.setBackground(fondo); btn.setForeground(textColor);
         btn.setOpaque(true); btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.setFocusPainted(false);
@@ -70,7 +70,7 @@ public class PanelCliente {
 
     private JLabel crearLabel(String texto, int size, int style, Color color) {
         JLabel lbl = new JLabel(texto);
-        lbl.setFont(new Font("Arial", style, size));
+        lbl.setFont(new Font("Arial", style, size + 2));
         lbl.setForeground(color);
         return lbl;
     }
@@ -79,7 +79,7 @@ public class PanelCliente {
         JPanel sidebar = new JPanel();
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
         sidebar.setBackground(C[1]);
-        sidebar.setPreferredSize(new Dimension(220, 0));
+        sidebar.setPreferredSize(new Dimension(240, 0));
         sidebar.setBorder(BorderFactory.createEmptyBorder(20, 12, 20, 12));
 
         JLabel logo;
@@ -103,7 +103,7 @@ public class PanelCliente {
         JButton btnInicio = crearBoton("Inicio", C[2], C[1], false);
         btnInicio.setFont(new Font("Arial", Font.BOLD, 13));
         btnInicio.setAlignmentX(Component.LEFT_ALIGNMENT);
-        btnInicio.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        btnInicio.setMaximumSize(new Dimension(Integer.MAX_VALUE, 46));
         btnInicio.setHorizontalAlignment(SwingConstants.LEFT);
         btnInicio.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("panelCliente"); }
@@ -113,7 +113,7 @@ public class PanelCliente {
         // Mis mascotas
         JButton btnMisMascotas = crearBoton("Mis mascotas", C[1], C[5], false);
         btnMisMascotas.setAlignmentX(Component.LEFT_ALIGNMENT);
-        btnMisMascotas.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        btnMisMascotas.setMaximumSize(new Dimension(Integer.MAX_VALUE, 46));
         btnMisMascotas.setHorizontalAlignment(SwingConstants.LEFT);
         btnMisMascotas.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("misMascotas"); }
@@ -123,7 +123,7 @@ public class PanelCliente {
         // Mis citas
         JButton btnMisCitas = crearBoton("Mis citas", C[1], C[5], false);
         btnMisCitas.setAlignmentX(Component.LEFT_ALIGNMENT);
-        btnMisCitas.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        btnMisCitas.setMaximumSize(new Dimension(Integer.MAX_VALUE, 46));
         btnMisCitas.setHorizontalAlignment(SwingConstants.LEFT);
         btnMisCitas.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("misCitas"); }
@@ -133,7 +133,7 @@ public class PanelCliente {
         // Historial
         JButton btnHistorial = crearBoton("Historial", C[1], C[5], false);
         btnHistorial.setAlignmentX(Component.LEFT_ALIGNMENT);
-        btnHistorial.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        btnHistorial.setMaximumSize(new Dimension(Integer.MAX_VALUE, 46));
         btnHistorial.setHorizontalAlignment(SwingConstants.LEFT);
         btnHistorial.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("historial"); }
@@ -146,7 +146,7 @@ public class PanelCliente {
 
         JButton btnAlimentos = crearBoton("Alimentos", C[1], C[5], false);
         btnAlimentos.setAlignmentX(Component.LEFT_ALIGNMENT);
-        btnAlimentos.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        btnAlimentos.setMaximumSize(new Dimension(Integer.MAX_VALUE, 46));
         btnAlimentos.setHorizontalAlignment(SwingConstants.LEFT);
         btnAlimentos.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("alimentos"); }
@@ -155,7 +155,7 @@ public class PanelCliente {
 
         JButton btnVacunas = crearBoton("Vacunas", C[1], C[5], false);
         btnVacunas.setAlignmentX(Component.LEFT_ALIGNMENT);
-        btnVacunas.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        btnVacunas.setMaximumSize(new Dimension(Integer.MAX_VALUE, 46));
         btnVacunas.setHorizontalAlignment(SwingConstants.LEFT);
         btnVacunas.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("vacunas"); }
@@ -189,11 +189,11 @@ public class PanelCliente {
         JPanel userPanel = new JPanel(new BorderLayout(8, 0));
         userPanel.setBackground(C[10]);
         userPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        userPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 55));
+        userPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 66));
         userPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         JLabel avatarLbl = crearLabel(iniciales, 13, Font.BOLD, C[1]);
         avatarLbl.setBackground(C[5]); avatarLbl.setOpaque(true);
-        avatarLbl.setPreferredSize(new Dimension(34, 34));
+        avatarLbl.setPreferredSize(new Dimension(40, 40));
         avatarLbl.setHorizontalAlignment(SwingConstants.CENTER);
         JPanel userInfo = new JPanel(new GridLayout(2, 1));
         userInfo.setBackground(C[10]);
@@ -316,13 +316,15 @@ public class PanelCliente {
         citasPanel.add(citasHeader, BorderLayout.NORTH);
 
         int max = Math.min(citas.size(), 3);
-        JPanel listaCitas = new JPanel(new GridLayout(max > 0 ? max : 1, 1, 0, 8));
+        JPanel listaCitas = new JPanel();
+        listaCitas.setLayout(new BoxLayout(listaCitas, BoxLayout.Y_AXIS));
         listaCitas.setBackground(C[0]);
         listaCitas.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
 
         if (citas.isEmpty()) {
             JLabel sinCitas = crearLabel("No tienes citas registradas aún.", 13, Font.PLAIN, C[7]);
             sinCitas.setHorizontalAlignment(SwingConstants.CENTER);
+            sinCitas.setAlignmentX(Component.LEFT_ALIGNMENT);
             listaCitas.add(sinCitas);
         } else {
             for (int i = 0; i < max; i++) {
@@ -344,6 +346,8 @@ public class PanelCliente {
 
                 JPanel card = new JPanel(new BorderLayout(10, 0));
                 card.setBackground(C[2]);
+                card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 90));
+                card.setAlignmentX(Component.LEFT_ALIGNMENT);
                 card.setBorder(BorderFactory.createCompoundBorder(
                         BorderFactory.createMatteBorder(0, 4, 0, 0, colorEstado),
                         BorderFactory.createCompoundBorder(
@@ -377,6 +381,7 @@ public class PanelCliente {
                 derecha.add(badge); derecha.add(cancelar);
                 card.add(info, BorderLayout.CENTER); card.add(derecha, BorderLayout.EAST);
                 listaCitas.add(card);
+                if (i < max - 1) listaCitas.add(Box.createVerticalStrut(8));
             }
         }
 

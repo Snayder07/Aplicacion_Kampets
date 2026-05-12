@@ -70,29 +70,19 @@ public class Main {
                 frame.setSize(420, 520);
                 frame.setLocationRelativeTo(null);
                 break;
-            case "misCitas":
-                panelMisCitas.recargar();
-                expandirVentana();
-                break;
-            case "misMascotas":
-                panelMisMascotas.recargar();
-                expandirVentana();
-                break;
-            case "agendarCita":
-                panelAgendarCita.recargar();
-                expandirVentana();
-                break;
-            case "panelCliente":
-                panelCliente.recargar();
-                expandirVentana();
-                break;
-            case "panelAdmin":
-                panelAdmin.recargar();
-                expandirVentana();
-                break;
-            default:
-                expandirVentana();
-                break;
+            case "panelCliente":   panelCliente.recargar();         expandirVentana(); break;
+            case "panelAdmin":     panelAdmin.recargar();           expandirVentana(); break;
+            case "adminCitas":     panelAdminCitas.recargar();      expandirVentana(); break;
+            case "adminMascotas":  panelAdminMascotas.recargar();   expandirVentana(); break;
+            case "adminVacunas":   panelAdminVacunas.recargar();    expandirVentana(); break;
+            case "adminInventario":panelAdminInventario.recargar(); expandirVentana(); break;
+            case "adminReportes":  panelAdminReportes.recargar();   expandirVentana(); break;
+            case "misCitas":       panelMisCitas.recargar();        expandirVentana(); break;
+            case "misMascotas":    panelMisMascotas.recargar();     expandirVentana(); break;
+            case "historial":      panelHistorial.recargar();       expandirVentana(); break;
+            case "vacunas":        panelVacunas.recargar();         expandirVentana(); break;
+            case "agendarCita":    panelAgendarCita.recargar();     expandirVentana(); break;
+            default:               expandirVentana(); break;
         }
     }
 

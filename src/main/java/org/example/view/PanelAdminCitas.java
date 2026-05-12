@@ -21,10 +21,10 @@ public class PanelAdminCitas {
     private final CitaAdminController ctrl = new CitaAdminController();
 
     private final Color[] CLARO = {
-            new Color(240,246,252),new Color(26,74,122),Color.WHITE,new Color(42,90,138),
-            new Color(230,240,250),Color.WHITE,new Color(15,40,80),new Color(100,116,139),
-            new Color(234,88,12),new Color(208,228,244),new Color(15,53,96),new Color(180,210,235),
-            new Color(220,38,38),new Color(22,163,74),new Color(210,228,245),
+            new Color(240,253,244),new Color(22,101,52),Color.WHITE,new Color(34,120,70),
+            new Color(220,245,230),Color.WHITE,new Color(15,60,30),new Color(100,130,110),
+            new Color(234,88,12),new Color(187,224,200),new Color(15,60,30),new Color(134,190,155),
+            new Color(220,38,38),new Color(22,163,74),new Color(210,240,220),
     };
     private final Color[] OSCURO = {
             new Color(18,24,38),new Color(13,18,30),new Color(26,34,52),new Color(37,55,90),
@@ -47,7 +47,7 @@ public class PanelAdminCitas {
     }
 
     private JLabel lbl(String t, int sz, int st, Color c) {
-        JLabel l = new JLabel(t); l.setFont(new Font("Arial",st,sz)); l.setForeground(c); return l;
+        JLabel l = new JLabel(t); l.setFont(new Font("Arial",st,sz + 2)); l.setForeground(c); return l;
     }
 
     private JPanel crearContenido() {
@@ -165,15 +165,25 @@ public class PanelAdminCitas {
         }
 
         // Construir datos para la tabla
-        String[] cols = {"Mascota","Veterinario","Fecha","Hora","Estado"};
-        Object[][] datos = new Object[citasFiltradas.size()][5];
+        String[] cols = {"Mascota","Dueño","Direccion","Veterinario","Fecha","Hora","Estado"};
+        Object[][] datos = new Object[citasFiltradas.size()][7];
         for (int i = 0; i < citasFiltradas.size(); i++) {
             Citas cita = citasFiltradas.get(i);
-            datos[i][0] = cita.getMascota()  != null ? cita.getMascota().getNombre()  : "—";
-            datos[i][1] = cita.getEmpleado() != null ? cita.getEmpleado().getNombre() : "—";
-            datos[i][2] = cita.getFechaCita() != null ? cita.getFechaCita().toString() : "—";
-            datos[i][3] = cita.getHoraCita()  != null ? cita.getHoraCita().toString()  : "—";
-            datos[i][4] = cita.getEstadoCita() != null ? cita.getEstadoCita().toString() : "—";
+            String mascotaNombre = cita.getMascota() != null ? cita.getMascota().getNombre() : "—";
+            String duenio = "—";
+            if (cita.getMascota() != null && cita.getMascota().getCliente() != null
+                    && cita.getMascota().getCliente().getNombre() != null)
+                duenio = cita.getMascota().getCliente().getNombre();
+            // Dirección solo cuando el cliente pidió servicio a domicilio
+            String direccion = (cita.getDireccionDomicilio() != null && !cita.getDireccionDomicilio().isEmpty())
+                    ? "Domicilio: " + cita.getDireccionDomicilio() : "Presencial";
+            datos[i][0] = mascotaNombre;
+            datos[i][1] = duenio;
+            datos[i][2] = direccion;
+            datos[i][3] = cita.getEmpleado()  != null ? cita.getEmpleado().getNombre()  : "—";
+            datos[i][4] = cita.getFechaCita() != null ? cita.getFechaCita().toString()  : "—";
+            datos[i][5] = cita.getHoraCita()  != null ? cita.getHoraCita().toString()   : "—";
+            datos[i][6] = cita.getEstadoCita()!= null ? cita.getEstadoCita().toString() : "—";
         }
 
         DefaultTableModel modelo = new DefaultTableModel(datos,cols) {
@@ -191,7 +201,7 @@ public class PanelAdminCitas {
         th.setReorderingAllowed(false); th.setPreferredSize(new Dimension(0,36));
 
         // Renderer columna Estado
-        tabla.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer(){
+        tabla.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer(){
             public Component getTableCellRendererComponent(JTable t,Object v,boolean s,boolean f,int r,int col){
                 JLabel l=(JLabel)super.getTableCellRendererComponent(t,v,s,f,r,col);
                 l.setFont(new Font("Arial",Font.BOLD,12)); l.setHorizontalAlignment(SwingConstants.CENTER);
@@ -217,10 +227,10 @@ public class PanelAdminCitas {
                 setBorder(BorderFactory.createEmptyBorder(0,14,0,14)); return this;
             }
         };
-        for(int i=0;i<4;i++) tabla.getColumnModel().getColumn(i).setCellRenderer(base);
+        for(int i=0;i<6;i++) tabla.getColumnModel().getColumn(i).setCellRenderer(base);
 
         // Anchos de columna
-        int[] anchos = {130, 160, 110, 80, 140};
+        int[] anchos = {110, 140, 180, 140, 100, 70, 130};
         for (int i=0;i<anchos.length;i++) tabla.getColumnModel().getColumn(i).setPreferredWidth(anchos[i]);
 
         JScrollPane sp = new JScrollPane(tabla);

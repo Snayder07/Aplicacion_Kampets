@@ -1,20 +1,27 @@
 package org.example.view;
 
+import org.example.controller.InventarioController;
+import org.example.model.Productos;
+
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.List;
+import java.util.Objects;
 
 public class PanelAdminInventario {
     public JPanel panel;
     private boolean temaOscuro = false;
 
+    private final InventarioController ctrl = new InventarioController();
+
     private final Color[] CLARO = {
-            new Color(240,246,252),new Color(26,74,122),Color.WHITE,new Color(42,90,138),
-            new Color(230,240,250),Color.WHITE,new Color(15,40,80),new Color(100,116,139),
-            new Color(234,88,12),new Color(208,228,244),new Color(15,53,96),new Color(180,210,235),
-            new Color(220,38,38),new Color(22,163,74),new Color(210,228,245),
+            new Color(240,253,244),new Color(22,101,52),Color.WHITE,new Color(34,120,70),
+            new Color(220,245,230),Color.WHITE,new Color(15,60,30),new Color(100,130,110),
+            new Color(234,88,12),new Color(187,224,200),new Color(15,60,30),new Color(134,190,155),
+            new Color(220,38,38),new Color(22,163,74),new Color(210,240,220),
     };
     private final Color[] OSCURO = {
             new Color(18,24,38),new Color(13,18,30),new Color(26,34,52),new Color(37,55,90),
@@ -26,6 +33,7 @@ public class PanelAdminInventario {
 
     public PanelAdminInventario() { panel = new JPanel(new BorderLayout()); construir(); }
     public void setTema(boolean o) { if(o!=temaOscuro){temaOscuro=o;construir();} }
+    public void recargar() { construir(); }
 
     private void construir() {
         panel.removeAll(); C = temaOscuro ? OSCURO : CLARO;
@@ -35,11 +43,19 @@ public class PanelAdminInventario {
         panel.revalidate(); panel.repaint();
     }
 
-    private JLabel lbl(String t,int sz,int st,Color c){JLabel l=new JLabel(t);l.setFont(new Font("Arial",st,sz));l.setForeground(c);return l;}
+    private JLabel lbl(String t,int sz,int st,Color c){JLabel l=new JLabel(t);l.setFont(new Font("Arial",st,sz+2));l.setForeground(c);return l;}
 
     private JPanel crearContenido() {
+        // ── Cargar datos de BD ────────────────────────────────────────
+        List<Productos> lista = ctrl.listarTodos();
+        long total     = lista.size();
+        long stockBajo = lista.stream().filter(p -> p.getStock() != null && p.getStock() < 10).count();
+        long tipos     = lista.stream().map(Productos::getTipo).filter(Objects::nonNull).distinct().count();
+        long sinStock  = lista.stream().filter(p -> p.getStock() != null && p.getStock() == 0).count();
+
         JPanel c = new JPanel(new BorderLayout()); c.setBackground(C[0]);
 
+        // ── Topbar ────────────────────────────────────────────────────
         JPanel tb = new JPanel(new BorderLayout()); tb.setBackground(C[2]);
         tb.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0,0,1,0,C[9]),BorderFactory.createEmptyBorder(16,28,16,28)));
         JPanel tl = new JPanel(new GridLayout(2,1)); tl.setBackground(C[2]);
@@ -54,14 +70,20 @@ public class PanelAdminInventario {
         btnAgregar.setFont(new Font("Arial",Font.BOLD,13)); btnAgregar.setBackground(new Color(22,163,74));
         btnAgregar.setForeground(Color.WHITE); btnAgregar.setOpaque(true); btnAgregar.setBorderPainted(false);
         btnAgregar.setCursor(new Cursor(Cursor.HAND_CURSOR)); btnAgregar.setBorder(BorderFactory.createEmptyBorder(9,18,9,18));
+        btnAgregar.addActionListener(e -> mostrarFormAgregar());
         tr.add(btnTema); tr.add(btnAgregar);
         tb.add(tl,BorderLayout.WEST); tb.add(tr,BorderLayout.EAST); c.add(tb,BorderLayout.NORTH);
 
         JPanel body = new JPanel(new BorderLayout(0,20)); body.setBackground(C[0]); body.setBorder(BorderFactory.createEmptyBorder(24,28,28,28));
 
-        // Stats
+        // ── Stats ─────────────────────────────────────────────────────
         JPanel stats = new JPanel(new GridLayout(1,4,16,0)); stats.setBackground(C[0]);
-        Object[][] st = {{"Total productos","86",C[1]},{"Stock bajo","7",C[12]},{"Por vencer","4",C[8]},{"Categorías","5",C[1]}};
+        Object[][] st = {
+                {"Total productos",  String.valueOf(total),     C[1]},
+                {"Stock bajo (<10)", String.valueOf(stockBajo), C[12]},
+                {"Sin stock",        String.valueOf(sinStock),  C[8]},
+                {"Categorías",       String.valueOf(tipos),     C[1]},
+        };
         for (Object[] s : st) {
             JPanel card = new JPanel(new BorderLayout(0,4)); card.setBackground(C[2]);
             card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(C[9],1),BorderFactory.createEmptyBorder(16,20,16,20)));
@@ -71,20 +93,23 @@ public class PanelAdminInventario {
         }
         body.add(stats,BorderLayout.NORTH);
 
-        // Tabla
-        String[] cols = {"Producto","Categoría","Stock","Unidad","Vencimiento","Proveedor","Estado"};
-        Object[][] datos = {
-                {"Vacuna Antirrábica",    "Vacunas",      "45", "dosis",   "Dic 2026","BioVet",    "OK"},
-                {"Amoxicilina 250mg",     "Medicamentos", "12", "frascos", "Mar 2026","PharmaVet", "Stock bajo"},
-                {"Jeringa 5ml",           "Insumos",      "200","unidades","N/A",     "MedSupply", "OK"},
-                {"Vacuna Polivalente",    "Vacunas",      "8",  "dosis",   "Ago 2025","BioVet",    "Por vencer"},
-                {"Antiparasitario Oral",  "Medicamentos", "30", "cajas",   "Jun 2026","PharmaVet", "OK"},
-                {"Guantes de latex",      "Insumos",      "500","pares",   "N/A",     "MedSupply", "OK"},
-                {"Vitamina C inyectable", "Medicamentos", "5",  "frascos", "May 2025","PharmaVet", "Stock bajo"},
-                {"Vacuna Bordetella",     "Vacunas",      "22", "dosis",   "Nov 2026","BioVet",    "OK"},
-                {"Alcohol 70%",           "Insumos",      "15", "litros",  "N/A",     "MedSupply", "Stock bajo"},
-                {"Ibuprofeno Vet 200mg",  "Medicamentos", "40", "tabletas","Ene 2027","PharmaVet", "OK"},
-        };
+        // ── Tabla ─────────────────────────────────────────────────────
+        String[] cols = {"Producto","Tipo","Marca","Precio","Stock","Estado"};
+
+        Object[][] datos = new Object[lista.size()][6];
+        for (int i = 0; i < lista.size(); i++) {
+            Productos p = lista.get(i);
+            String nombre  = p.getNombre() != null ? p.getNombre() : "—";
+            String tipo    = p.getTipo()   != null ? p.getTipo()   : "—";
+            String marca   = p.getMarca()  != null ? p.getMarca()  : "—";
+            String precio  = p.getPrecio() != null ? "$" + p.getPrecio().toPlainString() : "—";
+            String stock   = p.getStock()  != null ? String.valueOf(p.getStock()) : "0";
+            String estado;
+            if      (p.getStock() == null || p.getStock() == 0) estado = "Sin stock";
+            else if (p.getStock() < 10)                         estado = "Stock bajo";
+            else                                                 estado = "OK";
+            datos[i] = new Object[]{nombre, tipo, marca, precio, stock, estado};
+        }
 
         DefaultTableModel modelo = new DefaultTableModel(datos,cols){public boolean isCellEditable(int r,int cc){return false;}};
         JTable tabla = new JTable(modelo);
@@ -95,14 +120,19 @@ public class PanelAdminInventario {
         JTableHeader th = tabla.getTableHeader(); th.setBackground(C[14]); th.setForeground(temaOscuro?C[7]:C[1]);
         th.setFont(new Font("Arial",Font.BOLD,11)); th.setReorderingAllowed(false); th.setPreferredSize(new Dimension(0,36));
 
-        tabla.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer(){
+        // Anchos de columnas
+        int[] anchos = {200, 120, 120, 110, 80, 100};
+        for (int i = 0; i < anchos.length; i++) tabla.getColumnModel().getColumn(i).setPreferredWidth(anchos[i]);
+
+        // Renderer estado (col 5)
+        tabla.getColumnModel().getColumn(5).setCellRenderer(new DefaultTableCellRenderer(){
             public Component getTableCellRendererComponent(JTable t,Object v,boolean s,boolean f,int r,int col){
                 JLabel l=(JLabel)super.getTableCellRendererComponent(t,v,s,f,r,col);
                 l.setFont(new Font("Arial",Font.BOLD,12)); l.setHorizontalAlignment(SwingConstants.CENTER);
-                switch(v.toString()){
-                    case "Stock bajo":  l.setForeground(C[12]); break;
-                    case "Por vencer":  l.setForeground(C[8]);  break;
-                    default:            l.setForeground(C[13]);
+                switch(v != null ? v.toString() : ""){
+                    case "Sin stock":  l.setForeground(C[12]); break;
+                    case "Stock bajo": l.setForeground(C[8]);  break;
+                    default:           l.setForeground(C[13]);
                 }
                 l.setBackground(s?C[3]:(r%2==0?C[2]:C[4])); l.setOpaque(true); return l;
             }
@@ -114,11 +144,45 @@ public class PanelAdminInventario {
                 setFont(new Font("Arial",Font.PLAIN,13)); setOpaque(true); setBorder(BorderFactory.createEmptyBorder(0,14,0,14)); return this;
             }
         };
-        for(int i=0;i<6;i++) tabla.getColumnModel().getColumn(i).setCellRenderer(base);
+        for(int i=0;i<5;i++) tabla.getColumnModel().getColumn(i).setCellRenderer(base);
 
         JScrollPane sp = new JScrollPane(tabla); sp.setBorder(null); sp.getViewport().setBackground(C[2]);
         JPanel wrapper = new JPanel(new BorderLayout()); wrapper.setBackground(C[2]); wrapper.add(sp,BorderLayout.CENTER);
         body.add(wrapper,BorderLayout.CENTER); c.add(body,BorderLayout.CENTER); return c;
+    }
+
+    private void mostrarFormAgregar() {
+        JDialog dlg = new JDialog();
+        dlg.setTitle("Agregar producto");
+        dlg.setModal(true);
+        dlg.setSize(400, 320);
+        dlg.setLocationRelativeTo(panel);
+
+        JPanel form = new JPanel(new GridLayout(6, 2, 8, 10));
+        form.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        form.setBackground(C[2]);
+
+        JTextField tfNombre = new JTextField(); JTextField tfTipo = new JTextField();
+        JTextField tfMarca  = new JTextField(); JTextField tfPrecio = new JTextField();
+        JTextField tfStock  = new JTextField();
+
+        form.add(new JLabel("Nombre:")); form.add(tfNombre);
+        form.add(new JLabel("Tipo:"));   form.add(tfTipo);
+        form.add(new JLabel("Marca:"));  form.add(tfMarca);
+        form.add(new JLabel("Precio:")); form.add(tfPrecio);
+        form.add(new JLabel("Stock:"));  form.add(tfStock);
+
+        JButton btnGuardar = new JButton("Guardar");
+        btnGuardar.setBackground(new Color(22,163,74)); btnGuardar.setForeground(Color.WHITE);
+        btnGuardar.setOpaque(true); btnGuardar.setBorderPainted(false);
+        btnGuardar.addActionListener(e -> {
+            boolean ok = ctrl.agregarProducto(tfNombre.getText(), tfTipo.getText(),
+                    tfMarca.getText(), tfPrecio.getText(), tfStock.getText(), panel);
+            if (ok) { dlg.dispose(); recargar(); }
+        });
+        form.add(new JLabel()); form.add(btnGuardar);
+
+        dlg.add(form); dlg.setVisible(true);
     }
 
     private void estilizarTema(JButton b){

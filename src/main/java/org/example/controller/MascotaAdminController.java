@@ -35,6 +35,17 @@ public class MascotaAdminController {
         }
     }
 
+    /** Busca una especie por nombre; si no existe, la crea en la BD. */
+    public Especies obtenerOCrearEspecie(String nombre) {
+        if (nombre == null || nombre.trim().isEmpty()) return null;
+        Especies existente = especieRepo.buscarPorNombre(nombre.trim());
+        if (existente != null) return existente;
+        Especies nueva = new Especies();
+        nueva.setNombre(nombre.trim());
+        especieRepo.guardar(nueva);
+        return especieRepo.buscarPorNombre(nombre.trim());
+    }
+
     public List<Cliente> listarClientes() {
         try {
             return clienteService.listarTodos();

@@ -1,5 +1,9 @@
 package org.example.view;
 
+import org.example.controller.CitaAdminController;
+import org.example.model.Citas;
+import org.example.model.Control_vacunas;
+import org.example.service.ControlVacunaService;
 import org.example.service.EmpleadoService;
 
 import javax.swing.*;
@@ -10,20 +14,25 @@ import java.awt.event.*;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 public class PanelAdmin {
     public JPanel panel;
     private boolean temaOscuro = false;
 
-    private final EmpleadoService empleadoService = new EmpleadoService();
+    private final EmpleadoService      empleadoService  = new EmpleadoService();
+    private final CitaAdminController  citaCtrl         = new CitaAdminController();
+    private final ControlVacunaService vacunaService    = new ControlVacunaService();
 
     private final Color[] CLARO = {
-            new Color(240,246,252), new Color(26,74,122),   Color.WHITE,
-            new Color(42,90,138),   new Color(230,240,250), Color.WHITE,
-            new Color(15,40,80),    new Color(100,116,139), new Color(234,88,12),
-            new Color(208,228,244), new Color(15,53,96),    new Color(180,210,235),
-            new Color(220,38,38),   new Color(22,163,74),   new Color(210,228,245),
+            new Color(240,253,244), new Color(22,101,52),   Color.WHITE,
+            new Color(34,120,70),   new Color(220,245,230), Color.WHITE,
+            new Color(15,60,30),    new Color(100,130,110), new Color(234,88,12),
+            new Color(187,224,200), new Color(15,60,30),    new Color(134,190,155),
+            new Color(220,38,38),   new Color(22,163,74),   new Color(210,240,220),
     };
     private final Color[] OSCURO = {
             new Color(18,24,38),    new Color(13,18,30),   new Color(26,34,52),
@@ -47,10 +56,10 @@ public class PanelAdmin {
     }
 
     private JLabel lbl(String t, int sz, int st, Color c) {
-        JLabel l = new JLabel(t); l.setFont(new Font("Arial",st,sz)); l.setForeground(c); return l;
+        JLabel l = new JLabel(t); l.setFont(new Font("Arial",st,sz + 2)); l.setForeground(c); return l;
     }
     private JButton btn(String t, Color bg, Color fg) {
-        JButton b = new JButton(t); b.setFont(new Font("Arial",Font.BOLD,13));
+        JButton b = new JButton(t); b.setFont(new Font("Arial",Font.BOLD,15));
         b.setBackground(bg); b.setForeground(fg); b.setOpaque(true);
         b.setFocusPainted(false); b.setBorderPainted(false);
         b.setCursor(new Cursor(Cursor.HAND_CURSOR)); return b;
@@ -252,11 +261,22 @@ public class PanelAdmin {
     }
 
     private JPanel crearFilaStats() {
+        // Datos reales de BD
+        List<Citas> citasHoy;
+        List<Control_vacunas> todasVacunas;
+        try { citasHoy      = citaCtrl.listarDeHoy();           } catch (Exception e) { citasHoy      = Collections.emptyList(); }
+        try { todasVacunas  = vacunaService.listarTodas();      } catch (Exception e) { todasVacunas  = Collections.emptyList(); }
+
+        long pendientes = todasVacunas.stream().filter(cv -> {
+            String est = vacunaService.calcularEstado(cv.getProximaDosis());
+            return est.equals("Vencida") || est.equals("Próxima");
+        }).count();
+
         JPanel fila = new JPanel(new GridLayout(1,2,16,0));
         fila.setBackground(C[0]);
         Object[][] stats = {
-                {"Citas hoy",         "12", "+3 vs ayer",        C[13]},
-                {"Vacunas pendientes", "5",  "Requieren atención", C[8]},
+                {"Citas hoy",         String.valueOf(citasHoy.size()),  "Programadas para hoy",  C[13]},
+                {"Vacunas pendientes", String.valueOf(pendientes),       "Vencidas o próximas",   C[8]},
         };
         for (Object[] s : stats) {
             JPanel card = new JPanel(new BorderLayout(0,6));
@@ -283,14 +303,33 @@ public class PanelAdmin {
             public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("adminCitas"); }
         });
         header.add(titulo,BorderLayout.WEST); header.add(verTodas,BorderLayout.EAST);
+
+        // Datos reales desde BD
+        List<Citas> citasHoy;
+        try { citasHoy = citaCtrl.listarDeHoy(); } catch (Exception ex) { citasHoy = Collections.emptyList(); }
+
         String[] cols = {"Cliente/Mascota","Hora","Vet","Estado"};
-        Object[][] datos = {
-                {"Maria F. – Luna",   "9:00",  "Dr. Ramírez","Confirmada"},
-                {"Carlos M. – Rocky", "10:30", "Dra. Torres","Pendiente"},
-                {"Ana L. – Mochi",    "11:00", "Dr. Gómez",  "Confirmada"},
-                {"Juan P. – Max",     "2:00",  "Dr. Ramírez","Cancelada"},
-                {"Laura S. – Nemo",   "3:30",  "Dra. Torres","En espera"},
-        };
+        Object[][] datos;
+        if (citasHoy.isEmpty()) {
+            datos = new Object[][]{{"Sin citas para hoy","—","—","—"}};
+        } else {
+            datos = new Object[citasHoy.size()][4];
+            for (int i = 0; i < citasHoy.size(); i++) {
+                Citas c = citasHoy.get(i);
+                String clienteNombre = c.getMascota() != null && c.getMascota().getCliente() != null
+                        ? c.getMascota().getCliente().getNombre() : "—";
+                String[] partes = clienteNombre.split(" ");
+                String clienteCorto = partes.length >= 2
+                        ? partes[0] + " " + partes[1].charAt(0) + "."
+                        : clienteNombre;
+                String mascotaNombre = c.getMascota() != null ? c.getMascota().getNombre() : "—";
+                String hora   = c.getHoraCita()   != null ? c.getHoraCita().toString()                     : "—";
+                String vet    = c.getEmpleado()   != null ? c.getEmpleado().getNombre()                    : "—";
+                String estado = c.getEstadoCita() != null ? c.getEstadoCita().toString()                   : "—";
+                datos[i] = new Object[]{clienteCorto + " – " + mascotaNombre, hora, vet, estado};
+            }
+        }
+
         JTable tabla = construirTabla(cols, datos, 3);
         JScrollPane sp = new JScrollPane(tabla); sp.setBorder(null); sp.getViewport().setBackground(C[2]);
         JPanel wrapper = new JPanel(new BorderLayout()); wrapper.setBackground(C[2]);
@@ -309,14 +348,30 @@ public class PanelAdmin {
             public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("adminVacunas"); }
         });
         header.add(titulo,BorderLayout.WEST); header.add(verTodas,BorderLayout.EAST);
+
+        // Datos reales desde BD — solo Vencidas o Próximas
+        List<Control_vacunas> todas;
+        try { todas = vacunaService.listarTodas(); } catch (Exception ex) { todas = Collections.emptyList(); }
+
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd MMM yyyy", new Locale("es"));
+        List<Object[]> filas = new ArrayList<>();
+        for (Control_vacunas cv : todas) {
+            String estado = vacunaService.calcularEstado(cv.getProximaDosis());
+            if (!estado.equals("Vencida") && !estado.equals("Próxima")) continue;
+            String mascota = cv.getMascota() != null ? cv.getMascota().getNombre() : "—";
+            String duenio  = cv.getMascota() != null && cv.getMascota().getCliente() != null
+                    ? cv.getMascota().getCliente().getNombre() : "—";
+            String tipo    = cv.getVacuna()  != null ? cv.getVacuna().getNombre()  : "—";
+            String ultima  = cv.getFechaAplicacion() != null ? cv.getFechaAplicacion().format(fmt)  : "—";
+            String proxima = cv.getProximaDosis()    != null ? cv.getProximaDosis().format(fmt)      : "—";
+            filas.add(new Object[]{mascota, duenio, tipo, ultima, proxima, estado});
+        }
+
         String[] cols = {"Mascota","Dueño","Tipo de vacuna","Última aplicación","Próxima fecha","Estado"};
-        Object[][] datos = {
-                {"Rocky","Carlos Mendoza", "Antirrábica",  "15 Mar 2024","15 Mar 2025","Vencida"},
-                {"Luna", "Maria Fernández","Polivalente",  "01 Abr 2025","01 Abr 2026","Próxima"},
-                {"Mochi","Ana López",      "Bordetella",   "20 Feb 2025","20 May 2025","Vencida"},
-                {"Max",  "Juan Pérez",     "Leptospirosis","10 Ene 2025","10 Jul 2025","Próxima"},
-                {"Nemo", "Laura Sánchez",  "Antirrábica",  "05 Nov 2024","05 Nov 2025","Pendiente"},
-        };
+        Object[][] datos = filas.isEmpty()
+                ? new Object[][]{{"Sin vacunas pendientes","—","—","—","—","—"}}
+                : filas.toArray(new Object[0][]);
+
         JTable tabla = construirTabla(cols, datos, 5);
         int[] anchos = {90,160,140,130,130,100};
         for (int i=0;i<anchos.length;i++) tabla.getColumnModel().getColumn(i).setPreferredWidth(anchos[i]);
@@ -372,21 +427,43 @@ public class PanelAdmin {
         chooser.setDialogTitle("Guardar reporte");
         chooser.setSelectedFile(new File("reporte_kampets.txt"));
         if (chooser.showSaveDialog(panel) != JFileChooser.APPROVE_OPTION) return;
+
+        List<Citas> citasHoy;
+        List<Control_vacunas> todasVacunas;
+        try { citasHoy     = citaCtrl.listarDeHoy();      } catch (Exception e) { citasHoy     = Collections.emptyList(); }
+        try { todasVacunas = vacunaService.listarTodas(); } catch (Exception e) { todasVacunas = Collections.emptyList(); }
+        long pendientes = todasVacunas.stream().filter(cv -> {
+            String est = vacunaService.calcularEstado(cv.getProximaDosis());
+            return est.equals("Vencida") || est.equals("Próxima");
+        }).count();
+
         try (PrintWriter pw = new PrintWriter(new FileWriter(chooser.getSelectedFile()))) {
             pw.println("========================================");
             pw.println("       REPORTE KAMPETS VETERINARIA      ");
             pw.println("========================================");
             pw.println("Fecha: " + LocalDate.now());
             pw.println(); pw.println("ESTADÍSTICAS DEL DÍA");
-            pw.println("  Citas hoy:           12");
-            pw.println("  Vacunas pendientes:   5");
+            pw.println("  Citas hoy:           " + citasHoy.size());
+            pw.println("  Vacunas pendientes:  " + pendientes);
             pw.println();
+            if (!citasHoy.isEmpty()) {
+                pw.println("CITAS DE HOY:");
+                DateTimeFormatter fmt = DateTimeFormatter.ofPattern("HH:mm");
+                for (Citas c : citasHoy) {
+                    String mascota = c.getMascota() != null ? c.getMascota().getNombre() : "—";
+                    String vet     = c.getEmpleado() != null ? c.getEmpleado().getNombre() : "—";
+                    String hora    = c.getHoraCita() != null ? c.getHoraCita().format(fmt) : "—";
+                    String estado  = c.getEstadoCita() != null ? c.getEstadoCita().toString() : "—";
+                    pw.println("  " + hora + " | " + mascota + " | " + vet + " | " + estado);
+                }
+                pw.println();
+            }
             pw.println("========================================");
             pw.println("  Generado por Kampets · Sistema interno");
             pw.println("========================================");
-            JOptionPane.showMessageDialog(panel,"✅ Reporte exportado:\n"+chooser.getSelectedFile().getAbsolutePath(),"Listo",JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(panel,"Reporte exportado:\n"+chooser.getSelectedFile().getAbsolutePath(),"Listo",JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(panel,"❌ Error: "+ex.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(panel,"Error: "+ex.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);
         }
     }
 }

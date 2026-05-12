@@ -1,20 +1,27 @@
 package org.example.view;
 
+import org.example.controller.MascotaAdminController;
+import org.example.model.Mascotas;
+
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 public class PanelAdminMascotas {
     public JPanel panel;
     private boolean temaOscuro = false;
+    private final MascotaAdminController ctrl = new MascotaAdminController();
 
     private final Color[] CLARO = {
-            new Color(240,246,252),new Color(26,74,122),Color.WHITE,new Color(42,90,138),
-            new Color(230,240,250),Color.WHITE,new Color(15,40,80),new Color(100,116,139),
-            new Color(234,88,12),new Color(208,228,244),new Color(15,53,96),new Color(180,210,235),
-            new Color(220,38,38),new Color(22,163,74),new Color(210,228,245),
+            new Color(240,253,244),new Color(22,101,52),Color.WHITE,new Color(34,120,70),
+            new Color(220,245,230),Color.WHITE,new Color(15,60,30),new Color(100,130,110),
+            new Color(234,88,12),new Color(187,224,200),new Color(15,60,30),new Color(134,190,155),
+            new Color(220,38,38),new Color(22,163,74),new Color(210,240,220),
     };
     private final Color[] OSCURO = {
             new Color(18,24,38),new Color(13,18,30),new Color(26,34,52),new Color(37,55,90),
@@ -26,6 +33,7 @@ public class PanelAdminMascotas {
 
     public PanelAdminMascotas() { panel = new JPanel(new BorderLayout()); construir(); }
     public void setTema(boolean o) { if(o!=temaOscuro){temaOscuro=o;construir();} }
+    public void recargar() { construir(); }
 
     private void construir() {
         panel.removeAll(); C = temaOscuro ? OSCURO : CLARO;
@@ -35,7 +43,7 @@ public class PanelAdminMascotas {
         panel.revalidate(); panel.repaint();
     }
 
-    private JLabel lbl(String t,int sz,int st,Color c){JLabel l=new JLabel(t);l.setFont(new Font("Arial",st,sz));l.setForeground(c);return l;}
+    private JLabel lbl(String t,int sz,int st,Color c){JLabel l=new JLabel(t);l.setFont(new Font("Arial",st,sz + 2));l.setForeground(c);return l;}
 
     private JPanel crearContenido() {
         JPanel c = new JPanel(new BorderLayout()); c.setBackground(C[0]);
@@ -59,9 +67,23 @@ public class PanelAdminMascotas {
 
         JPanel body = new JPanel(new BorderLayout(0,16)); body.setBackground(C[0]); body.setBorder(BorderFactory.createEmptyBorder(24,28,28,28));
 
+        // ── Datos reales desde BD ─────────────────────────
+        List<Mascotas> todas = ctrl.listarTodas();
+        long total   = todas.size();
+        long perros  = todas.stream().filter(m -> m.getEspecie() != null &&
+                m.getEspecie().getNombre().equalsIgnoreCase("Perro")).count();
+        long gatos   = todas.stream().filter(m -> m.getEspecie() != null &&
+                m.getEspecie().getNombre().equalsIgnoreCase("Gato")).count();
+        long otros   = total - perros - gatos;
+
         // Stats
         JPanel stats = new JPanel(new GridLayout(1,4,16,0)); stats.setBackground(C[0]);
-        Object[][] st = {{"Total mascotas","137",C[1]},{"Perros","89",C[1]},{"Gatos","38",C[1]},{"Otros","10",C[1]}};
+        Object[][] st = {
+                {"Total mascotas", String.valueOf(total)},
+                {"Perros",         String.valueOf(perros)},
+                {"Gatos",          String.valueOf(gatos)},
+                {"Otros",          String.valueOf(otros)},
+        };
         for (Object[] s : st) {
             JPanel card = new JPanel(new BorderLayout(0,4)); card.setBackground(C[2]);
             card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(C[9],1),BorderFactory.createEmptyBorder(16,20,16,20)));
@@ -71,18 +93,17 @@ public class PanelAdminMascotas {
         }
         body.add(stats,BorderLayout.NORTH);
 
-        // Tabla
-        String[] cols = {"Nombre","Especie","Raza","Edad","Dueño","Veterinario","Estado"};
-        Object[][] datos = {
-                {"Luna",  "Perro","Labrador",      "2 años","Maria F.", "Dr. Ramírez","Activa"},
-                {"Rocky", "Perro","Bulldog",        "4 años","Carlos M.","Dra. Torres","Activa"},
-                {"Mochi", "Gato", "Siamés",         "1 año", "Ana L.",   "Dr. Gómez",  "Activa"},
-                {"Max",   "Perro","Pastor Alemán",  "5 años","Juan P.",  "Dr. Ramírez","Activa"},
-                {"Nemo",  "Gato", "Angora",         "3 años","Laura S.", "Dra. Torres","Activa"},
-                {"Coco",  "Perro","Poodle",         "2 años","María R.", "Dr. Gómez",  "Activa"},
-                {"Lola",  "Perro","Beagle",         "6 años","Pedro A.", "Dr. Ramírez","Inactiva"},
-                {"Simba", "Gato", "Persa",          "4 años","Clara V.", "Dra. Torres","Activa"},
-        };
+        // ── Tabla con columnas reales ─────────────────────
+        String[] cols = {"Nombre","Especie","Dueño","Fecha nac.","Sexo"};
+        Object[][] datos = new Object[todas.size()][5];
+        for (int i = 0; i < todas.size(); i++) {
+            Mascotas m = todas.get(i);
+            String especie  = m.getEspecie()  != null ? m.getEspecie().getNombre()  : "—";
+            String duenio   = m.getCliente()  != null ? m.getCliente().getNombre()  : "—";
+            String fechaNac = m.getFechaNac() != null ? m.getFechaNac().toString()  : "—";
+            String sexo     = m.getSexo()     != null ? m.getSexo()                : "—";
+            datos[i] = new Object[]{ m.getNombre(), especie, duenio, fechaNac, sexo };
+        }
 
         DefaultTableModel modelo = new DefaultTableModel(datos,cols){public boolean isCellEditable(int r,int cc){return false;}};
         JTable tabla = new JTable(modelo);
@@ -93,22 +114,17 @@ public class PanelAdminMascotas {
         JTableHeader th = tabla.getTableHeader(); th.setBackground(C[14]); th.setForeground(temaOscuro?C[7]:C[1]);
         th.setFont(new Font("Arial",Font.BOLD,11)); th.setReorderingAllowed(false); th.setPreferredSize(new Dimension(0,36));
 
-        tabla.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer(){
-            public Component getTableCellRendererComponent(JTable t,Object v,boolean s,boolean f,int r,int col){
-                JLabel l=(JLabel)super.getTableCellRendererComponent(t,v,s,f,r,col);
-                l.setFont(new Font("Arial",Font.BOLD,12)); l.setHorizontalAlignment(SwingConstants.CENTER);
-                l.setForeground(v.toString().equals("Activa")?C[13]:C[12]);
-                l.setBackground(s?C[3]:(r%2==0?C[2]:C[4])); l.setOpaque(true); return l;
-            }
-        });
         DefaultTableCellRenderer base = new DefaultTableCellRenderer(){
             public Component getTableCellRendererComponent(JTable t,Object v,boolean s,boolean f,int r,int col){
                 super.getTableCellRendererComponent(t,v,s,f,r,col); setForeground(C[6]);
                 setBackground(r%2==0?C[2]:C[4]); if(s)setBackground(C[3]);
-                setFont(new Font("Arial",Font.PLAIN,13)); setOpaque(true); setBorder(BorderFactory.createEmptyBorder(0,14,0,14)); return this;
+                setFont(new Font("Arial",Font.PLAIN,13)); setOpaque(true);
+                setBorder(BorderFactory.createEmptyBorder(0,14,0,14)); return this;
             }
         };
-        for(int i=0;i<6;i++) tabla.getColumnModel().getColumn(i).setCellRenderer(base);
+        for(int i=0;i<5;i++) tabla.getColumnModel().getColumn(i).setCellRenderer(base);
+        int[] anchos = {140, 120, 180, 110, 80};
+        for(int i=0;i<anchos.length;i++) tabla.getColumnModel().getColumn(i).setPreferredWidth(anchos[i]);
 
         JScrollPane sp = new JScrollPane(tabla); sp.setBorder(null); sp.getViewport().setBackground(C[2]);
         JPanel wrapper = new JPanel(new BorderLayout()); wrapper.setBackground(C[2]); wrapper.add(sp,BorderLayout.CENTER);

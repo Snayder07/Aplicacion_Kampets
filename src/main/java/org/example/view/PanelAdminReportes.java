@@ -1,21 +1,46 @@
 package org.example.view;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.example.controller.CitaAdminController;
+import org.example.controller.InventarioController;
+import org.example.controller.MascotaAdminController;
+import org.example.controller.VacunaAdminController;
+import org.example.model.*;
+import org.example.service.ClienteService;
+import org.example.service.ControlVacunaService;
+
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class PanelAdminReportes {
     public JPanel panel;
     private boolean temaOscuro = false;
 
+    private final CitaAdminController    citaCtrl    = new CitaAdminController();
+    private final VacunaAdminController  vacunaCtrl  = new VacunaAdminController();
+    private final InventarioController   invCtrl     = new InventarioController();
+    private final MascotaAdminController mascotaCtrl = new MascotaAdminController();
+    private final ClienteService         clienteSvc  = new ClienteService();
+    private final ControlVacunaService   vacunaSvc   = new ControlVacunaService();
+
+    private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
     private final Color[] CLARO = {
-            new Color(240,246,252),new Color(26,74,122),Color.WHITE,new Color(42,90,138),
-            new Color(230,240,250),Color.WHITE,new Color(15,40,80),new Color(100,116,139),
-            new Color(234,88,12),new Color(208,228,244),new Color(15,53,96),new Color(180,210,235),
-            new Color(220,38,38),new Color(22,163,74),new Color(210,228,245),
+            new Color(240,253,244),new Color(22,101,52),Color.WHITE,new Color(34,120,70),
+            new Color(220,245,230),Color.WHITE,new Color(15,60,30),new Color(100,130,110),
+            new Color(234,88,12),new Color(187,224,200),new Color(15,60,30),new Color(134,190,155),
+            new Color(220,38,38),new Color(22,163,74),new Color(210,240,220),
     };
     private final Color[] OSCURO = {
             new Color(18,24,38),new Color(13,18,30),new Color(26,34,52),new Color(37,55,90),
@@ -27,6 +52,7 @@ public class PanelAdminReportes {
 
     public PanelAdminReportes() { panel = new JPanel(new BorderLayout()); construir(); }
     public void setTema(boolean o) { if(o!=temaOscuro){temaOscuro=o;construir();} }
+    public void recargar() { construir(); }
 
     private void construir() {
         panel.removeAll(); C = temaOscuro ? OSCURO : CLARO;
@@ -36,16 +62,24 @@ public class PanelAdminReportes {
         panel.revalidate(); panel.repaint();
     }
 
-    private JLabel lbl(String t,int sz,int st,Color c){JLabel l=new JLabel(t);l.setFont(new Font("Arial",st,sz));l.setForeground(c);return l;}
+    private JLabel lbl(String t,int sz,int st,Color c){JLabel l=new JLabel(t);l.setFont(new Font("Arial",st,sz+2));l.setForeground(c);return l;}
 
     private JPanel crearContenido() {
+        // ── Cargar datos de BD ────────────────────────────────────────
+        List<Citas>          citas    = citaCtrl.listarTodas();
+        List<Control_vacunas> vacunas = vacunaCtrl.listarTodas();
+        List<Cliente>         clientes = clienteSvc.listarTodos();
+        long completadas  = citas.stream().filter(ci -> EstadoCita.COMPLETADA.equals(ci.getEstadoCita())).count();
+        long canceladas   = citas.stream().filter(ci -> EstadoCita.CANCELADA.equals(ci.getEstadoCita())).count();
+
         JPanel c = new JPanel(new BorderLayout()); c.setBackground(C[0]);
 
+        // ── Topbar ────────────────────────────────────────────────────
         JPanel tb = new JPanel(new BorderLayout()); tb.setBackground(C[2]);
         tb.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0,0,1,0,C[9]),BorderFactory.createEmptyBorder(16,28,16,28)));
         JPanel tl = new JPanel(new GridLayout(2,1)); tl.setBackground(C[2]);
         tl.add(lbl("Reportes",22,Font.BOLD,C[6]));
-        tl.add(lbl("Genera y descarga reportes del sistema",12,Font.PLAIN,C[7]));
+        tl.add(lbl("Genera y descarga reportes del sistema en PDF",12,Font.PLAIN,C[7]));
         JPanel tr = new JPanel(new FlowLayout(FlowLayout.RIGHT,10,0)); tr.setBackground(C[2]);
         JButton btnTema = new JButton(temaOscuro?"☀  Claro":"🌙  Oscuro"); estilizarTema(btnTema);
         btnTema.addActionListener(new ActionListener() {
@@ -55,11 +89,13 @@ public class PanelAdminReportes {
 
         JPanel body = new JPanel(new BorderLayout(0,24)); body.setBackground(C[0]); body.setBorder(BorderFactory.createEmptyBorder(24,28,28,28));
 
-        // Stats
+        // ── Stats ─────────────────────────────────────────────────────
         JPanel stats = new JPanel(new GridLayout(1,4,16,0)); stats.setBackground(C[0]);
         Object[][] st = {
-                {"Citas completadas","48",C[13]},{"Nuevos usuarios","21",C[1]},
-                {"Vacunas aplicadas","34",C[1]}, {"Cancelaciones","6",C[12]},
+                {"Citas completadas",  String.valueOf(completadas),    C[13]},
+                {"Total clientes",     String.valueOf(clientes.size()), C[1]},
+                {"Vacunas registradas",String.valueOf(vacunas.size()),  C[1]},
+                {"Cancelaciones",      String.valueOf(canceladas),      C[12]},
         };
         for (Object[] s : st) {
             JPanel card = new JPanel(new BorderLayout(0,4)); card.setBackground(C[2]);
@@ -70,32 +106,26 @@ public class PanelAdminReportes {
         }
         body.add(stats,BorderLayout.NORTH);
 
-        // Tarjetas de reportes
+        // ── Tarjetas de reportes ──────────────────────────────────────
         JPanel grid = new JPanel(new GridLayout(2,3,16,16)); grid.setBackground(C[0]);
 
-        // Reporte de citas
-        grid.add(crearTarjetaReporte("📋","Reporte de citas","Todas las citas del mes con estados y detalles","reporte_citas"));
-        // Reporte de vacunas
-        grid.add(crearTarjetaReporte("💉","Reporte de vacunas","Estado del plan de vacunación de todas las mascotas","reporte_vacunas"));
-        // Reporte de mascotas
-        grid.add(crearTarjetaReporte("🐾","Reporte de mascotas","Listado completo de mascotas registradas","reporte_mascotas"));
-        // Reporte de inventario
-        grid.add(crearTarjetaReporte("📦","Reporte de inventario","Stock actual de medicamentos y productos","reporte_inventario"));
-        // Reporte de usuarios
-        grid.add(crearTarjetaReporte("👤","Reporte de usuarios","Clientes registrados y actividad reciente","reporte_usuarios"));
-        // Reporte general
-        grid.add(crearTarjetaReporte("📊","Reporte general","Resumen ejecutivo completo del mes","reporte_general"));
+        grid.add(crearTarjetaReporte("📋","Reporte de citas",     "Todas las citas con estados y detalles",        "reporte_citas"));
+        grid.add(crearTarjetaReporte("💉","Reporte de vacunas",   "Estado del plan de vacunacion de las mascotas", "reporte_vacunas"));
+        grid.add(crearTarjetaReporte("🐾","Reporte de mascotas",  "Listado completo de mascotas registradas",      "reporte_mascotas"));
+        grid.add(crearTarjetaReporte("📦","Reporte de inventario","Stock actual de medicamentos y productos",      "reporte_inventario"));
+        grid.add(crearTarjetaReporte("👤","Reporte de usuarios",  "Clientes registrados y actividad reciente",     "reporte_usuarios"));
+        grid.add(crearTarjetaReporte("📊","Reporte general",      "Resumen ejecutivo completo del sistema",        "reporte_general"));
 
         JScrollPane scroll = new JScrollPane(grid); scroll.setBorder(null); scroll.getViewport().setBackground(C[0]);
         body.add(scroll,BorderLayout.CENTER); c.add(body,BorderLayout.CENTER); return c;
     }
 
-    private JPanel crearTarjetaReporte(String icono, String nombre, String descripcion, String archivo) {
+    private JPanel crearTarjetaReporte(String icono, String nombre, String descripcion, String tipo) {
         JPanel card = new JPanel(new BorderLayout(0,10)); card.setBackground(C[2]);
         card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(C[9],1),BorderFactory.createEmptyBorder(22,22,18,22)));
 
         JPanel top = new JPanel(new BorderLayout(12,0)); top.setBackground(C[2]);
-        JLabel ico = new JLabel(icono); ico.setFont(new Font("Arial",Font.PLAIN,28)); ico.setPreferredSize(new Dimension(44,44));
+        JLabel ico = new JLabel(icono); ico.setFont(new Font("Segoe UI Emoji",Font.PLAIN,28)); ico.setPreferredSize(new Dimension(44,44));
         JPanel textos = new JPanel(new GridLayout(2,1,0,4)); textos.setBackground(C[2]);
         textos.add(lbl(nombre,14,Font.BOLD,C[6]));
         textos.add(lbl(descripcion,11,Font.PLAIN,C[7]));
@@ -108,7 +138,7 @@ public class PanelAdminReportes {
         descBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         descBtn.setBorder(BorderFactory.createEmptyBorder(9,16,9,16));
         descBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) { descargarReporte(nombre, archivo); }
+            public void actionPerformed(ActionEvent e) { descargarReportePDF(nombre, tipo); }
         });
 
         card.add(top,BorderLayout.CENTER);
@@ -116,30 +146,330 @@ public class PanelAdminReportes {
         return card;
     }
 
-    private void descargarReporte(String nombre, String archivo) {
+    // ─────────────────────────────────────────────────────────────────────
+    //  GENERACION DE PDF
+    // ─────────────────────────────────────────────────────────────────────
+
+    private void descargarReportePDF(String nombre, String tipo) {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Guardar " + nombre);
-        chooser.setSelectedFile(new File(archivo + ".txt"));
+        chooser.setSelectedFile(new File(tipo + ".pdf"));
         if (chooser.showSaveDialog(panel) != JFileChooser.APPROVE_OPTION) return;
-        try (PrintWriter pw = new PrintWriter(new FileWriter(chooser.getSelectedFile()))) {
-            pw.println("========================================");
-            pw.println("  " + nombre.toUpperCase() + " — KAMPETS VETERINARIA");
-            pw.println("========================================");
-            pw.println("Fecha de generación: " + LocalDate.now());
-            pw.println();
-            pw.println("RESUMEN DEL MES");
-            pw.println("  Citas completadas:  48");
-            pw.println("  Nuevos usuarios:    21");
-            pw.println("  Vacunas aplicadas:  34");
-            pw.println("  Cancelaciones:       6");
-            pw.println();
-            pw.println("========================================");
-            pw.println("  Generado por Kampets · Sistema interno");
-            pw.println("========================================");
-            JOptionPane.showMessageDialog(panel, "✅ Reporte exportado:\n" + chooser.getSelectedFile().getAbsolutePath(), "Listo", JOptionPane.INFORMATION_MESSAGE);
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(panel, "❌ Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+
+        File archivo = chooser.getSelectedFile();
+        if (!archivo.getName().toLowerCase().endsWith(".pdf"))
+            archivo = new File(archivo.getAbsolutePath() + ".pdf");
+
+        try {
+            switch (tipo) {
+                case "reporte_citas":      generarReporteCitas(archivo);      break;
+                case "reporte_vacunas":    generarReporteVacunas(archivo);    break;
+                case "reporte_mascotas":   generarReporteMascotas(archivo);   break;
+                case "reporte_inventario": generarReporteInventario(archivo); break;
+                case "reporte_usuarios":   generarReporteUsuarios(archivo);   break;
+                default:                   generarReporteGeneral(archivo);    break;
+            }
+            JOptionPane.showMessageDialog(panel,
+                    "PDF exportado:\n" + archivo.getAbsolutePath(), "Listo", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(panel, "Error al generar PDF: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    // ── Reporte de citas ─────────────────────────────────────────────────
+    private void generarReporteCitas(File archivo) throws IOException {
+        List<Citas> citas = citaCtrl.listarTodas();
+        String[] cols = {"Mascota","Dueno","Veterinario","Fecha","Hora","Estado"};
+        float[]  anchos = {110, 120, 120, 90, 70, 90};
+
+        Object[][] filas = new Object[citas.size()][];
+        for (int i = 0; i < citas.size(); i++) {
+            Citas ci = citas.get(i);
+            String masc = ci.getMascota() != null ? ci.getMascota().getNombre() : "—";
+            String dueno = (ci.getMascota() != null && ci.getMascota().getCliente() != null)
+                            ? ci.getMascota().getCliente().getNombre() : "—";
+            String vet  = ci.getEmpleado() != null ? ci.getEmpleado().getNombre() : "—";
+            String fecha = ci.getFechaCita() != null ? ci.getFechaCita().format(FMT) : "—";
+            String hora  = ci.getHoraCita() != null ? ci.getHoraCita().toString() : "—";
+            String estado = ci.getEstadoCita() != null ? ci.getEstadoCita().name() : "—";
+            filas[i] = new Object[]{masc, dueno, vet, fecha, hora, estado};
+        }
+        generarPDF(archivo, "REPORTE DE CITAS", cols, anchos, filas);
+    }
+
+    // ── Reporte de vacunas ───────────────────────────────────────────────
+    private void generarReporteVacunas(File archivo) throws IOException {
+        List<Control_vacunas> lista = vacunaCtrl.listarTodas();
+        String[] cols = {"Mascota","Dueno","Vacuna","Fecha aplic.","Prox. fecha","Estado"};
+        float[]  anchos = {100, 110, 120, 90, 90, 80};
+
+        Object[][] filas = new Object[lista.size()][];
+        for (int i = 0; i < lista.size(); i++) {
+            Control_vacunas cv = lista.get(i);
+            String masc  = cv.getMascota() != null ? cv.getMascota().getNombre() : "—";
+            String dueno = (cv.getMascota() != null && cv.getMascota().getCliente() != null)
+                            ? cv.getMascota().getCliente().getNombre() : "—";
+            String vac   = cv.getVacuna() != null ? cv.getVacuna().getNombre() : "—";
+            String fa    = cv.getFechaAplicacion() != null ? cv.getFechaAplicacion().format(FMT) : "—";
+            String fp    = cv.getProximaDosis()     != null ? cv.getProximaDosis().format(FMT)  : "—";
+            String estado = vacunaSvc.calcularEstado(cv.getProximaDosis());
+            filas[i] = new Object[]{masc, dueno, vac, fa, fp, estado};
+        }
+        generarPDF(archivo, "REPORTE DE VACUNAS", cols, anchos, filas);
+    }
+
+    // ── Reporte de mascotas ──────────────────────────────────────────────
+    private void generarReporteMascotas(File archivo) throws IOException {
+        List<Mascotas> lista = mascotaCtrl.listarTodas();
+        String[] cols = {"Nombre","Especie","Dueno","Fecha nac.","Sexo"};
+        float[]  anchos = {120, 110, 140, 90, 70};
+
+        Object[][] filas = new Object[lista.size()][];
+        for (int i = 0; i < lista.size(); i++) {
+            Mascotas m = lista.get(i);
+            String nom    = m.getNombre() != null ? m.getNombre() : "—";
+            String esp    = m.getEspecie() != null ? m.getEspecie().getNombre() : "—";
+            String dueno  = m.getCliente() != null ? m.getCliente().getNombre() : "—";
+            String fnac   = m.getFechaNac() != null ? m.getFechaNac().format(FMT) : "—";
+            String sexo   = m.getSexo() != null ? m.getSexo() : "—";
+            filas[i] = new Object[]{nom, esp, dueno, fnac, sexo};
+        }
+        generarPDF(archivo, "REPORTE DE MASCOTAS", cols, anchos, filas);
+    }
+
+    // ── Reporte de inventario ────────────────────────────────────────────
+    private void generarReporteInventario(File archivo) throws IOException {
+        List<Productos> lista = invCtrl.listarTodos();
+        String[] cols = {"Producto","Tipo","Marca","Precio","Stock","Estado"};
+        float[]  anchos = {150, 90, 90, 80, 60, 80};
+
+        Object[][] filas = new Object[lista.size()][];
+        for (int i = 0; i < lista.size(); i++) {
+            Productos p = lista.get(i);
+            String nombre = p.getNombre() != null ? p.getNombre() : "—";
+            String tipo   = p.getTipo()   != null ? p.getTipo()   : "—";
+            String marca  = p.getMarca()  != null ? p.getMarca()  : "—";
+            String precio = p.getPrecio() != null ? "$" + p.getPrecio().toPlainString() : "—";
+            String stock  = p.getStock()  != null ? String.valueOf(p.getStock()) : "0";
+            String estado = (p.getStock() == null || p.getStock() == 0) ? "Sin stock"
+                          : (p.getStock() < 10) ? "Stock bajo" : "OK";
+            filas[i] = new Object[]{nombre, tipo, marca, precio, stock, estado};
+        }
+        generarPDF(archivo, "REPORTE DE INVENTARIO", cols, anchos, filas);
+    }
+
+    // ── Reporte de usuarios ──────────────────────────────────────────────
+    private void generarReporteUsuarios(File archivo) throws IOException {
+        List<Cliente> lista = clienteSvc.listarTodos();
+        String[] cols = {"Nombre","Correo","Telefono","Fecha registro"};
+        float[]  anchos = {160, 160, 100, 90};
+
+        Object[][] filas = new Object[lista.size()][];
+        for (int i = 0; i < lista.size(); i++) {
+            Cliente cl = lista.get(i);
+            String nom  = cl.getNombre() != null ? cl.getNombre() : "—";
+            String cor  = cl.getCorreo() != null ? cl.getCorreo() : "—";
+            String tel  = cl.getTelefono() != null ? cl.getTelefono() : "—";
+            String freg = cl.getFechaRegistro() != null ? cl.getFechaRegistro().format(FMT) : "—";
+            filas[i] = new Object[]{nom, cor, tel, freg};
+        }
+        generarPDF(archivo, "REPORTE DE USUARIOS / CLIENTES", cols, anchos, filas);
+    }
+
+    // ── Reporte general ──────────────────────────────────────────────────
+    private void generarReporteGeneral(File archivo) throws IOException {
+        List<Citas>           citas    = citaCtrl.listarTodas();
+        List<Control_vacunas> vacunas  = vacunaCtrl.listarTodas();
+        List<Cliente>         clientes = clienteSvc.listarTodos();
+        List<Mascotas>        mascotas = mascotaCtrl.listarTodas();
+        List<Productos>       prods    = invCtrl.listarTodos();
+        long completadas = citas.stream().filter(ci -> EstadoCita.COMPLETADA.equals(ci.getEstadoCita())).count();
+        long canceladas  = citas.stream().filter(ci -> EstadoCita.CANCELADA .equals(ci.getEstadoCita())).count();
+        long vencidas    = vacunas.stream().filter(cv -> "Vencida".equals(vacunaSvc.calcularEstado(cv.getProximaDosis()))).count();
+        long stockBajo   = prods.stream().filter(p -> p.getStock() != null && p.getStock() < 10).count();
+
+        try (PDDocument doc = new PDDocument()) {
+            PDPage page = new PDPage(PDRectangle.A4);
+            doc.addPage(page);
+            float margin = 50; float pageH = page.getMediaBox().getHeight();
+            float y = pageH - margin;
+
+            try (PDPageContentStream cs = new PDPageContentStream(doc, page)) {
+                // Título
+                texto(cs, PDType1Font.HELVETICA_BOLD, 18, margin, y, "REPORTE GENERAL — KAMPETS VETERINARIA");
+                y -= 22;
+                texto(cs, PDType1Font.HELVETICA, 10, margin, y, "Fecha: " + LocalDate.now().format(FMT));
+                y -= 30;
+
+                linea(cs, margin, y, page.getMediaBox().getWidth() - margin);
+                y -= 18;
+
+                texto(cs, PDType1Font.HELVETICA_BOLD, 13, margin, y, "RESUMEN EJECUTIVO");
+                y -= 20;
+                texto(cs, PDType1Font.HELVETICA, 11, margin, y, "  Total citas registradas:   " + citas.size());    y -= 16;
+                texto(cs, PDType1Font.HELVETICA, 11, margin, y, "  Citas completadas:         " + completadas);     y -= 16;
+                texto(cs, PDType1Font.HELVETICA, 11, margin, y, "  Citas canceladas:          " + canceladas);      y -= 16;
+                texto(cs, PDType1Font.HELVETICA, 11, margin, y, "  Total clientes:            " + clientes.size()); y -= 16;
+                texto(cs, PDType1Font.HELVETICA, 11, margin, y, "  Total mascotas:            " + mascotas.size()); y -= 16;
+                texto(cs, PDType1Font.HELVETICA, 11, margin, y, "  Vacunas registradas:       " + vacunas.size());  y -= 16;
+                texto(cs, PDType1Font.HELVETICA, 11, margin, y, "  Vacunas vencidas:          " + vencidas);        y -= 16;
+                texto(cs, PDType1Font.HELVETICA, 11, margin, y, "  Productos en inventario:   " + prods.size());    y -= 16;
+                texto(cs, PDType1Font.HELVETICA, 11, margin, y, "  Productos con stock bajo:  " + stockBajo);       y -= 24;
+
+                linea(cs, margin, y, page.getMediaBox().getWidth() - margin);
+                y -= 18;
+
+                texto(cs, PDType1Font.HELVETICA_BOLD, 13, margin, y, "ULTIMAS 5 CITAS");
+                y -= 18;
+                // Encabezados con posición X absoluta
+                texto(cs, PDType1Font.HELVETICA_BOLD, 10, margin,       y, "Mascota");
+                texto(cs, PDType1Font.HELVETICA_BOLD, 10, margin + 130, y, "Veterinario");
+                texto(cs, PDType1Font.HELVETICA_BOLD, 10, margin + 260, y, "Fecha");
+                texto(cs, PDType1Font.HELVETICA_BOLD, 10, margin + 340, y, "Estado");
+                y -= 16;
+                int maxCitas = Math.min(5, citas.size());
+                for (int i = 0; i < maxCitas; i++) {
+                    Citas ci = citas.get(citas.size() - 1 - i);
+                    String masc   = ci.getMascota() != null ? ci.getMascota().getNombre() : "-";
+                    String vet    = ci.getEmpleado() != null ? ci.getEmpleado().getNombre() : "-";
+                    String fecha  = ci.getFechaCita() != null ? ci.getFechaCita().format(FMT) : "-";
+                    String estado = ci.getEstadoCita() != null ? ci.getEstadoCita().name() : "-";
+                    texto(cs, PDType1Font.HELVETICA, 10, margin,       y, truncar(masc,   125));
+                    texto(cs, PDType1Font.HELVETICA, 10, margin + 130, y, truncar(vet,    125));
+                    texto(cs, PDType1Font.HELVETICA, 10, margin + 260, y, truncar(fecha,  75));
+                    texto(cs, PDType1Font.HELVETICA, 10, margin + 340, y, truncar(estado, 110));
+                    y -= 15;
+                }
+                y -= 10;
+                linea(cs, margin, y, page.getMediaBox().getWidth() - margin);
+                y -= 16;
+                texto(cs, PDType1Font.HELVETICA, 9, margin, y, "Generado por Kampets — Sistema de gestion veterinaria");
+            }
+            doc.save(archivo);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  HELPER PDF: tabla genérica con columnas en posición X absoluta
+    // ─────────────────────────────────────────────────────────────────────
+
+    private void generarPDF(File archivo, String titulo, String[] cols,
+                            float[] anchos, Object[][] filas) throws IOException {
+        try (PDDocument doc = new PDDocument()) {
+            PDPage page = new PDPage(PDRectangle.A4);
+            doc.addPage(page);
+            float margin = 45;
+            float pageH  = page.getMediaBox().getHeight();
+            float pageW  = page.getMediaBox().getWidth();
+            float y      = pageH - margin;
+            float rowH   = 15f;
+            int pageNum  = 1;
+
+            // Posiciones X absolutas de cada columna
+            float[] colX = new float[cols.length];
+            colX[0] = margin;
+            for (int i = 1; i < cols.length; i++) colX[i] = colX[i - 1] + anchos[i - 1];
+
+            PDPageContentStream cs = new PDPageContentStream(doc, page);
+
+            // ── Encabezado ──────────────────────────────────────────
+            texto(cs, PDType1Font.HELVETICA_BOLD, 16, margin, y, titulo); y -= 20;
+            texto(cs, PDType1Font.HELVETICA, 10, margin, y,
+                  "Fecha de generacion: " + LocalDate.now().format(FMT)
+                  + "     Total registros: " + filas.length);
+            y -= 12;
+            linea(cs, margin, y, pageW - margin); y -= 16;
+
+            // ── Encabezados de columnas ──────────────────────────────
+            for (int j = 0; j < cols.length; j++)
+                texto(cs, PDType1Font.HELVETICA_BOLD, 10, colX[j], y, truncar(cols[j], anchos[j]));
+            y -= rowH;
+            linea(cs, margin, y, pageW - margin); y -= 5;
+
+            // ── Filas de datos ───────────────────────────────────────
+            for (Object[] fila : filas) {
+                // Nueva página si no hay espacio
+                if (y < 60) {
+                    piePagina(cs, margin, pageNum);
+                    cs.close();
+                    page = new PDPage(PDRectangle.A4);
+                    doc.addPage(page);
+                    cs = new PDPageContentStream(doc, page);
+                    y = pageH - margin;
+                    pageNum++;
+                    // Repetir encabezados en nueva página
+                    for (int j = 0; j < cols.length; j++)
+                        texto(cs, PDType1Font.HELVETICA_BOLD, 10, colX[j], y, truncar(cols[j], anchos[j]));
+                    y -= rowH;
+                    linea(cs, margin, y, pageW - margin); y -= 5;
+                }
+                // Escribir cada celda en su columna X
+                for (int j = 0; j < Math.min(fila.length, cols.length); j++) {
+                    String cel = fila[j] != null ? limpiarTexto(fila[j].toString()) : "-";
+                    texto(cs, PDType1Font.HELVETICA, 9, colX[j], y, truncar(cel, anchos[j]));
+                }
+                y -= rowH;
+            }
+
+            // ── Pie de última página ─────────────────────────────────
+            piePagina(cs, margin, pageNum);
+            cs.close();
+            doc.save(archivo);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  HELPERS
+    // ─────────────────────────────────────────────────────────────────────
+
+    /** Escribe texto en coordenadas X, Y absolutas de la página */
+    private void texto(PDPageContentStream cs, PDType1Font fuente, float tam,
+                       float x, float y, String texto) throws IOException {
+        cs.beginText();
+        cs.setFont(fuente, tam);
+        cs.newLineAtOffset(x, y);
+        cs.showText(limpiarTexto(texto));
+        cs.endText();
+    }
+
+    /** Dibuja una línea horizontal de separación */
+    private void linea(PDPageContentStream cs, float x1, float y, float x2) throws IOException {
+        cs.setStrokingColor(0.7f, 0.7f, 0.7f);
+        cs.moveTo(x1, y); cs.lineTo(x2, y); cs.stroke();
+        cs.setStrokingColor(0f, 0f, 0f);
+    }
+
+    /** Pie de página con número */
+    private void piePagina(PDPageContentStream cs, float margin, int num) throws IOException {
+        linea(cs, margin, 45, 550);
+        texto(cs, PDType1Font.HELVETICA, 8, margin, 32,
+              "Pag. " + num + " — Generado por Kampets Sistema de Gestion Veterinaria");
+    }
+
+    /**
+     * Trunca el texto para que no se salga del ancho de la columna.
+     * Aprox. 5.2 pt por caracter a tamaño 9 en Helvetica.
+     */
+    private String truncar(String s, float anchoPts) {
+        if (s == null || s.isEmpty()) return "-";
+        int maxChars = Math.max(1, (int)(anchoPts / 5.2f));
+        if (s.length() <= maxChars) return s;
+        return s.substring(0, maxChars - 1) + ".";
+    }
+
+    /** Sustituye caracteres fuera de Latin-1/WinAnsi para que PDFBox no lance error */
+    private String limpiarTexto(String s) {
+        if (s == null) return "";
+        StringBuilder sb = new StringBuilder(s.length());
+        for (char ch : s.toCharArray()) {
+            int code = (int) ch;
+            if      (code == 0x2014 || code == 0x2013) sb.append('-');   // em dash / en dash
+            else if (code == 0x201C || code == 0x201D) sb.append('"');   // comillas dobles curvas
+            else if (code == 0x2018 || code == 0x2019) sb.append('\'');  // comillas simples curvas
+            else if (code > 255)                        sb.append('?');   // otros fuera de Latin-1
+            else                                        sb.append(ch);
+        }
+        return sb.toString();
     }
 
     private void estilizarTema(JButton b){

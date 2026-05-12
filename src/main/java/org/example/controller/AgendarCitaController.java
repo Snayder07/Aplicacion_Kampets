@@ -51,7 +51,8 @@ public class AgendarCitaController {
 
     // ── Guardar cita en BD ────────────────────────────────
     public boolean guardarCita(Mascotas mascota, Empleados empleado,
-                               String fechaStr, String horaStr, JPanel panel) {
+                               String fechaStr, String horaStr,
+                               String direccionDomicilio, JPanel panel) {
         try {
             if (mascota  == null) throw new Exception("Selecciona una mascota.");
             if (empleado == null) throw new Exception("Selecciona un veterinario.");
@@ -79,16 +80,21 @@ public class AgendarCitaController {
             cita.setFechaCita(fecha);
             cita.setHoraCita(hora);
             cita.setEstadoCita(EstadoCita.CONFIRMADA);
+            if (direccionDomicilio != null && !direccionDomicilio.trim().isEmpty())
+                cita.setDireccionDomicilio(direccionDomicilio.trim());
 
             citaService.guardarCita(cita);
 
-            JOptionPane.showMessageDialog(panel,
-                    "✅ Cita agendada exitosamente!\n\n" +
-                            "Mascota:     " + mascota.getNombre()  + "\n" +
-                            "Veterinario: " + empleado.getNombre() + "\n" +
-                            "Fecha:       " + fecha                + "\n" +
-                            "Hora:        " + hora,
-                    "Cita confirmada", JOptionPane.INFORMATION_MESSAGE);
+            String msg = "Cita agendada exitosamente!\n\n"
+                    + "Mascota:     " + mascota.getNombre()  + "\n"
+                    + "Veterinario: " + empleado.getNombre() + "\n"
+                    + "Fecha:       " + fecha                + "\n"
+                    + "Hora:        " + hora;
+            if (direccionDomicilio != null && !direccionDomicilio.trim().isEmpty())
+                msg += "\nDomicilio:   " + direccionDomicilio.trim();
+
+            JOptionPane.showMessageDialog(panel, msg, "Cita confirmada",
+                    JOptionPane.INFORMATION_MESSAGE);
             return true;
 
         } catch (Exception e) {

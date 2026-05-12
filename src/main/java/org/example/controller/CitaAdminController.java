@@ -45,6 +45,14 @@ public class CitaAdminController {
         }
     }
 
+    public List<Citas> listarDeHoy() {
+        try {
+            return citaService.listarDeHoy();
+        } catch (Exception e) {
+            return Collections.emptyList();
+        }
+    }
+
     public void cancelarCita(Integer id, JPanel panel) {
         try {
             citaService.cancelarCita(id);

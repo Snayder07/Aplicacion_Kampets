@@ -30,6 +30,9 @@ public class Citas {
     @Column(name = "estado_cita", length = 50)
     private EstadoCita estadoCita;
 
+    @Column(name = "direccion_domicilio", length = 200)
+    private String direccionDomicilio;
+
     public Citas() {}
 
     public Integer getId() { return id; }
@@ -49,4 +52,7 @@ public class Citas {
 
     public EstadoCita getEstadoCita() { return estadoCita; }
     public void setEstadoCita(EstadoCita estadoCita) { this.estadoCita = estadoCita; }
+
+    public String getDireccionDomicilio() { return direccionDomicilio; }
+    public void setDireccionDomicilio(String d) { this.direccionDomicilio = d; }
 }

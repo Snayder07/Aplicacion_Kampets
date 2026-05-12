@@ -61,10 +61,10 @@ public class PanelAgendarCita {
     }
 
     private JLabel lbl(String t, int sz, int st, Color c) {
-        JLabel l = new JLabel(t); l.setFont(new Font("Arial", st, sz)); l.setForeground(c); return l;
+        JLabel l = new JLabel(t); l.setFont(new Font("Arial", st, sz + 2)); l.setForeground(c); return l;
     }
     private JButton btn(String t, Color bg, Color fg, boolean borde) {
-        JButton b = new JButton(t); b.setFont(new Font("Arial", Font.PLAIN, 13));
+        JButton b = new JButton(t); b.setFont(new Font("Arial", Font.PLAIN, 15));
         b.setBackground(bg); b.setForeground(fg); b.setOpaque(true);
         b.setFocusPainted(false); b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         if (borde) b.setBorder(BorderFactory.createLineBorder(fg, 1));
@@ -76,7 +76,7 @@ public class PanelAgendarCita {
     private JPanel crearSidebar() {
         JPanel sb = new JPanel();
         sb.setLayout(new BoxLayout(sb, BoxLayout.Y_AXIS));
-        sb.setBackground(C[1]); sb.setPreferredSize(new Dimension(220, 0));
+        sb.setBackground(C[1]); sb.setPreferredSize(new Dimension(240, 0));
         sb.setBorder(BorderFactory.createEmptyBorder(20, 12, 20, 12));
 
         JLabel logo;
@@ -95,7 +95,7 @@ public class PanelAgendarCita {
             JButton b = btn(mp[i], C[1], C[5], false);
             b.setFont(new Font("Arial", Font.PLAIN, 13));
             b.setAlignmentX(Component.LEFT_ALIGNMENT);
-            b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+            b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 46));
             b.setHorizontalAlignment(SwingConstants.LEFT);
             b.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -114,7 +114,7 @@ public class PanelAgendarCita {
         for (String item : ms) {
             JButton b = btn(item, C[1], C[5], false);
             b.setAlignmentX(Component.LEFT_ALIGNMENT);
-            b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+            b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 46));
             b.setHorizontalAlignment(SwingConstants.LEFT);
             if (item.equals("Alimentos")) b.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("alimentos"); }
@@ -149,10 +149,10 @@ public class PanelAgendarCita {
 
         JPanel up = new JPanel(new BorderLayout(8, 0));
         up.setBackground(C[10]); up.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        up.setMaximumSize(new Dimension(Integer.MAX_VALUE, 55));
+        up.setMaximumSize(new Dimension(Integer.MAX_VALUE, 66));
         up.setAlignmentX(Component.LEFT_ALIGNMENT);
         JLabel av = lbl(iniciales, 13, Font.BOLD, C[1]); av.setBackground(C[5]); av.setOpaque(true);
-        av.setPreferredSize(new Dimension(34, 34)); av.setHorizontalAlignment(SwingConstants.CENTER);
+        av.setPreferredSize(new Dimension(40, 40)); av.setHorizontalAlignment(SwingConstants.CENTER);
         JPanel ui = new JPanel(new GridLayout(2, 1)); ui.setBackground(C[10]);
         ui.add(lbl(nombreCliente, 12, Font.BOLD, C[5]));
         ui.add(lbl("Cliente", 10, Font.PLAIN, C[11]));
@@ -239,7 +239,7 @@ public class PanelAgendarCita {
             }
         });
         cbMascota.setAlignmentX(Component.LEFT_ALIGNMENT);
-        cbMascota.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        cbMascota.setMaximumSize(new Dimension(Integer.MAX_VALUE, 46));
         form.add(cbMascota); form.add(Box.createVerticalStrut(16));
 
         // ── Servicio — desde BD ───────────────────────────
@@ -262,7 +262,7 @@ public class PanelAgendarCita {
             }
         });
         cbServicio.setAlignmentX(Component.LEFT_ALIGNMENT);
-        cbServicio.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        cbServicio.setMaximumSize(new Dimension(Integer.MAX_VALUE, 46));
         form.add(cbServicio); form.add(Box.createVerticalStrut(16));
 
         // ── Fecha con JDateChooser y Hora ─────────────────
@@ -278,7 +278,7 @@ public class PanelAgendarCita {
         dateChooser.setDateFormatString("yyyy-MM-dd");
         dateChooser.setBorder(BorderFactory.createLineBorder(C[9], 1));
         dateChooser.setAlignmentX(Component.LEFT_ALIGNMENT);
-        dateChooser.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        dateChooser.setMaximumSize(new Dimension(Integer.MAX_VALUE, 46));
         colFecha.add(dateChooser);
 
         JPanel colHora = new JPanel(); colHora.setLayout(new BoxLayout(colHora, BoxLayout.Y_AXIS));
@@ -291,11 +291,69 @@ public class PanelAgendarCita {
         cbHora.setBackground(C[2]); cbHora.setForeground(C[6]);
         cbHora.setBorder(BorderFactory.createLineBorder(C[9], 1));
         cbHora.setAlignmentX(Component.LEFT_ALIGNMENT);
-        cbHora.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        cbHora.setMaximumSize(new Dimension(Integer.MAX_VALUE, 46));
         colHora.add(cbHora);
 
         filaFechaHora.add(colFecha); filaFechaHora.add(colHora);
-        form.add(filaFechaHora); form.add(Box.createVerticalStrut(28));
+        form.add(filaFechaHora); form.add(Box.createVerticalStrut(20));
+
+        // ── Servicio a domicilio ──────────────────────────
+        JPanel domicilioTogglePanel = new JPanel(new BorderLayout(10, 0));
+        domicilioTogglePanel.setBackground(C[4]);
+        domicilioTogglePanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(C[9], 1),
+                BorderFactory.createEmptyBorder(12, 14, 12, 14)));
+        domicilioTogglePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        domicilioTogglePanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
+
+        JPanel domTexto = new JPanel(new GridLayout(2, 1, 0, 2));
+        domTexto.setBackground(C[4]);
+        domTexto.add(lbl("Traer / Llevar a domicilio", 12, Font.BOLD, C[6]));
+        domTexto.add(lbl("El veterinario se desplaza a tu direccion", 10, Font.PLAIN, C[7]));
+
+        JToggleButton togDomicilio = new JToggleButton("No");
+        togDomicilio.setFont(new Font("Arial", Font.BOLD, 12));
+        togDomicilio.setBackground(C[9]); togDomicilio.setForeground(C[6]);
+        togDomicilio.setFocusPainted(false); togDomicilio.setOpaque(true);
+        togDomicilio.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(C[9], 1),
+                BorderFactory.createEmptyBorder(6, 16, 6, 16)));
+        togDomicilio.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        domicilioTogglePanel.add(domTexto, BorderLayout.CENTER);
+        domicilioTogglePanel.add(togDomicilio, BorderLayout.EAST);
+        form.add(domicilioTogglePanel); form.add(Box.createVerticalStrut(6));
+
+        // Campos de dirección (ocultos por defecto — se muestran sin panel wrapper)
+        JLabel lblDireccion = lbl("Direccion de domicilio", 12, Font.BOLD, C[6]);
+        lblDireccion.setAlignmentX(Component.LEFT_ALIGNMENT);
+        lblDireccion.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
+        lblDireccion.setVisible(false);
+
+        JTextField tfDireccion = new JTextField();
+        tfDireccion.setFont(new Font("Arial", Font.PLAIN, 13));
+        tfDireccion.setPreferredSize(new Dimension(480, 36));
+        tfDireccion.setMaximumSize(new Dimension(Integer.MAX_VALUE, 46));
+        tfDireccion.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(C[9], 1), BorderFactory.createEmptyBorder(6, 10, 6, 10)));
+        tfDireccion.setAlignmentX(Component.LEFT_ALIGNMENT);
+        tfDireccion.setVisible(false);
+
+        form.add(lblDireccion);
+        form.add(tfDireccion);
+        form.add(Box.createVerticalStrut(8));
+
+        togDomicilio.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                boolean activo = togDomicilio.isSelected();
+                togDomicilio.setText(activo ? "Si" : "No");
+                togDomicilio.setBackground(activo ? C[1] : C[9]);
+                togDomicilio.setForeground(activo ? C[5] : C[6]);
+                lblDireccion.setVisible(activo);
+                tfDireccion.setVisible(activo);
+                form.revalidate(); form.repaint();
+            }
+        });
 
         // ── Botones ───────────────────────────────────────
         JPanel botones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0));
@@ -342,7 +400,8 @@ public class PanelAgendarCita {
                 }
                 Empleados empleado = vets.get(0);
 
-                boolean ok = ctrl.guardarCita(mascota, empleado, fechaStr, hora, panel);
+                String domicilio = togDomicilio.isSelected() ? tfDireccion.getText().trim() : null;
+                boolean ok = ctrl.guardarCita(mascota, empleado, fechaStr, hora, domicilio, panel);
                 if (ok) Main.cambiarPantalla("misCitas");
             }
         });
