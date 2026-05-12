@@ -16,6 +16,9 @@ public class Empleados extends Persona {
     @Column(name = "nombre_emp", nullable = false, length = 100)
     private String nombreEmp;
 
+    @Column(name = "apellido_emp", length = 100)
+    private String apellidoEmp;
+
     @Column(name = "telefono_emp", length = 20)
     private String telefonoEmp;
 
@@ -35,9 +38,16 @@ public class Empleados extends Persona {
 
     // Sobreescribimos getters/setters para mapear a columnas de BD
     @Override
-    public String getNombre() { return nombreEmp; }
+    public String getNombre() {
+        if (apellidoEmp != null && !apellidoEmp.trim().isEmpty())
+            return nombreEmp + " " + apellidoEmp;
+        return nombreEmp;
+    }
     @Override
     public void setNombre(String nombre) { this.nombreEmp = nombre; }
+
+    public String getApellido() { return apellidoEmp; }
+    public void setApellido(String apellido) { this.apellidoEmp = apellido; }
 
     @Override
     public String getTelefono() { return telefonoEmp; }

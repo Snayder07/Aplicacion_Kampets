@@ -153,7 +153,7 @@ public class PanelAdmin {
         form.add(Box.createVerticalStrut(20));
 
         // Nombre
-        JLabel lNombre = lbl("Nombre completo", 12, Font.BOLD, C[6]);
+        JLabel lNombre = lbl("Nombre", 12, Font.BOLD, C[6]);
         lNombre.setAlignmentX(Component.LEFT_ALIGNMENT);
         form.add(lNombre); form.add(Box.createVerticalStrut(6));
         JTextField tfNombre = new JTextField();
@@ -162,6 +162,17 @@ public class PanelAdmin {
         tfNombre.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(C[9], 1), BorderFactory.createEmptyBorder(6,10,6,10)));
         form.add(tfNombre); form.add(Box.createVerticalStrut(12));
+
+        // Apellido
+        JLabel lApellido = lbl("Apellido", 12, Font.BOLD, C[6]);
+        lApellido.setAlignmentX(Component.LEFT_ALIGNMENT);
+        form.add(lApellido); form.add(Box.createVerticalStrut(6));
+        JTextField tfApellido = new JTextField();
+        tfApellido.setFont(new Font("Arial", Font.PLAIN, 13));
+        tfApellido.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        tfApellido.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(C[9], 1), BorderFactory.createEmptyBorder(6,10,6,10)));
+        form.add(tfApellido); form.add(Box.createVerticalStrut(12));
 
         // Correo
         JLabel lCorreo = lbl("Correo electrónico", 12, Font.BOLD, C[6]);
@@ -216,7 +227,8 @@ public class PanelAdmin {
         btnGuardar.setBorder(BorderFactory.createEmptyBorder(9,18,9,18));
         btnGuardar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String nombre = tfNombre.getText().trim();
+                String nombre    = tfNombre.getText().trim();
+                String apellido  = tfApellido.getText().trim();
                 String correo = tfCorreo.getText().trim();
                 String pass   = new String(tfPass.getPassword());
                 String cargo  = (String) cbCargo.getSelectedItem();
@@ -224,11 +236,11 @@ public class PanelAdmin {
                 if (nombre.isEmpty() || correo.isEmpty() || pass.isEmpty()) {
                     JOptionPane.showMessageDialog(dlg,
                             "Todos los campos son obligatorios.",
-                            "Campos vacíos", JOptionPane.WARNING_MESSAGE);
+                            "Campos vac\u00edos", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
                 try {
-                    empleadoService.registrarAdmin(nombre, correo, pass, cargo);
+                    empleadoService.registrarAdmin(nombre, apellido, correo, pass, cargo);
                     JOptionPane.showMessageDialog(dlg,
                             "✅ Administrador registrado exitosamente.\n\nCorreo: " + correo,
                             "Éxito", JOptionPane.INFORMATION_MESSAGE);

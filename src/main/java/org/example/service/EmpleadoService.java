@@ -31,7 +31,7 @@ public class EmpleadoService {
     }
 
     // ── REGISTRAR ADMIN — solo desde panel admin ──────────
-    public void registrarAdmin(String nombre, String correo,
+    public void registrarAdmin(String nombre, String apellido, String correo,
                                String contrasena, String cargo) throws Exception {
         if (nombre == null || nombre.trim().isEmpty())
             throw new Exception("El nombre es obligatorio.");
@@ -46,6 +46,7 @@ public class EmpleadoService {
 
         Empleados nuevo = new Empleados();
         nuevo.setNombre(nombre.trim());
+        nuevo.setApellido(apellido != null ? apellido.trim() : "");
         nuevo.setCorreo(correo.trim().toLowerCase());
         nuevo.setContrasena(contrasena);
         nuevo.setCargo(cargo != null && !cargo.trim().isEmpty() ? cargo.trim() : "Administrador");
