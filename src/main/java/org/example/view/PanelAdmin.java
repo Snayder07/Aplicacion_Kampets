@@ -1,5 +1,7 @@
 package org.example.view;
 
+import org.example.service.EmpleadoService;
+
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.*;
@@ -13,6 +15,8 @@ import java.util.Locale;
 public class PanelAdmin {
     public JPanel panel;
     private boolean temaOscuro = false;
+
+    private final EmpleadoService empleadoService = new EmpleadoService();
 
     private final Color[] CLARO = {
             new Color(240,246,252), new Color(26,74,122),   Color.WHITE,
@@ -32,6 +36,7 @@ public class PanelAdmin {
 
     public PanelAdmin() { panel = new JPanel(new BorderLayout()); construir(); }
     public void setTema(boolean o) { if (o != temaOscuro) { temaOscuro = o; construir(); } }
+    public void recargar() { construir(); }
 
     private void construir() {
         panel.removeAll(); C = temaOscuro ? OSCURO : CLARO;
@@ -73,18 +78,6 @@ public class PanelAdmin {
         izq.setLayout(new BoxLayout(izq, BoxLayout.Y_AXIS));
         izq.setBackground(C[2]);
 
-        JPanel nav = new JPanel(new FlowLayout(FlowLayout.LEFT,4,0));
-        nav.setBackground(C[2]);
-        JButton btnNav = new JButton("⌂ Inicio");
-        btnNav.setFont(new Font("Arial",Font.PLAIN,12));
-        btnNav.setForeground(C[4]); btnNav.setBackground(C[2]);
-        btnNav.setBorderPainted(false); btnNav.setFocusPainted(false);
-        btnNav.setOpaque(false); btnNav.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnNav.setMargin(new Insets(0,0,0,0));
-        JLabel flecha = new JLabel(" › "); flecha.setFont(new Font("Arial",Font.PLAIN,12)); flecha.setForeground(C[11]);
-        JLabel pagActual = new JLabel("Inicio"); pagActual.setFont(new Font("Arial",Font.PLAIN,12)); pagActual.setForeground(C[7]);
-        nav.add(btnNav); nav.add(flecha); nav.add(pagActual);
-
         JLabel titulo = new JLabel("Inicio");
         titulo.setFont(new Font("Arial",Font.BOLD,22)); titulo.setForeground(C[6]);
         titulo.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -95,7 +88,7 @@ public class PanelAdmin {
         fecha.setFont(new Font("Arial",Font.PLAIN,12)); fecha.setForeground(C[11]);
         fecha.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        izq.add(nav); izq.add(Box.createVerticalStrut(6)); izq.add(titulo); izq.add(fecha);
+        izq.add(titulo); izq.add(fecha);
 
         JPanel der = new JPanel(new FlowLayout(FlowLayout.RIGHT,10,0));
         der.setBackground(C[2]);
@@ -114,19 +107,135 @@ public class PanelAdmin {
             }
         });
 
-        JButton btnExportar = btn("⬇  Exportar reporte PDF", C[2], C[1]);
+        JButton btnExportar = btn("⬇  Exportar reporte", C[2], C[1]);
         btnExportar.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(C[9],1), BorderFactory.createEmptyBorder(8,16,8,16)));
         btnExportar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { exportarReporte(); }
         });
 
-        JButton btnNuevo = btn("+ Nuevo usuario", new Color(22,163,74), Color.WHITE);
+        JButton btnNuevo = btn("+ Nuevo admin", new Color(22,163,74), Color.WHITE);
         btnNuevo.setBorder(BorderFactory.createEmptyBorder(9,18,9,18));
+        btnNuevo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) { mostrarFormularioNuevoAdmin(); }
+        });
 
         der.add(btnTema); der.add(btnExportar); der.add(btnNuevo);
         tb.add(izq, BorderLayout.WEST); tb.add(der, BorderLayout.EAST);
         return tb;
+    }
+
+    private void mostrarFormularioNuevoAdmin() {
+        JDialog dlg = new JDialog(Main.frame, "Registrar nuevo administrador", true);
+        dlg.setSize(440, 480);
+        dlg.setLocationRelativeTo(Main.frame);
+        dlg.setResizable(false);
+
+        JPanel form = new JPanel();
+        form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
+        form.setBackground(C[2]);
+        form.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
+
+        JLabel titulo = lbl("Nuevo administrador", 16, Font.BOLD, C[6]);
+        titulo.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JLabel sub = lbl("Solo los admins pueden crear cuentas de administrador", 11, Font.PLAIN, C[7]);
+        sub.setAlignmentX(Component.LEFT_ALIGNMENT);
+        form.add(titulo); form.add(Box.createVerticalStrut(4)); form.add(sub);
+        form.add(Box.createVerticalStrut(20));
+
+        // Nombre
+        JLabel lNombre = lbl("Nombre completo", 12, Font.BOLD, C[6]);
+        lNombre.setAlignmentX(Component.LEFT_ALIGNMENT);
+        form.add(lNombre); form.add(Box.createVerticalStrut(6));
+        JTextField tfNombre = new JTextField();
+        tfNombre.setFont(new Font("Arial", Font.PLAIN, 13));
+        tfNombre.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        tfNombre.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(C[9], 1), BorderFactory.createEmptyBorder(6,10,6,10)));
+        form.add(tfNombre); form.add(Box.createVerticalStrut(12));
+
+        // Correo
+        JLabel lCorreo = lbl("Correo electrónico", 12, Font.BOLD, C[6]);
+        lCorreo.setAlignmentX(Component.LEFT_ALIGNMENT);
+        form.add(lCorreo); form.add(Box.createVerticalStrut(6));
+        JTextField tfCorreo = new JTextField();
+        tfCorreo.setFont(new Font("Arial", Font.PLAIN, 13));
+        tfCorreo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        tfCorreo.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(C[9], 1), BorderFactory.createEmptyBorder(6,10,6,10)));
+        form.add(tfCorreo); form.add(Box.createVerticalStrut(12));
+
+        // Contraseña
+        JLabel lPass = lbl("Contraseña", 12, Font.BOLD, C[6]);
+        lPass.setAlignmentX(Component.LEFT_ALIGNMENT);
+        form.add(lPass); form.add(Box.createVerticalStrut(6));
+        JPasswordField tfPass = new JPasswordField();
+        tfPass.setFont(new Font("Arial", Font.PLAIN, 13));
+        tfPass.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        tfPass.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(C[9], 1), BorderFactory.createEmptyBorder(6,10,6,10)));
+        form.add(tfPass); form.add(Box.createVerticalStrut(12));
+
+        // Cargo
+        JLabel lCargo = lbl("Cargo", 12, Font.BOLD, C[6]);
+        lCargo.setAlignmentX(Component.LEFT_ALIGNMENT);
+        form.add(lCargo); form.add(Box.createVerticalStrut(6));
+        JComboBox<String> cbCargo = new JComboBox<>(new String[]{
+                "Administrador", "Veterinario", "Recepcionista"
+        });
+        cbCargo.setFont(new Font("Arial", Font.PLAIN, 13));
+        cbCargo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        form.add(cbCargo); form.add(Box.createVerticalStrut(24));
+
+        // Botones
+        JPanel bots = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        bots.setBackground(C[2]); bots.setAlignmentX(Component.LEFT_ALIGNMENT);
+        bots.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+
+        JButton btnCancelar = new JButton("Cancelar");
+        btnCancelar.setFont(new Font("Arial", Font.PLAIN, 13));
+        btnCancelar.setBackground(C[4]); btnCancelar.setForeground(C[6]);
+        btnCancelar.setOpaque(true); btnCancelar.setBorderPainted(false);
+        btnCancelar.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(C[9], 1), BorderFactory.createEmptyBorder(8,16,8,16)));
+        btnCancelar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnCancelar.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) { dlg.dispose(); }
+        });
+
+        JButton btnGuardar = btn("Registrar admin", new Color(22,163,74), Color.WHITE);
+        btnGuardar.setBorder(BorderFactory.createEmptyBorder(9,18,9,18));
+        btnGuardar.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String nombre = tfNombre.getText().trim();
+                String correo = tfCorreo.getText().trim();
+                String pass   = new String(tfPass.getPassword());
+                String cargo  = (String) cbCargo.getSelectedItem();
+
+                if (nombre.isEmpty() || correo.isEmpty() || pass.isEmpty()) {
+                    JOptionPane.showMessageDialog(dlg,
+                            "Todos los campos son obligatorios.",
+                            "Campos vacíos", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                try {
+                    empleadoService.registrarAdmin(nombre, correo, pass, cargo);
+                    JOptionPane.showMessageDialog(dlg,
+                            "✅ Administrador registrado exitosamente.\n\nCorreo: " + correo,
+                            "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                    dlg.dispose();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(dlg,
+                            ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        bots.add(btnCancelar); bots.add(btnGuardar);
+        form.add(bots);
+
+        dlg.setContentPane(form);
+        dlg.setVisible(true);
     }
 
     private JPanel crearCentro() {
@@ -134,7 +243,6 @@ public class PanelAdmin {
         centro.setBackground(C[0]);
         centro.setBorder(BorderFactory.createEmptyBorder(24,28,28,28));
         centro.add(crearFilaStats(), BorderLayout.NORTH);
-
         JPanel inferior = new JPanel(new BorderLayout(0,20));
         inferior.setBackground(C[0]);
         inferior.add(crearTablaCitas(),   BorderLayout.NORTH);
@@ -156,10 +264,9 @@ public class PanelAdmin {
             card.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createLineBorder(C[9],1),
                     BorderFactory.createEmptyBorder(20,22,20,22)));
-            JLabel t = lbl((String)s[0],12,Font.PLAIN,C[7]);
-            JLabel v = lbl((String)s[1],32,Font.BOLD,C[6]);
-            JLabel sub = lbl((String)s[2],11,Font.PLAIN,(Color)s[3]);
-            card.add(t,BorderLayout.NORTH); card.add(v,BorderLayout.CENTER); card.add(sub,BorderLayout.SOUTH);
+            card.add(lbl((String)s[0],12,Font.PLAIN,C[7]),       BorderLayout.NORTH);
+            card.add(lbl((String)s[1],32,Font.BOLD,C[6]),        BorderLayout.CENTER);
+            card.add(lbl((String)s[2],11,Font.PLAIN,(Color)s[3]),BorderLayout.SOUTH);
             fila.add(card);
         }
         return fila;
@@ -176,7 +283,6 @@ public class PanelAdmin {
             public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("adminCitas"); }
         });
         header.add(titulo,BorderLayout.WEST); header.add(verTodas,BorderLayout.EAST);
-
         String[] cols = {"Cliente/Mascota","Hora","Vet","Estado"};
         Object[][] datos = {
                 {"Maria F. – Luna",   "9:00",  "Dr. Ramírez","Confirmada"},
@@ -195,20 +301,14 @@ public class PanelAdmin {
     private JPanel crearTablaVacunas() {
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(C[2]); header.setBorder(BorderFactory.createEmptyBorder(16,20,14,20));
-        JPanel hi = new JPanel(new FlowLayout(FlowLayout.LEFT,10,0)); hi.setBackground(C[2]);
-        JLabel titulo = lbl("💉 Vacunas pendientes",15,Font.BOLD,C[6]);
-        JLabel badge = new JLabel("5"); badge.setFont(new Font("Arial",Font.BOLD,11));
-        badge.setForeground(Color.WHITE); badge.setBackground(C[8]); badge.setOpaque(true);
-        badge.setBorder(BorderFactory.createEmptyBorder(2,8,2,8));
-        hi.add(titulo); hi.add(badge);
+        JLabel titulo = lbl("Vacunas pendientes",15,Font.BOLD,C[6]);
         JButton verTodas = btn("Ver todas",C[4],C[1]);
         verTodas.setBorder(BorderFactory.createEmptyBorder(6,14,6,14));
         verTodas.setFont(new Font("Arial",Font.PLAIN,12));
         verTodas.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("adminVacunas"); }
         });
-        header.add(hi,BorderLayout.WEST); header.add(verTodas,BorderLayout.EAST);
-
+        header.add(titulo,BorderLayout.WEST); header.add(verTodas,BorderLayout.EAST);
         String[] cols = {"Mascota","Dueño","Tipo de vacuna","Última aplicación","Próxima fecha","Estado"};
         Object[][] datos = {
                 {"Rocky","Carlos Mendoza", "Antirrábica",  "15 Mar 2024","15 Mar 2025","Vencida"},
@@ -228,14 +328,18 @@ public class PanelAdmin {
     }
 
     private JTable construirTabla(String[] cols, Object[][] datos, int colEstado) {
-        DefaultTableModel modelo = new DefaultTableModel(datos,cols) { public boolean isCellEditable(int r,int c){return false;} };
+        DefaultTableModel modelo = new DefaultTableModel(datos,cols) {
+            public boolean isCellEditable(int r,int c){return false;}
+        };
         JTable tabla = new JTable(modelo);
         tabla.setBackground(C[2]); tabla.setForeground(C[6]);
         tabla.setFont(new Font("Arial",Font.PLAIN,13)); tabla.setRowHeight(38);
         tabla.setShowGrid(false); tabla.setIntercellSpacing(new Dimension(0,0));
         tabla.setSelectionBackground(C[3]); tabla.setFillsViewportHeight(true);
-        JTableHeader th = tabla.getTableHeader(); th.setBackground(C[14]); th.setForeground(temaOscuro?C[7]:C[1]);
-        th.setFont(new Font("Arial",Font.BOLD,11)); th.setReorderingAllowed(false); th.setPreferredSize(new Dimension(0,36));
+        JTableHeader th = tabla.getTableHeader();
+        th.setBackground(C[14]); th.setForeground(temaOscuro?C[7]:C[1]);
+        th.setFont(new Font("Arial",Font.BOLD,11)); th.setReorderingAllowed(false);
+        th.setPreferredSize(new Dimension(0,36));
         tabla.getColumnModel().getColumn(colEstado).setCellRenderer(new DefaultTableCellRenderer(){
             public Component getTableCellRendererComponent(JTable t,Object v,boolean s,boolean f,int r,int col){
                 JLabel l=(JLabel)super.getTableCellRendererComponent(t,v,s,f,r,col);
@@ -255,7 +359,8 @@ public class PanelAdmin {
             public Component getTableCellRendererComponent(JTable t,Object v,boolean s,boolean f,int r,int col){
                 super.getTableCellRendererComponent(t,v,s,f,r,col); setForeground(C[6]);
                 setFont(new Font("Arial",Font.PLAIN,13)); setBackground(r%2==0?C[2]:C[4]);
-                if(s)setBackground(C[3]); setOpaque(true); setBorder(BorderFactory.createEmptyBorder(0,14,0,14)); return this;
+                if(s)setBackground(C[3]); setOpaque(true);
+                setBorder(BorderFactory.createEmptyBorder(0,14,0,14)); return this;
             }
         };
         for(int i=0;i<colEstado;i++) tabla.getColumnModel().getColumn(i).setCellRenderer(base);

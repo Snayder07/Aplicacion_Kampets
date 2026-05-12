@@ -1,6 +1,7 @@
 package org.example.view;
 
 import org.example.model.Cliente;
+import org.example.model.Empleados;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,8 +10,9 @@ public class Main {
     public static JFrame frame      = new JFrame("Kampets");
     public static JPanel contenedor = new JPanel(new CardLayout());
 
-    // ── Cliente logueado actualmente ──────────────────────
-    public static Cliente clienteActual = null;
+    // ── Sesión activa ─────────────────────────────────────
+    public static Cliente   clienteActual   = null;
+    public static Empleados empleadoActual  = null;
 
     // ── Instancias de cada panel ──────────────────────────
     private static PanelCliente         panelCliente         = new PanelCliente();
@@ -26,18 +28,6 @@ public class Main {
     private static PanelVacunas         panelVacunas         = new PanelVacunas();
     private static PanelAgendarCita     panelAgendarCita     = new PanelAgendarCita();
     private static PanelMisMascotas     panelMisMascotas     = new PanelMisMascotas();
-
-    // ── Lista de administradores ──────────────────────────
-    private static final String[][] ADMINS = {
-            {"admin@kampets.com", "admin123"}
-    };
-
-    public static boolean esAdmin(String correo, String clave) {
-        for (String[] admin : ADMINS) {
-            if (admin[0].equals(correo) && admin[1].equals(clave)) return true;
-        }
-        return false;
-    }
 
     public static void main(String[] args) {
         contenedor.add(new Interfaz_Grafica_Kampets().panel, "login");
@@ -71,7 +61,7 @@ public class Main {
 
     public static void cambiarPantalla(String nombre) {
         CardLayout cl = (CardLayout) contenedor.getLayout();
-        cl.show(contenedor, nombre); 
+        cl.show(contenedor, nombre);
 
         switch (nombre) {
             case "login":
@@ -94,6 +84,10 @@ public class Main {
                 break;
             case "panelCliente":
                 panelCliente.recargar();
+                expandirVentana();
+                break;
+            case "panelAdmin":
+                panelAdmin.recargar();
                 expandirVentana();
                 break;
             default:

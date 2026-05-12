@@ -77,15 +77,6 @@ public class SidebarAdmin {
         sb.add(btnReportes); sb.add(Box.createVerticalStrut(2));
 
         agregarSep(sb, C);
-
-        // ── SISTEMA ───────────────────────────────────────
-        agregarSeccion(sb, "SISTEMA", C);
-
-        JButton btnConfig = crearItem("⚙  Configuración", pantallaActual.equals("adminConfig"), C);
-        btnConfig.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("adminConfig"); }
-        });
-        sb.add(btnConfig); sb.add(Box.createVerticalStrut(2));
         sb.add(Box.createVerticalGlue());
 
         // ── Cerrar sesión ─────────────────────────────────
@@ -104,6 +95,8 @@ public class SidebarAdmin {
                 int r = JOptionPane.showConfirmDialog(panelRef, "¿Deseas cerrar sesión?",
                         "Cerrar sesión", JOptionPane.YES_NO_OPTION);
                 if (r == JOptionPane.YES_OPTION) {
+                    Main.empleadoActual = null;
+                    Main.clienteActual  = null;
                     Main.frame.setExtendedState(JFrame.NORMAL);
                     Main.frame.setSize(420, 520);
                     Main.frame.setLocationRelativeTo(null);
@@ -113,22 +106,33 @@ public class SidebarAdmin {
         });
         sb.add(cerrar); sb.add(Box.createVerticalStrut(8));
 
-        // ── Usuario ───────────────────────────────────────
+        // ── Usuario — nombre real del admin logueado ──────
+        String nombreAdmin = Main.empleadoActual != null ?
+                Main.empleadoActual.getNombre() : "Administrador";
+        String cargoAdmin  = Main.empleadoActual != null ?
+                Main.empleadoActual.getCargo()   : "Admin · Kampets";
+
+        // Iniciales del nombre
+        String[] partes = nombreAdmin.split(" ");
+        String iniciales = partes.length >= 2 ?
+                String.valueOf(partes[0].charAt(0)) + String.valueOf(partes[1].charAt(0)) :
+                String.valueOf(nombreAdmin.charAt(0));
+
         JPanel up = new JPanel(new BorderLayout(10, 0));
         up.setBackground(C[10]);
         up.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
         up.setMaximumSize(new Dimension(Integer.MAX_VALUE, 58));
         up.setAlignmentX(Component.LEFT_ALIGNMENT);
-        JLabel av = new JLabel("AD");
+        JLabel av = new JLabel(iniciales);
         av.setFont(new Font("Arial", Font.BOLD, 13));
         av.setForeground(C[1]); av.setBackground(Color.WHITE); av.setOpaque(true);
         av.setPreferredSize(new Dimension(34, 34));
         av.setHorizontalAlignment(SwingConstants.CENTER);
         JPanel ui = new JPanel(new GridLayout(2, 1));
         ui.setBackground(C[10]);
-        JLabel uName = new JLabel("Administrador");
+        JLabel uName = new JLabel(nombreAdmin);
         uName.setFont(new Font("Arial", Font.BOLD, 12)); uName.setForeground(Color.WHITE);
-        JLabel uRole = new JLabel("Super admin · Kampets");
+        JLabel uRole = new JLabel(cargoAdmin + " · Kampets");
         uRole.setFont(new Font("Arial", Font.PLAIN, 10)); uRole.setForeground(C[11]);
         ui.add(uName); ui.add(uRole);
         up.add(av, BorderLayout.WEST); up.add(ui, BorderLayout.CENTER);

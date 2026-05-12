@@ -30,7 +30,7 @@ public class EmpleadoRepositoryImpl implements EmpleadoRepository {
         EntityManager em = JPAUtil.getEntityManager();
         try {
             return em.createQuery(
-                            "SELECT e FROM Empleados e WHERE e.correo = :correo", Empleados.class)
+                            "SELECT e FROM Empleados e WHERE e.correoEmp = :correo", Empleados.class)
                     .setParameter("correo", correo)
                     .getSingleResult();
         } catch (NoResultException e) {
