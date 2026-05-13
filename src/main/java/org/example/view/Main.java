@@ -22,6 +22,7 @@ public class Main {
     private static PanelAdminVacunas    panelAdminVacunas    = new PanelAdminVacunas();
     private static PanelAdminInventario panelAdminInventario = new PanelAdminInventario();
     private static PanelAdminReportes   panelAdminReportes   = new PanelAdminReportes();
+    private static PanelCalendario      panelCalendario      = new PanelCalendario();
     private static PanelMisCitas        panelMisCitas        = new PanelMisCitas();
     private static PanelHistorial       panelHistorial       = new PanelHistorial();
     private static PanelAlimentos       panelAlimentos       = new PanelAlimentos();
@@ -39,6 +40,7 @@ public class Main {
         contenedor.add(panelAdminVacunas.panel,              "adminVacunas");
         contenedor.add(panelAdminInventario.panel,           "adminInventario");
         contenedor.add(panelAdminReportes.panel,             "adminReportes");
+        contenedor.add(panelCalendario.panel,                "adminCalendario");
         contenedor.add(panelMisCitas.panel,                  "misCitas");
         contenedor.add(panelHistorial.panel,                 "historial");
         contenedor.add(panelAlimentos.panel,                 "alimentos");
@@ -77,6 +79,7 @@ public class Main {
             case "adminVacunas":   panelAdminVacunas.recargar();    expandirVentana(); break;
             case "adminInventario":panelAdminInventario.recargar(); expandirVentana(); break;
             case "adminReportes":  panelAdminReportes.recargar();   expandirVentana(); break;
+            case "adminCalendario":panelCalendario.recargar();      expandirVentana(); break;
             case "misCitas":       panelMisCitas.recargar();        expandirVentana(); break;
             case "misMascotas":    panelMisMascotas.recargar();     expandirVentana(); break;
             case "historial":      panelHistorial.recargar();       expandirVentana(); break;

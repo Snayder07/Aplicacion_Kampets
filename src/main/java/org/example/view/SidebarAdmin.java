@@ -53,6 +53,12 @@ public class SidebarAdmin {
         });
         sb.add(btnMascotas); sb.add(Box.createVerticalStrut(4));
 
+        JButton btnCalendario = crearItem("📅", "Calendario", pantallaActual.equals("adminCalendario"), C);
+        btnCalendario.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("adminCalendario"); }
+        });
+        sb.add(btnCalendario); sb.add(Box.createVerticalStrut(4));
+
         agregarSep(sb, C);
 
         // ── CLÍNICA ───────────────────────────────────────

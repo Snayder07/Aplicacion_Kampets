@@ -36,7 +36,7 @@ public class CitaRepositoryImpl implements CitaRepository {
     public List<Citas> buscarPorCliente(Integer clienteId) {
         EntityManager em = JPAUtil.getEntityManager();
         List<Citas> citas = em.createQuery(
-                "SELECT c FROM Citas c WHERE c.mascota.cliente.id = :clienteId", Citas.class)
+                        "SELECT c FROM Citas c WHERE c.mascota.cliente.id = :clienteId", Citas.class)
                 .setParameter("clienteId", clienteId)
                 .getResultList();
         em.close();
@@ -47,7 +47,7 @@ public class CitaRepositoryImpl implements CitaRepository {
     public List<Citas> buscarPasadasPorCliente(Integer clienteId) {
         EntityManager em = JPAUtil.getEntityManager();
         List<Citas> citas = em.createQuery(
-                "SELECT c FROM Citas c WHERE c.mascota.cliente.id = :clienteId AND c.fechaCita < CURRENT_DATE ORDER BY c.fechaCita DESC", Citas.class)
+                        "SELECT c FROM Citas c WHERE c.mascota.cliente.id = :clienteId AND c.fechaCita < CURRENT_DATE ORDER BY c.fechaCita DESC", Citas.class)
                 .setParameter("clienteId", clienteId)
                 .getResultList();
         em.close();
@@ -58,7 +58,7 @@ public class CitaRepositoryImpl implements CitaRepository {
     public List<Citas> buscarDeHoy() {
         EntityManager em = JPAUtil.getEntityManager();
         List<Citas> citas = em.createQuery(
-                "SELECT c FROM Citas c WHERE c.fechaCita = CURRENT_DATE ORDER BY c.horaCita ASC", Citas.class)
+                        "SELECT c FROM Citas c WHERE c.fechaCita = CURRENT_DATE ORDER BY c.horaCita ASC", Citas.class)
                 .getResultList();
         em.close();
         return citas;
@@ -70,6 +70,17 @@ public class CitaRepositoryImpl implements CitaRepository {
         em.getTransaction().begin();
         Citas cita = em.find(Citas.class, id);
         if (cita != null) em.remove(cita);
+        em.getTransaction().commit();
+        em.close();
+    }
+
+    /**
+     * Actualiza una cita existente (usado al mover bloques en el calendario).
+     */
+    public void actualizar(Citas cita) {
+        EntityManager em = JPAUtil.getEntityManager();
+        em.getTransaction().begin();
+        em.merge(cita);
         em.getTransaction().commit();
         em.close();
     }

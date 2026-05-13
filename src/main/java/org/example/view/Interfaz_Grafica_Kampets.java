@@ -5,6 +5,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class Interfaz_Grafica_Kampets {
     public JPanel panel;
@@ -23,7 +25,7 @@ public class Interfaz_Grafica_Kampets {
         panel = new JPanel();
         panel.setLayout(null);
         panel.setBackground(new Color(240, 248, 244));
-        panel.setPreferredSize(new Dimension(420, 440));
+        panel.setPreferredSize(new Dimension(420, 480)); // aumentado para el enlace nuevo
 
         // ── Título ───────────────────────────────────────
         JLabel titulo = new JLabel("Kampets");
@@ -78,6 +80,32 @@ public class Interfaz_Grafica_Kampets {
         passwordField1.setBounds(40, 208, 340, 35);
         panel.add(passwordField1);
 
+        // ── Enlace "¿Olvidaste tu contraseña?" ───────────
+        JLabel linkOlvide = new JLabel("¿Olvidaste tu contraseña?");
+        linkOlvide.setFont(new Font("Arial", Font.PLAIN, 12));
+        linkOlvide.setForeground(new Color(29, 158, 117));
+        linkOlvide.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        linkOlvide.setBounds(40, 250, 220, 20);
+        // Subrayado al pasar el mouse
+        linkOlvide.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                linkOlvide.setText("<html><u>¿Olvidaste tu contraseña?</u></html>");
+            }
+            @Override
+            public void mouseExited(MouseEvent e) {
+                linkOlvide.setText("¿Olvidaste tu contraseña?");
+            }
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Abre el diálogo de recuperación
+                Window ventana = SwingUtilities.getWindowAncestor(panel);
+                RecuperacionContrasenaDialog dialogo = new RecuperacionContrasenaDialog(ventana);
+                dialogo.setVisible(true);
+            }
+        });
+        panel.add(linkOlvide);
+
         // ── Botón Entrar ─────────────────────────────────
         entrarButton = new JButton("Entrar");
         entrarButton.setFont(new Font("Arial", Font.BOLD, 14));
@@ -86,7 +114,7 @@ public class Interfaz_Grafica_Kampets {
         entrarButton.setOpaque(true);
         entrarButton.setBorderPainted(false);
         entrarButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        entrarButton.setBounds(40, 265, 340, 40);
+        entrarButton.setBounds(40, 280, 340, 40);
         panel.add(entrarButton);
 
         // ── Botón Entrar como Administrador ──────────────
@@ -97,14 +125,14 @@ public class Interfaz_Grafica_Kampets {
         entrarAdminButton.setOpaque(true);
         entrarAdminButton.setBorderPainted(false);
         entrarAdminButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        entrarAdminButton.setBounds(40, 315, 340, 38);
+        entrarAdminButton.setBounds(40, 330, 340, 38);
         panel.add(entrarAdminButton);
 
         // ── Texto primera vez ─────────────────────────────
         JLabel labelSep = new JLabel("¿Es tu primera vez aquí?");
         labelSep.setFont(new Font("Arial", Font.PLAIN, 12));
         labelSep.setForeground(new Color(150, 150, 150));
-        labelSep.setBounds(40, 362, 340, 20);
+        labelSep.setBounds(40, 378, 340, 20);
         labelSep.setHorizontalAlignment(SwingConstants.CENTER);
         panel.add(labelSep);
 
@@ -116,7 +144,7 @@ public class Interfaz_Grafica_Kampets {
         crearCuentaButton.setOpaque(true);
         crearCuentaButton.setBorder(BorderFactory.createLineBorder(new Color(29, 158, 117), 1));
         crearCuentaButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        crearCuentaButton.setBounds(40, 385, 340, 38);
+        crearCuentaButton.setBounds(40, 402, 340, 38);
         panel.add(crearCuentaButton);
 
         // ── Acciones de los botones ───────────────────────
@@ -132,7 +160,6 @@ public class Interfaz_Grafica_Kampets {
                             "Campos vacíos", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-                // LoginController busca el cliente en la BD
                 loginController.loginCliente(correo, clave, panel);
             }
         });
@@ -148,7 +175,6 @@ public class Interfaz_Grafica_Kampets {
                             "Campos vacíos", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-                // LoginController busca el empleado en la BD
                 loginController.loginAdmin(correo, clave, panel);
             }
         });

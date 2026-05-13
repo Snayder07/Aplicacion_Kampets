@@ -41,4 +41,16 @@ public class ClienteRepositoryImpl implements ClienteRepository {
         em.getTransaction().commit();
         em.close();
     }
+
+    /**
+     * Actualiza un cliente existente en la base de datos.
+     * Necesario para guardar la nueva contraseña tras la recuperación.
+     */
+    public void actualizar(Cliente cliente) {
+        EntityManager em = JPAUtil.getEntityManager();
+        em.getTransaction().begin();
+        em.merge(cliente);
+        em.getTransaction().commit();
+        em.close();
+    }
 }
