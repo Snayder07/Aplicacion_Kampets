@@ -5,10 +5,6 @@ import org.example.repository.CitaRepositoryImpl;
 
 import java.util.List;
 
-/**
- * PERSONA 2 — Servicio de Citas
- * Lógica para crear, cancelar y consultar citas
- */
 public class CitaService {
 
     private final CitaRepositoryImpl repositorio = new CitaRepositoryImpl();
@@ -24,10 +20,7 @@ public class CitaService {
         repositorio.guardar(cita);
     }
 
-    // ─────────────────────────────────────────────────────────
-    // LISTAR TODAS LAS CITAS
-    // El admin puede ver todas (RF-02, RF-07)
-    // ─────────────────────────────────────────────────────────
+
     public List<Citas> listarTodas() {
         return repositorio.buscarTodos();
     }
