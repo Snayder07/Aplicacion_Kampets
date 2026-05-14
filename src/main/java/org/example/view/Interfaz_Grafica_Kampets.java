@@ -84,7 +84,7 @@ public class Interfaz_Grafica_Kampets {
         JLabel linkOlvide = new JLabel("¿Olvidaste tu contraseña?");
         linkOlvide.setFont(new Font("Arial", Font.PLAIN, 12));
         linkOlvide.setForeground(new Color(29, 158, 117));
-        linkOlvide.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        linkOlvide.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
         linkOlvide.setBounds(40, 250, 220, 20);
         // Subrayado al pasar el mouse
         linkOlvide.addMouseListener(new MouseAdapter() {
@@ -113,7 +113,7 @@ public class Interfaz_Grafica_Kampets {
         entrarButton.setForeground(Color.WHITE);
         entrarButton.setOpaque(true);
         entrarButton.setBorderPainted(false);
-        entrarButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        entrarButton.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
         entrarButton.setBounds(40, 280, 340, 40);
         panel.add(entrarButton);
 
@@ -124,7 +124,7 @@ public class Interfaz_Grafica_Kampets {
         entrarAdminButton.setForeground(Color.WHITE);
         entrarAdminButton.setOpaque(true);
         entrarAdminButton.setBorderPainted(false);
-        entrarAdminButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        entrarAdminButton.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
         entrarAdminButton.setBounds(40, 330, 340, 38);
         panel.add(entrarAdminButton);
 
@@ -143,7 +143,7 @@ public class Interfaz_Grafica_Kampets {
         crearCuentaButton.setForeground(new Color(29, 158, 117));
         crearCuentaButton.setOpaque(true);
         crearCuentaButton.setBorder(BorderFactory.createLineBorder(new Color(29, 158, 117), 1));
-        crearCuentaButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        crearCuentaButton.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
         crearCuentaButton.setBounds(40, 402, 340, 38);
         panel.add(crearCuentaButton);
 

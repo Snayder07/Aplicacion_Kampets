@@ -131,7 +131,7 @@ public class PanelCalendario {
         b.setFont(new Font("Arial", Font.PLAIN, 12));
         b.setBackground(C[3]); b.setForeground(Color.WHITE);
         b.setOpaque(true); b.setBorderPainted(false); b.setFocusPainted(false);
-        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        b.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
         return b;
     }
 

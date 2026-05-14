@@ -50,6 +50,15 @@ public class EmpleadoRepositoryImpl implements EmpleadoRepository {
     }
 
     @Override
+    public void actualizar(Empleados empleado) {
+        EntityManager em = JPAUtil.getEntityManager();
+        em.getTransaction().begin();
+        em.merge(empleado);
+        em.getTransaction().commit();
+        em.close();
+    }
+
+    @Override
     public void eliminar(Integer id) {
         EntityManager em = JPAUtil.getEntityManager();
         em.getTransaction().begin();

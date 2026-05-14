@@ -81,11 +81,7 @@ public class PanelAdminReportes {
         tl.add(lbl("Reportes",22,Font.BOLD,C[6]));
         tl.add(lbl("Genera y descarga reportes del sistema en PDF",12,Font.PLAIN,C[7]));
         JPanel tr = new JPanel(new FlowLayout(FlowLayout.RIGHT,10,0)); tr.setBackground(C[2]);
-        JButton btnTema = new JButton(temaOscuro?"☀  Claro":"🌙  Oscuro"); estilizarTema(btnTema);
-        btnTema.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) { temaOscuro=!temaOscuro; Main.aplicarTemaGlobal(temaOscuro); construir(); }
-        });
-        tr.add(btnTema); tb.add(tl,BorderLayout.WEST); tb.add(tr,BorderLayout.EAST); c.add(tb,BorderLayout.NORTH);
+        tb.add(tl,BorderLayout.WEST); tb.add(tr,BorderLayout.EAST); c.add(tb,BorderLayout.NORTH);
 
         JPanel body = new JPanel(new BorderLayout(0,24)); body.setBackground(C[0]); body.setBorder(BorderFactory.createEmptyBorder(24,28,28,28));
 
@@ -140,7 +136,7 @@ public class PanelAdminReportes {
         descBtn.setFont(new Font("Arial",Font.BOLD,12));
         descBtn.setBackground(C[1]); descBtn.setForeground(C[5]);
         descBtn.setOpaque(true); descBtn.setBorderPainted(false);
-        descBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        descBtn.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
         descBtn.setBorder(BorderFactory.createEmptyBorder(9,16,9,16));
         descBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { descargarReportePDF(nombre, tipo); }
@@ -479,7 +475,7 @@ public class PanelAdminReportes {
 
     private void estilizarTema(JButton b){
         b.setFont(new Font("Arial",Font.PLAIN,13)); b.setBackground(C[2]); b.setForeground(C[6]);
-        b.setOpaque(true); b.setFocusPainted(false); b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        b.setOpaque(true); b.setFocusPainted(false); b.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
         b.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(C[9],1),BorderFactory.createEmptyBorder(7,14,7,14)));
     }
 }

@@ -54,15 +54,11 @@ public class PanelAdminMascotas {
         tl.add(lbl("Mascotas registradas",22,Font.BOLD,C[6]));
         tl.add(lbl("Gestión de mascotas en el sistema",12,Font.PLAIN,C[7]));
         JPanel tr = new JPanel(new FlowLayout(FlowLayout.RIGHT,10,0)); tr.setBackground(C[2]);
-        JButton btnTema = new JButton(temaOscuro?"☀  Claro":"🌙  Oscuro"); estilizarTema(btnTema);
-        btnTema.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) { temaOscuro=!temaOscuro; Main.aplicarTemaGlobal(temaOscuro); construir(); }
-        });
         JButton btnNueva = new JButton("+ Registrar mascota");
         btnNueva.setFont(new Font("Arial",Font.BOLD,13)); btnNueva.setBackground(new Color(22,163,74));
         btnNueva.setForeground(Color.WHITE); btnNueva.setOpaque(true); btnNueva.setBorderPainted(false);
-        btnNueva.setCursor(new Cursor(Cursor.HAND_CURSOR)); btnNueva.setBorder(BorderFactory.createEmptyBorder(9,18,9,18));
-        tr.add(btnTema); tr.add(btnNueva);
+        btnNueva.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR)); btnNueva.setBorder(BorderFactory.createEmptyBorder(9,18,9,18));
+        tr.add(btnNueva);
         tb.add(tl,BorderLayout.WEST); tb.add(tr,BorderLayout.EAST); c.add(tb,BorderLayout.NORTH);
 
         JPanel body = new JPanel(new BorderLayout(0,16)); body.setBackground(C[0]); body.setBorder(BorderFactory.createEmptyBorder(24,28,28,28));
@@ -138,7 +134,7 @@ public class PanelAdminMascotas {
 
     private void estilizarTema(JButton b){
         b.setFont(new Font("Arial",Font.PLAIN,13)); b.setBackground(C[2]); b.setForeground(C[6]);
-        b.setOpaque(true); b.setFocusPainted(false); b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        b.setOpaque(true); b.setFocusPainted(false); b.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
         b.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(C[9],1),BorderFactory.createEmptyBorder(7,14,7,14)));
     }
 }

@@ -20,9 +20,9 @@ public class InventarioController {
     }
 
     public boolean agregarProducto(String nombre, String tipo, String marca,
-                                   String precio, String stock, JPanel panel) {
+                                   String precio, String stock, byte[] foto, JPanel panel) {
         try {
-            productoService.agregar(nombre, tipo, marca, precio, stock);
+            productoService.agregar(nombre, tipo, marca, precio, stock, foto);
             JOptionPane.showMessageDialog(panel, "Producto agregado exitosamente.");
             return true;
         } catch (Exception e) {

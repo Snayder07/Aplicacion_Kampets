@@ -62,7 +62,7 @@ public class PanelAdmin {
         JButton b = new JButton(t); b.setFont(new Font("Arial",Font.BOLD,15));
         b.setBackground(bg); b.setForeground(fg); b.setOpaque(true);
         b.setFocusPainted(false); b.setBorderPainted(false);
-        b.setCursor(new Cursor(Cursor.HAND_CURSOR)); return b;
+        b.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR)); return b;
     }
 
     private JPanel crearContenido() {
@@ -102,20 +102,6 @@ public class PanelAdmin {
         JPanel der = new JPanel(new FlowLayout(FlowLayout.RIGHT,10,0));
         der.setBackground(C[2]);
 
-        JButton btnTema = new JButton(temaOscuro ? "☀  Claro" : "🌙  Oscuro");
-        btnTema.setFont(new Font("Arial",Font.PLAIN,13));
-        btnTema.setBackground(C[2]); btnTema.setForeground(C[6]); btnTema.setOpaque(true);
-        btnTema.setFocusPainted(false); btnTema.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnTema.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(C[9],1), BorderFactory.createEmptyBorder(7,14,7,14)));
-        btnTema.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                temaOscuro = !temaOscuro;
-                Main.aplicarTemaGlobal(temaOscuro);
-                construir();
-            }
-        });
-
         JButton btnExportar = btn("⬇  Exportar reporte", C[2], C[1]);
         btnExportar.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(C[9],1), BorderFactory.createEmptyBorder(8,16,8,16)));
@@ -129,7 +115,7 @@ public class PanelAdmin {
             public void actionPerformed(ActionEvent e) { mostrarFormularioNuevoAdmin(); }
         });
 
-        der.add(btnTema); der.add(btnExportar); der.add(btnNuevo);
+        der.add(btnExportar); der.add(btnNuevo);
         tb.add(izq, BorderLayout.WEST); tb.add(der, BorderLayout.EAST);
         return tb;
     }
@@ -218,7 +204,7 @@ public class PanelAdmin {
         btnCancelar.setOpaque(true); btnCancelar.setBorderPainted(false);
         btnCancelar.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(C[9], 1), BorderFactory.createEmptyBorder(8,16,8,16)));
-        btnCancelar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnCancelar.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
         btnCancelar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { dlg.dispose(); }
         });

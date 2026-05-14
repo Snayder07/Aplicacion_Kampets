@@ -145,7 +145,7 @@ public class CrearCuenta {
         registrarButton.setForeground(Color.WHITE);
         registrarButton.setOpaque(true);
         registrarButton.setBorderPainted(false);
-        registrarButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        registrarButton.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
         registrarButton.setBounds(40, 395, 340, 40);
         panel.add(registrarButton);
 
@@ -156,7 +156,7 @@ public class CrearCuenta {
         volverButton.setForeground(new Color(29, 158, 117));
         volverButton.setOpaque(true);
         volverButton.setBorder(BorderFactory.createLineBorder(new Color(29, 158, 117), 1));
-        volverButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        volverButton.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
         volverButton.setBounds(40, 445, 340, 38);
         panel.add(volverButton);
 

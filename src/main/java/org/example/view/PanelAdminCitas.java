@@ -62,20 +62,18 @@ public class PanelAdminCitas {
         tl.add(lbl("Todas las citas",22,Font.BOLD,C[6]));
         tl.add(lbl("Gestión y seguimiento de citas",12,Font.PLAIN,C[7]));
         JPanel tr = new JPanel(new FlowLayout(FlowLayout.RIGHT,10,0)); tr.setBackground(C[2]);
-        JButton btnTema = new JButton(temaOscuro?"☀  Claro":"🌙  Oscuro");
-        estilizarTema(btnTema);
-        btnTema.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                temaOscuro=!temaOscuro; Main.aplicarTemaGlobal(temaOscuro); construir();
-            }
-        });
         JButton btnNueva = new JButton("+ Nueva cita");
         btnNueva.setFont(new Font("Arial",Font.BOLD,13));
         btnNueva.setBackground(new Color(22,163,74)); btnNueva.setForeground(Color.WHITE);
         btnNueva.setOpaque(true); btnNueva.setBorderPainted(false);
-        btnNueva.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnNueva.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
         btnNueva.setBorder(BorderFactory.createEmptyBorder(9,18,9,18));
-        tr.add(btnTema); tr.add(btnNueva);
+        btnNueva.addActionListener(ev -> {
+            NuevaCitaAdminDialog dlg = new NuevaCitaAdminDialog(SwingUtilities.getWindowAncestor(c));
+            dlg.setVisible(true);
+            if (dlg.fueGuardado()) construir();
+        });
+        tr.add(btnNueva);
         tb.add(tl,BorderLayout.WEST); tb.add(tr,BorderLayout.EAST);
         c.add(tb,BorderLayout.NORTH);
 
@@ -105,7 +103,7 @@ public class PanelAdminCitas {
             f.setBackground(esActivo?C[1]:C[2]);
             f.setForeground(esActivo?C[5]:C[7]);
             f.setOpaque(true); f.setFocusPainted(false);
-            f.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            f.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
             f.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createLineBorder(esActivo?C[1]:C[9],1),
                     BorderFactory.createEmptyBorder(6,14,6,14)));
@@ -259,7 +257,7 @@ public class PanelAdminCitas {
 
     private void estilizarTema(JButton b){
         b.setFont(new Font("Arial",Font.PLAIN,13)); b.setBackground(C[2]); b.setForeground(C[6]);
-        b.setOpaque(true); b.setFocusPainted(false); b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        b.setOpaque(true); b.setFocusPainted(false); b.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
         b.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(C[9],1),BorderFactory.createEmptyBorder(7,14,7,14)));
     }

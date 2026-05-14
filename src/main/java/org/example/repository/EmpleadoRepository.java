@@ -8,5 +8,6 @@ public interface EmpleadoRepository {
     Empleados buscarPorId(Integer id);
     Empleados buscarPorCorreo(String correo);
     List<Empleados> buscarTodos();
+    void actualizar(Empleados empleado);
     void eliminar(Integer id);
 }

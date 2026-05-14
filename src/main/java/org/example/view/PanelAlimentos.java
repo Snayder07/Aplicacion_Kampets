@@ -43,7 +43,7 @@ public class PanelAlimentos {
     private JButton btn(String t, Color bg, Color fg, boolean borde) {
         JButton b = new JButton(t); b.setFont(new Font("Arial", Font.PLAIN, 15));
         b.setBackground(bg); b.setForeground(fg); b.setOpaque(true);
-        b.setFocusPainted(false); b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        b.setFocusPainted(false); b.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
         if (borde) b.setBorder(BorderFactory.createLineBorder(fg,1)); else b.setBorderPainted(false);
         return b;
     }
@@ -136,14 +136,6 @@ public class PanelAlimentos {
 
         JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         topRight.setBackground(C[2]);
-        JButton btnTema = new JButton(temaOscuro ? "☀  Claro" : "🌙  Oscuro");
-        btnTema.setFont(new Font("Arial", Font.PLAIN, 13));
-        btnTema.setBackground(C[0]); btnTema.setForeground(C[6]); btnTema.setOpaque(true);
-        btnTema.setFocusPainted(false); btnTema.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnTema.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(C[9],1), BorderFactory.createEmptyBorder(7,14,7,14)));
-        btnTema.addActionListener(e -> { temaOscuro = !temaOscuro; construir(); });
-        topRight.add(btnTema);
         topbar.add(topLeft, BorderLayout.WEST);
         topbar.add(topRight, BorderLayout.EAST);
         contenido.add(topbar, BorderLayout.NORTH);

@@ -83,6 +83,19 @@ public class SidebarAdmin {
         sb.add(btnReportes); sb.add(Box.createVerticalStrut(4));
 
         agregarSep(sb, C);
+
+        // ── CONFIGURACIÓN ─────────────────────────────────
+        agregarSeccion(sb, "CONFIGURACION", C);
+
+        JButton btnCorreo = crearItem("⚙", "Configurar correo", false, C);
+        btnCorreo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new ConfigurarCorreoDialog(SwingUtilities.getWindowAncestor(panelRef)).setVisible(true);
+            }
+        });
+        sb.add(btnCorreo); sb.add(Box.createVerticalStrut(4));
+
+        agregarSep(sb, C);
         sb.add(Box.createVerticalGlue());
 
         // ── Cerrar sesión ─────────────────────────────────
@@ -91,7 +104,7 @@ public class SidebarAdmin {
         cerrar.setBackground(new Color(127, 29, 29));
         cerrar.setForeground(new Color(252, 165, 165));
         cerrar.setOpaque(true); cerrar.setBorderPainted(false); cerrar.setFocusPainted(false);
-        cerrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        cerrar.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
         cerrar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 46));
         cerrar.setAlignmentX(Component.LEFT_ALIGNMENT);
         cerrar.setHorizontalAlignment(SwingConstants.LEFT);
@@ -169,7 +182,7 @@ public class SidebarAdmin {
         b.add(contenido, BorderLayout.CENTER);
         b.setBackground(activo ? bgActivo : C[1]);
         b.setOpaque(true); b.setBorderPainted(false); b.setFocusPainted(false);
-        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        b.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
         b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 52));
         b.setAlignmentX(Component.LEFT_ALIGNMENT);
         b.setBorder(BorderFactory.createEmptyBorder(0, 16, 0, 12));

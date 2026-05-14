@@ -61,7 +61,7 @@ public class PanelMisCitas {
     private JButton btn(String t, Color bg, Color fg, boolean borde) {
         JButton b = new JButton(t); b.setFont(new Font("Arial", Font.PLAIN, 15));
         b.setBackground(bg); b.setForeground(fg); b.setOpaque(true);
-        b.setFocusPainted(false); b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        b.setFocusPainted(false); b.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
         if (borde) b.setBorder(BorderFactory.createLineBorder(fg, 1)); else b.setBorderPainted(false);
         return b;
     }
@@ -170,24 +170,13 @@ public class PanelMisCitas {
 
         JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         topRight.setBackground(C[2]);
-        JButton btnTema = new JButton(temaOscuro ? "☀  Claro" : "🌙  Oscuro");
-        btnTema.setFont(new Font("Arial", Font.PLAIN, 13));
-        btnTema.setBackground(C[0]); btnTema.setForeground(C[6]); btnTema.setOpaque(true);
-        btnTema.setFocusPainted(false); btnTema.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnTema.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(C[9], 1), BorderFactory.createEmptyBorder(7, 14, 7, 14)));
-        btnTema.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                temaOscuro = !temaOscuro; Main.aplicarTemaGlobal(temaOscuro); construir();
-            }
-        });
         JButton btnAgendar = btn("+ Agendar cita", C[1], C[5], false);
         btnAgendar.setFont(new Font("Arial", Font.BOLD, 13));
         btnAgendar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
         btnAgendar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("agendarCita"); }
         });
-        topRight.add(btnTema); topRight.add(btnAgendar);
+        topRight.add(btnAgendar);
         topbar.add(topLeft, BorderLayout.WEST);
         topbar.add(topRight, BorderLayout.EAST);
         contenido.add(topbar, BorderLayout.NORTH);
@@ -208,7 +197,7 @@ public class PanelMisCitas {
             f.setFont(new Font("Arial", Font.PLAIN, 12));
             f.setBackground(activo ? C[1] : C[2]);
             f.setForeground(activo ? C[5] : C[7]);
-            f.setOpaque(true); f.setFocusPainted(false); f.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            f.setOpaque(true); f.setFocusPainted(false); f.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
             f.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createLineBorder(activo ? C[1] : C[9], 1),
                     BorderFactory.createEmptyBorder(6, 14, 6, 14)));
@@ -286,7 +275,7 @@ public class PanelMisCitas {
                 btnCancelar.setBackground(C[2]);
                 btnCancelar.setForeground(temaOscuro ? new Color(80, 110, 150) : new Color(176, 200, 224));
                 btnCancelar.setBorderPainted(false); btnCancelar.setFocusPainted(false);
-                btnCancelar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                btnCancelar.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
                 btnCancelar.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         int confirm = JOptionPane.showConfirmDialog(panel,

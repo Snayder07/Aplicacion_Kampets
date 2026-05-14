@@ -273,7 +273,7 @@ public class RecuperacionContrasenaDialog extends JDialog {
         b.setForeground(Color.WHITE);
         b.setOpaque(true);
         b.setBorderPainted(false);
-        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        b.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
         return b;
     }
 
@@ -284,7 +284,7 @@ public class RecuperacionContrasenaDialog extends JDialog {
         b.setForeground(VERDE);
         b.setOpaque(true);
         b.setBorder(BorderFactory.createLineBorder(VERDE, 1));
-        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        b.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
         return b;
     }
 

@@ -11,6 +11,9 @@ public class Productos {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "foto_pro", columnDefinition = "BYTEA")
+    private byte[] foto;
+
     @Column(name = "nombre_pro", nullable = false, length = 100)
     private String nombre;
 
@@ -45,4 +48,7 @@ public class Productos {
 
     public Integer getStock() { return stock; }
     public void setStock(Integer stock) { this.stock = stock; }
+
+    public byte[] getFoto() { return foto; }
+    public void setFoto(byte[] foto) { this.foto = foto; }
 }

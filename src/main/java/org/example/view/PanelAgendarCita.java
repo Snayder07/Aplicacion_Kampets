@@ -66,7 +66,7 @@ public class PanelAgendarCita {
     private JButton btn(String t, Color bg, Color fg, boolean borde) {
         JButton b = new JButton(t); b.setFont(new Font("Arial", Font.PLAIN, 15));
         b.setBackground(bg); b.setForeground(fg); b.setOpaque(true);
-        b.setFocusPainted(false); b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        b.setFocusPainted(false); b.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
         if (borde) b.setBorder(BorderFactory.createLineBorder(fg, 1));
         else b.setBorderPainted(false);
         return b;
@@ -178,24 +178,13 @@ public class PanelAgendarCita {
 
         JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         topRight.setBackground(C[2]);
-        JButton btnTema = new JButton(temaOscuro ? "☀  Claro" : "🌙  Oscuro");
-        btnTema.setFont(new Font("Arial", Font.PLAIN, 13));
-        btnTema.setBackground(C[0]); btnTema.setForeground(C[6]); btnTema.setOpaque(true);
-        btnTema.setFocusPainted(false); btnTema.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnTema.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(C[9], 1), BorderFactory.createEmptyBorder(7, 14, 7, 14)));
-        btnTema.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                temaOscuro = !temaOscuro; Main.aplicarTemaGlobal(temaOscuro); construir();
-            }
-        });
         JButton btnVolver = btn("← Volver", C[0], C[1], true);
         btnVolver.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(C[9], 1), BorderFactory.createEmptyBorder(7, 14, 7, 14)));
         btnVolver.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("panelCliente"); }
         });
-        topRight.add(btnTema); topRight.add(btnVolver);
+        topRight.add(btnVolver);
         topbar.add(topLeft, BorderLayout.WEST); topbar.add(topRight, BorderLayout.EAST);
         contenido.add(topbar, BorderLayout.NORTH);
 
@@ -318,7 +307,7 @@ public class PanelAgendarCita {
         togDomicilio.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(C[9], 1),
                 BorderFactory.createEmptyBorder(6, 16, 6, 16)));
-        togDomicilio.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        togDomicilio.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
 
         domicilioTogglePanel.add(domTexto, BorderLayout.CENTER);
         domicilioTogglePanel.add(togDomicilio, BorderLayout.EAST);

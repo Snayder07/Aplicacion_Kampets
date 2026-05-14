@@ -61,7 +61,7 @@ public class PanelCliente {
         JButton btn = new JButton(texto);
         btn.setFont(new Font("Arial", Font.PLAIN, 15));
         btn.setBackground(fondo); btn.setForeground(textColor);
-        btn.setOpaque(true); btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setOpaque(true); btn.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
         btn.setFocusPainted(false);
         if (borde) btn.setBorder(BorderFactory.createLineBorder(textColor, 1));
         else btn.setBorderPainted(false);
@@ -228,18 +228,6 @@ public class PanelCliente {
         JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         topRight.setBackground(C[2]);
 
-        JButton btnTema = new JButton(temaOscuro ? "☀  Claro" : "🌙  Oscuro");
-        btnTema.setFont(new Font("Arial", Font.PLAIN, 13));
-        btnTema.setBackground(C[0]); btnTema.setForeground(C[6]); btnTema.setOpaque(true);
-        btnTema.setFocusPainted(false); btnTema.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnTema.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(C[9], 1), BorderFactory.createEmptyBorder(7, 14, 7, 14)));
-        btnTema.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                temaOscuro = !temaOscuro; Main.aplicarTemaGlobal(temaOscuro); construir();
-            }
-        });
-
         // ── Botón Mis mascotas ────────────────────────────
         JButton btnMascotas = crearBoton("Mis mascotas", C[4], C[1], true);
         btnMascotas.setFont(new Font("Arial", Font.PLAIN, 13));
@@ -257,7 +245,7 @@ public class PanelCliente {
             public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("agendarCita"); }
         });
 
-        topRight.add(btnTema); topRight.add(btnMascotas); topRight.add(btnAgendar);
+        topRight.add(btnMascotas); topRight.add(btnAgendar);
         topbar.add(topLeft, BorderLayout.WEST); topbar.add(topRight, BorderLayout.EAST);
         contenido.add(topbar, BorderLayout.NORTH);
 
@@ -367,7 +355,7 @@ public class PanelCliente {
                 JLabel cancelar = crearLabel("Cancelar cita", 11, Font.PLAIN,
                         temaOscuro ? new Color(80, 110, 150) : new Color(176, 200, 224));
                 cancelar.setHorizontalAlignment(SwingConstants.RIGHT);
-                cancelar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                cancelar.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
                 cancelar.addMouseListener(new java.awt.event.MouseAdapter() {
                     public void mouseClicked(java.awt.event.MouseEvent e) {
                         int conf = JOptionPane.showConfirmDialog(panel,
