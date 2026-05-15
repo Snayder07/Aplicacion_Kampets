@@ -1,8 +1,16 @@
 package org.example.view;
 
+import org.example.controller.InventarioController;
+import org.example.model.Productos;
+
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.math.BigDecimal;
+import java.util.List;
 
 public class PanelAlimentos {
     public JPanel panel;
@@ -145,78 +153,133 @@ public class PanelAlimentos {
         cuerpo.setBackground(C[0]);
         cuerpo.setBorder(BorderFactory.createEmptyBorder(24,28,28,28));
 
-        // Grid de productos
-        // { categoria, color badge, nombre, detalle, descripcion, precio, rating }
-        Object[][] productos = {
-            {"PERROS", new Color(59,130,246),  "Royal Canin Adulto",  "15 kg",  "Para perros adultos de razas medianas.",          "$185.000", "4.8"},
-            {"PERROS", new Color(59,130,246),  "Purina Pro Plan",     "3 kg",   "Alto contenido proteico para razas pequeñas.",    "$62.000",  "4.6"},
-            {"GATOS",  new Color(168,85,247),  "Whiskas Adulto",      "1.5 kg", "Nutricion completa para gatos adultos.",           "$28.000",  "4.5"},
-            {"GATOS",  new Color(168,85,247),  "Hill's Science Diet", "2 kg",   "Apoya la salud renal y urinaria.",                "$74.000",  "4.9"},
-            {"AVES",   new Color(34,197,94),   "Vitakraft Periquitos","500 g",  "Mezcla de semillas enriquecidas con vitaminas.",   "$18.000",  "4.4"},
-            {"PECES",  new Color(20,184,166),  "Tetra Goldfish",      "250 ml", "Alimento en escamas para peces de agua fria.",    "$22.000",  "4.3"},
+        // Cargar productos desde la base de datos
+        InventarioController ctrl = new InventarioController();
+        List<Productos> lista = ctrl.listarTodos();
+
+        // Paleta de colores para tipos de producto
+        Color[] paleta = {
+            new Color(59, 130, 246),   // azul
+            new Color(168, 85, 247),   // violeta
+            new Color(34, 197, 94),    // verde
+            new Color(20, 184, 166),   // teal
+            new Color(251, 146, 60),   // naranja
+            new Color(239, 68, 68),    // rojo
         };
 
-        JPanel grid = new JPanel(new GridLayout(2, 3, 16, 16));
+        final int TOTAL_SLOTS = 6;
+        int cols = 3;
+        int rows = TOTAL_SLOTS / cols;   // siempre 2 filas
+
+        JPanel grid = new JPanel(new GridLayout(rows, cols, 16, 16));
         grid.setBackground(C[0]);
 
-        for (Object[] p : productos) {
-            String  cat    = (String)  p[0];
-            Color   color  = (Color)   p[1];
-            String  nombre = (String)  p[2];
-            String  detalle= (String)  p[3];
-            String  desc   = (String)  p[4];
-            String  precio = (String)  p[5];
-            String  rating = (String)  p[6];
+        for (int idx = 0; idx < TOTAL_SLOTS; idx++) {
+            boolean tieneProducto = idx < lista.size();
+            Productos p  = tieneProducto ? lista.get(idx) : null;
+            Color    color = paleta[idx % paleta.length];
 
+            // ── TARJETA (con o sin producto) ─────────────────
             JPanel card = new JPanel(new BorderLayout(0, 10));
             card.setBackground(C[2]);
             card.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createMatteBorder(0, 4, 0, 0, color),
+                    BorderFactory.createMatteBorder(0, 4, 0, 0, tieneProducto ? color : C[8]),
                     BorderFactory.createCompoundBorder(
                             BorderFactory.createLineBorder(C[9], 1),
                             BorderFactory.createEmptyBorder(16, 16, 16, 16))));
 
-            // Badge categoría
+            if (!tieneProducto) {
+                // Slot vacío
+                JLabel ph = new JLabel("Sin producto", SwingConstants.CENTER);
+                ph.setFont(new Font("Arial", Font.PLAIN, 12));
+                ph.setForeground(C[7]);
+                card.add(ph, BorderLayout.CENTER);
+                grid.add(card);
+                continue;
+            }
+
+            // ── Datos ────────────────────────────────────────
+            String cat      = p.getTipo() != null && !p.getTipo().isEmpty() ? p.getTipo().toUpperCase() : "PRODUCTO";
+            String nombre   = p.getNombre() != null ? p.getNombre() : "Sin nombre";
+            String marca    = p.getMarca()  != null && !p.getMarca().isEmpty() ? p.getMarca() : "";
+            int    stockVal = p.getStock()  != null ? p.getStock() : 0;
+            BigDecimal precioVal = p.getPrecio() != null ? p.getPrecio() : BigDecimal.ZERO;
+            String precioStr = "$" + String.format("%,.0f", precioVal.doubleValue());
+
+            // ── BADGE ─────────────────────────────────────────
             JLabel badge = new JLabel(cat);
             badge.setFont(new Font("Arial", Font.BOLD, 10));
             badge.setForeground(color);
             badge.setBackground(new Color(color.getRed(), color.getGreen(), color.getBlue(), 30));
             badge.setOpaque(true);
             badge.setBorder(BorderFactory.createEmptyBorder(3, 8, 3, 8));
+            JPanel topWrap = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+            topWrap.setBackground(C[2]);
+            topWrap.add(badge);
+            card.add(topWrap, BorderLayout.NORTH);
 
-            JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-            top.setBackground(C[2]);
-            top.add(badge);
+            // ── CENTRO: info + foto ───────────────────────────
+            JPanel centro = new JPanel(new BorderLayout(0, 8));
+            centro.setBackground(C[2]);
 
-            // Info central
+            // Texto (nombre, marca)
             JPanel info = new JPanel();
             info.setLayout(new BoxLayout(info, BoxLayout.Y_AXIS));
             info.setBackground(C[2]);
-            info.setBorder(BorderFactory.createEmptyBorder(6, 0, 6, 0));
-
             JLabel lblNombre = lbl(nombre, 13, Font.BOLD, C[6]);
-            JLabel lblDetalle = lbl(detalle, 11, Font.PLAIN, C[7]);
-            JLabel lblDesc   = lbl(desc, 10, Font.PLAIN, C[11]);
             lblNombre.setBorder(BorderFactory.createEmptyBorder(0, 0, 4, 0));
-            lblDetalle.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
-
             info.add(lblNombre);
-            info.add(lblDetalle);
-            info.add(lblDesc);
+            if (!marca.isEmpty()) {
+                JLabel lblMarca = lbl(marca, 11, Font.PLAIN, C[7]);
+                info.add(lblMarca);
+            }
+            centro.add(info, BorderLayout.NORTH);
 
-            // Footer precio + rating
+            // Foto centrada
+            final BufferedImage[] imgHolder = {null};
+            if (p.getFoto() != null && p.getFoto().length > 0) {
+                try { imgHolder[0] = ImageIO.read(new ByteArrayInputStream(p.getFoto())); }
+                catch (Exception ignored) {}
+            }
+            final Color bg4 = C[4];
+            JPanel fotoPanel = new JPanel(new BorderLayout()) {
+                @Override protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    if (imgHolder[0] != null) {
+                        Graphics2D g2 = (Graphics2D) g;
+                        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                        g2.setRenderingHint(RenderingHints.KEY_RENDERING,     RenderingHints.VALUE_RENDER_QUALITY);
+                        int pw = getWidth(), ph2 = getHeight();
+                        int iw = imgHolder[0].getWidth(), ih = imgHolder[0].getHeight();
+                        double scale = Math.min((double) pw / iw, (double) ph2 / ih);
+                        int dw = (int)(iw * scale), dh = (int)(ih * scale);
+                        g2.drawImage(imgHolder[0], (pw-dw)/2, (ph2-dh)/2, dw, dh, this);
+                    }
+                }
+            };
+            fotoPanel.setBackground(bg4);
+            fotoPanel.setPreferredSize(new Dimension(0, 120));
+            centro.add(fotoPanel, BorderLayout.CENTER);
+
+            card.add(centro, BorderLayout.CENTER);
+
+            // ── FOOTER: precio | stock · disponible ───────────
             JPanel footer = new JPanel(new BorderLayout());
             footer.setBackground(C[2]);
             footer.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, C[9]));
-            footer.add(lbl(precio, 14, Font.BOLD, C[1]), BorderLayout.WEST);
 
-            JLabel lblRating = new JLabel("★ " + rating);
-            lblRating.setFont(new Font("Arial", Font.BOLD, 12));
-            lblRating.setForeground(new Color(234, 179, 8));
-            footer.add(lblRating, BorderLayout.EAST);
+            footer.add(lbl(precioStr, 14, Font.BOLD, C[1]), BorderLayout.WEST);
 
-            card.add(top,    BorderLayout.NORTH);
-            card.add(info,   BorderLayout.CENTER);
+            JPanel rightInfo = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+            rightInfo.setBackground(C[2]);
+            JLabel lblStk = lbl(stockVal + " uds", 10, Font.PLAIN, C[7]);
+            JLabel lblDisp = new JLabel(stockVal > 0 ? "● Disponible" : "● Agotado");
+            lblDisp.setFont(new Font("Arial", Font.BOLD, 10));
+            lblDisp.setForeground(stockVal > 0 ? new Color(34, 197, 94) : new Color(239, 68, 68));
+            rightInfo.add(lblStk);
+            rightInfo.add(lblDisp);
+            footer.add(rightInfo, BorderLayout.EAST);
+
             card.add(footer, BorderLayout.SOUTH);
             grid.add(card);
         }

@@ -32,7 +32,7 @@ public class Main {
     private static PanelAgendarCita     panelAgendarCita     = new PanelAgendarCita();
     private static PanelMisMascotas     panelMisMascotas     = new PanelMisMascotas();
 
-    public static void main(String[] args) {
+    public static void  main(String[] args) {
         contenedor.add(new Interfaz_Grafica_Kampets().panel, "login");
         contenedor.add(new CrearCuenta().panel,              "crearCuenta");
         contenedor.add(panelCliente.panel,                   "panelCliente");
