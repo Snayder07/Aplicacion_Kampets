@@ -104,6 +104,7 @@ public class Main {
             case "misCitas":       panelMisCitas.recargar();        expandirVentana(); break;
             case "misMascotas":    panelMisMascotas.recargar();     expandirVentana(); break;
             case "historial":      panelHistorial.recargar();       expandirVentana(); break;
+            case "alimentos":      panelAlimentos.recargar();       expandirVentana(); break;
             case "vacunas":        panelVacunas.recargar();         expandirVentana(); break;
             case "agendarCita":    panelAgendarCita.recargar();     expandirVentana(); break;
             default:               expandirVentana(); break;
