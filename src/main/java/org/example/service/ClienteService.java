@@ -20,6 +20,8 @@ public class ClienteService {
             throw new Exception("El correo es obligatorio.");
         if (contrasena == null || contrasena.trim().isEmpty())
             throw new Exception("La contraseña es obligatoria.");
+        if (contrasena.length() < 8)
+            throw new Exception("La contraseña debe tener al menos 8 caracteres.");
         if (!contrasena.equals(confirmar))
             throw new Exception("Las contraseñas no coinciden.");
         if (buscarPorCorreo(correo) != null)

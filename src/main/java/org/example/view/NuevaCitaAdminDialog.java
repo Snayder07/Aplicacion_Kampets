@@ -4,6 +4,7 @@ import com.toedter.calendar.JDateChooser;
 import org.example.model.*;
 import org.example.repository.*;
 import org.example.service.CitaService;
+import org.example.service.CorreoService;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -130,11 +131,11 @@ public class NuevaCitaAdminDialog extends JDialog {
         colHora.add(label("Hora *"));
         colHora.add(Box.createVerticalStrut(3));
         String[] horas = {
-            "Selecciona hora...",
-            "08:00","08:30","09:00","09:30",
-            "10:00","10:30","11:00","11:30",
-            "14:00","14:30","15:00","15:30",
-            "16:00","16:30"
+                "Selecciona hora...",
+                "08:00","08:30","09:00","09:30",
+                "10:00","10:30","11:00","11:30",
+                "14:00","14:30","15:00","15:30",
+                "16:00","16:30"
         };
         JComboBox<String> cbHora = new JComboBox<>(horas);
         cbHora.setFont(new Font("Arial", Font.PLAIN, 13));
@@ -255,21 +256,49 @@ public class NuevaCitaAdminDialog extends JDialog {
                 if (empleado == null)
                     throw new Exception("No hay empleados registrados. Registra un empleado primero.");
 
+                // ── Regla de cupo (mismo criterio que el cliente) ──
+                CitaService citaSvc = new CitaService();
+                long citasActivas = citaSvc.listarTodas().stream()
+                        .filter(c -> c.getEstadoCita() != EstadoCita.CANCELADA
+                                && c.getEstadoCita() != EstadoCita.COMPLETADA)
+                        .count();
+                boolean hayCupo = citasActivas < 10;
+                EstadoCita estadoFinal = hayCupo ? EstadoCita.CONFIRMADA : EstadoCita.PENDIENTE;
+
                 Citas cita = new Citas();
                 cita.setMascota(mascota);
                 cita.setEmpleado(empleado);
                 cita.setFechaCita(fecha);
                 cita.setHoraCita(hora);
-                cita.setEstadoCita(EstadoCita.CONFIRMADA);
+                cita.setEstadoCita(estadoFinal);
                 if (esDomicilio) cita.setDireccionDomicilio(direccion);
-                new CitaService().guardarCita(cita);
+                citaSvc.guardarCita(cita);
+
+                // Si hay cupo → enviar correo de confirmación al cliente
+                if (hayCupo && cliente.getCorreo() != null && !cliente.getCorreo().isEmpty()) {
+                    String cuerpoCorreo =
+                            "<div style='font-family:Arial,sans-serif;max-width:520px;margin:auto;background:#f0fdf4;border-radius:10px;padding:32px;'>" +
+                                    "<h2 style='color:#16a34a;'>✅ Cita Confirmada</h2>" +
+                                    "<p>Hola <b>" + cliente.getNombre() + "</b>, tu cita en <b>Kampets Veterinaria</b> fue confirmada.</p>" +
+                                    "<table style='width:100%;border-collapse:collapse;margin:16px 0;'>" +
+                                    "<tr><td style='padding:8px 12px;background:#dcfce7;color:#15803d;font-weight:bold;'>Mascota</td><td style='padding:8px 12px;'>" + nombreMascota + "</td></tr>" +
+                                    "<tr><td style='padding:8px 12px;background:#dcfce7;color:#15803d;font-weight:bold;'>Fecha</td><td style='padding:8px 12px;'>" + fecha + "</td></tr>" +
+                                    "<tr><td style='padding:8px 12px;background:#dcfce7;color:#15803d;font-weight:bold;'>Hora</td><td style='padding:8px 12px;'>" + hora + "</td></tr>" +
+                                    "</table>" +
+                                    "<p style='color:#6b7280;font-size:13px;'>Por favor preséntate puntualmente. 🐾</p></div>";
+                    try {
+                        CorreoService.enviarCorreoGeneral(cliente.getCorreo(), cliente.getNombre(), "Confirmación de cita - Kampets", cuerpoCorreo);
+                    } catch (Exception ignored) {}
+                }
 
                 guardado = true;
+                String estadoMsg = hayCupo ? "Confirmada" : "En lista de espera (sin cupo disponible)";
                 JOptionPane.showMessageDialog(this,
                         "Cita registrada.\n" +
-                        "Dueno: " + nombreDueno + "\n" +
-                        "Mascota: " + nombreMascota + "\n" +
-                        "Fecha: " + fecha + "  Hora: " + hora,
+                                "Dueño:  " + nombreDueno + "\n" +
+                                "Mascota: " + nombreMascota + "\n" +
+                                "Fecha:   " + fecha + "  Hora: " + hora + "\n" +
+                                "Estado:  " + estadoMsg,
                         "Listo", JOptionPane.INFORMATION_MESSAGE);
                 dispose();
 

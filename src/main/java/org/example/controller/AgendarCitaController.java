@@ -5,6 +5,7 @@ import org.example.model.Empleados;
 import org.example.model.EstadoCita;
 import org.example.model.Mascotas;
 import org.example.service.CitaService;
+import org.example.service.CorreoService;
 import org.example.service.EmpleadoService;
 import org.example.service.MascotaService;
 import org.example.model.Servicio;
@@ -17,6 +18,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class AgendarCitaController {
+
+    /** Máximo de citas activas antes de pasar nuevas a PENDIENTE */
+    private static final int LIMITE_CUPO = 10;
 
     private final CitaService     citaService     = new CitaService();
     private final MascotaService  mascotaService  = new MascotaService();
@@ -74,27 +78,63 @@ public class AgendarCitaController {
                 throw new Exception("Formato de hora inválido. Usa: HH:mm");
             }
 
+            // ── Regla de cupo: si hay 10+ citas activas → PENDIENTE ──
+            List<Citas> citasActivas = citaService.listarTodas().stream()
+                    .filter(c -> c.getEstadoCita() != EstadoCita.CANCELADA
+                            && c.getEstadoCita() != EstadoCita.COMPLETADA)
+                    .collect(java.util.stream.Collectors.toList());
+            boolean hayCupo = citasActivas.size() < LIMITE_CUPO;
+            EstadoCita estadoNuevo = hayCupo ? EstadoCita.CONFIRMADA : EstadoCita.PENDIENTE;
+
             Citas cita = new Citas();
             cita.setMascota(mascota);
             cita.setEmpleado(empleado);
             cita.setFechaCita(fecha);
             cita.setHoraCita(hora);
-            cita.setEstadoCita(EstadoCita.CONFIRMADA);
+            cita.setEstadoCita(estadoNuevo);
             if (direccionDomicilio != null && !direccionDomicilio.trim().isEmpty())
                 cita.setDireccionDomicilio(direccionDomicilio.trim());
 
             citaService.guardarCita(cita);
 
-            String msg = "Cita agendada exitosamente!\n\n"
-                    + "Mascota:     " + mascota.getNombre()  + "\n"
-                    + "Veterinario: " + empleado.getNombre() + "\n"
-                    + "Fecha:       " + fecha                + "\n"
-                    + "Hora:        " + hora;
-            if (direccionDomicilio != null && !direccionDomicilio.trim().isEmpty())
-                msg += "\nDomicilio:   " + direccionDomicilio.trim();
-
-            JOptionPane.showMessageDialog(panel, msg, "Cita confirmada",
-                    JOptionPane.INFORMATION_MESSAGE);
+            if (hayCupo) {
+                // Hay cupo → confirmada de una vez, enviar correo
+                String nombreCliente = mascota.getCliente() != null ? mascota.getCliente().getNombre() : "cliente";
+                String correoCliente = mascota.getCliente() != null ? mascota.getCliente().getCorreo() : null;
+                if (correoCliente != null && !correoCliente.isEmpty()) {
+                    String cuerpo =
+                            "<div style='font-family:Arial,sans-serif;max-width:520px;margin:auto;background:#f0fdf4;border-radius:10px;padding:32px;'>" +
+                                    "<h2 style='color:#16a34a;'>✅ Cita Confirmada</h2>" +
+                                    "<p style='color:#374151;font-size:15px;'>Hola <b>" + nombreCliente + "</b>, tu cita en <b>Kampets Veterinaria</b> ha sido <b>confirmada</b>.</p>" +
+                                    "<table style='width:100%;border-collapse:collapse;margin:20px 0;'>" +
+                                    "<tr><td style='padding:10px 14px;background:#dcfce7;color:#15803d;font-weight:bold;'>Mascota</td><td style='padding:10px 14px;background:#f0fdf4;'>" + mascota.getNombre() + "</td></tr>" +
+                                    "<tr><td style='padding:10px 14px;background:#dcfce7;color:#15803d;font-weight:bold;'>Fecha</td><td style='padding:10px 14px;background:#f0fdf4;'>" + fecha + "</td></tr>" +
+                                    "<tr><td style='padding:10px 14px;background:#dcfce7;color:#15803d;font-weight:bold;'>Hora</td><td style='padding:10px 14px;background:#f0fdf4;'>" + hora + "</td></tr>" +
+                                    "</table>" +
+                                    "<p style='color:#6b7280;font-size:13px;'>Por favor preséntate puntualmente.</p>" +
+                                    "<p style='color:#16a34a;font-weight:bold;'>¡Hasta pronto! 🐾</p></div>";
+                    try {
+                        CorreoService.enviarCorreoGeneral(correoCliente, nombreCliente, "Confirmación de cita - Kampets", cuerpo);
+                    } catch (Exception ignored) {}
+                }
+                String msg = "¡Cita agendada y confirmada!\n\n"
+                        + "Mascota:     " + mascota.getNombre()  + "\n"
+                        + "Veterinario: " + empleado.getNombre() + "\n"
+                        + "Fecha:       " + fecha                + "\n"
+                        + "Hora:        " + hora;
+                if (direccionDomicilio != null && !direccionDomicilio.trim().isEmpty())
+                    msg += "\nDomicilio:   " + direccionDomicilio.trim();
+                JOptionPane.showMessageDialog(panel, msg, "Cita confirmada", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                // Sin cupo → queda en espera, el admin la confirmará
+                String msg = "Tu cita fue registrada en lista de espera.\n\n"
+                        + "En este momento tenemos el horario lleno.\n"
+                        + "Un administrador la confirmará pronto y recibirás un correo.\n\n"
+                        + "Mascota: " + mascota.getNombre() + "\n"
+                        + "Fecha:   " + fecha + "\n"
+                        + "Hora:    " + hora;
+                JOptionPane.showMessageDialog(panel, msg, "En lista de espera", JOptionPane.INFORMATION_MESSAGE);
+            }
             return true;
 
         } catch (Exception e) {

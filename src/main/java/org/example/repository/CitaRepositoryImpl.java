@@ -84,4 +84,19 @@ public class CitaRepositoryImpl implements CitaRepository {
         em.getTransaction().commit();
         em.close();
     }
+
+    /**
+     * Cambia solo el estado de una cita sin tocar los demas campos.
+     */
+    public void actualizarEstado(Integer id, org.example.model.EstadoCita nuevoEstado) {
+        EntityManager em = JPAUtil.getEntityManager();
+        em.getTransaction().begin();
+        Citas cita = em.find(Citas.class, id);
+        if (cita != null) {
+            cita.setEstadoCita(nuevoEstado);
+            em.merge(cita);
+        }
+        em.getTransaction().commit();
+        em.close();
+    }
 }

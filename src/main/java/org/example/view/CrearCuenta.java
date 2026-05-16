@@ -117,11 +117,51 @@ public class CrearCuenta {
 
         passwordField = new JPasswordField();
         passwordField.setFont(new Font("Arial", Font.PLAIN, 13));
-        passwordField.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(180, 220, 200), 1),
-                BorderFactory.createEmptyBorder(4, 8, 4, 8)));
-        passwordField.setBounds(40, 332, 160, 35);
-        panel.add(passwordField);
+        passwordField.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+        passwordField.setOpaque(false);
+
+        JButton btnOjoPass = new JButton() {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                boolean vis = Boolean.TRUE.equals(getClientProperty("visible"));
+                g2.setColor(vis ? new Color(29,158,117) : new Color(130,130,130));
+                int cx=getWidth()/2, cy=getHeight()/2;
+                g2.setStroke(new BasicStroke(1.8f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                g2.drawOval(cx-7, cy-4, 14, 9);
+                g2.fillOval(cx-2, cy-2, 5, 5);
+                if (!vis) {
+                    g2.setStroke(new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                    g2.drawLine(cx-8, cy+5, cx+8, cy-5);
+                }
+                g2.dispose();
+            }
+        };
+        btnOjoPass.putClientProperty("visible", Boolean.FALSE);
+        btnOjoPass.setText("");
+        btnOjoPass.setOpaque(false); btnOjoPass.setContentAreaFilled(false); btnOjoPass.setBorderPainted(false); btnOjoPass.setFocusPainted(false);
+        btnOjoPass.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnOjoPass.addActionListener(e -> {
+            boolean vis = Boolean.TRUE.equals(btnOjoPass.getClientProperty("visible"));
+            if (!vis) { passwordField.setEchoChar((char)0); btnOjoPass.putClientProperty("visible", Boolean.TRUE); }
+            else { passwordField.setEchoChar('\u2022'); btnOjoPass.putClientProperty("visible", Boolean.FALSE); }
+            btnOjoPass.repaint();
+        });
+
+        JPanel wrapPass = new JPanel(new BorderLayout()) {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setColor(Color.WHITE); g2.fillRoundRect(0,0,getWidth(),getHeight(),4,4);
+                g2.setColor(new Color(180,220,200)); g2.drawRoundRect(0,0,getWidth()-1,getHeight()-1,4,4);
+                g2.dispose();
+            }
+        };
+        wrapPass.setOpaque(false);
+        wrapPass.add(passwordField, BorderLayout.CENTER);
+        wrapPass.add(btnOjoPass, BorderLayout.EAST);
+        btnOjoPass.setPreferredSize(new Dimension(32, 35));
+        wrapPass.setBounds(40, 332, 160, 35);
+        panel.add(wrapPass);
 
         // Confirmar contraseña
         JLabel labelConfirmar = new JLabel("Confirmar contraseña");
@@ -132,11 +172,51 @@ public class CrearCuenta {
 
         confirmarPasswordField = new JPasswordField();
         confirmarPasswordField.setFont(new Font("Arial", Font.PLAIN, 13));
-        confirmarPasswordField.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(180, 220, 200), 1),
-                BorderFactory.createEmptyBorder(4, 8, 4, 8)));
-        confirmarPasswordField.setBounds(220, 332, 160, 35);
-        panel.add(confirmarPasswordField);
+        confirmarPasswordField.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+        confirmarPasswordField.setOpaque(false);
+
+        JButton btnOjoConfirmar = new JButton() {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                boolean vis = Boolean.TRUE.equals(getClientProperty("visible"));
+                g2.setColor(vis ? new Color(29,158,117) : new Color(130,130,130));
+                int cx=getWidth()/2, cy=getHeight()/2;
+                g2.setStroke(new BasicStroke(1.8f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                g2.drawOval(cx-7, cy-4, 14, 9);
+                g2.fillOval(cx-2, cy-2, 5, 5);
+                if (!vis) {
+                    g2.setStroke(new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                    g2.drawLine(cx-8, cy+5, cx+8, cy-5);
+                }
+                g2.dispose();
+            }
+        };
+        btnOjoConfirmar.putClientProperty("visible", Boolean.FALSE);
+        btnOjoConfirmar.setText("");
+        btnOjoConfirmar.setOpaque(false); btnOjoConfirmar.setContentAreaFilled(false); btnOjoConfirmar.setBorderPainted(false); btnOjoConfirmar.setFocusPainted(false);
+        btnOjoConfirmar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnOjoConfirmar.addActionListener(e -> {
+            boolean vis = Boolean.TRUE.equals(btnOjoConfirmar.getClientProperty("visible"));
+            if (!vis) { confirmarPasswordField.setEchoChar((char)0); btnOjoConfirmar.putClientProperty("visible", Boolean.TRUE); }
+            else { confirmarPasswordField.setEchoChar('\u2022'); btnOjoConfirmar.putClientProperty("visible", Boolean.FALSE); }
+            btnOjoConfirmar.repaint();
+        });
+
+        JPanel wrapConfirmar = new JPanel(new BorderLayout()) {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setColor(Color.WHITE); g2.fillRoundRect(0,0,getWidth(),getHeight(),4,4);
+                g2.setColor(new Color(180,220,200)); g2.drawRoundRect(0,0,getWidth()-1,getHeight()-1,4,4);
+                g2.dispose();
+            }
+        };
+        wrapConfirmar.setOpaque(false);
+        wrapConfirmar.add(confirmarPasswordField, BorderLayout.CENTER);
+        wrapConfirmar.add(btnOjoConfirmar, BorderLayout.EAST);
+        btnOjoConfirmar.setPreferredSize(new Dimension(32, 35));
+        wrapConfirmar.setBounds(220, 332, 160, 35);
+        panel.add(wrapConfirmar);
 
         // Botón Crear cuenta
         registrarButton = new JButton("Crear cuenta");
@@ -169,6 +249,13 @@ public class CrearCuenta {
                 String telefono  = telefonoField.getText().trim();
                 String pass      = new String(passwordField.getPassword());
                 String confirmar = new String(confirmarPasswordField.getPassword());
+
+                if (pass.length() < 8) {
+                    JOptionPane.showMessageDialog(panel,
+                            "La contraseña debe tener al menos 8 caracteres.",
+                            "Contraseña muy corta", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
 
                 // ← Llama al RegistroController que guarda en BD
                 registroController.registrar(
