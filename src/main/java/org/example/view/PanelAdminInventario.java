@@ -102,11 +102,10 @@ public class PanelAdminInventario {
         }
         body.add(stats,BorderLayout.NORTH);
 
-        // ── Tabla con foto + eliminar ─────────────────────
-        // Columnas: Foto | Producto | Tipo | Marca | Precio | Stock | Estado | Eliminar
-        String[] cols = {"Foto","Producto","Tipo","Marca","Precio","Stock","Estado","Eliminar"};
+        // ── Tabla: Foto | Producto | Tipo | Marca | Precio | Stock | Estado | Editar | Eliminar
+        String[] cols = {"Foto","Producto","Tipo","Marca","Precio","Stock","Estado","Editar","Eliminar"};
 
-        Object[][] datos = new Object[lista.size()][8];
+        Object[][] datos = new Object[lista.size()][9];
         for (int i = 0; i < lista.size(); i++) {
             Productos p = lista.get(i);
             String nombre  = p.getNombre() != null ? p.getNombre() : "—";
@@ -118,12 +117,11 @@ public class PanelAdminInventario {
             if      (p.getStock() == null || p.getStock() == 0) estado = "Sin stock";
             else if (p.getStock() < 10)                         estado = "Stock bajo";
             else                                                 estado = "OK";
-            // Foto: guardamos los bytes para el renderer
-            datos[i] = new Object[]{p.getFoto(), nombre, tipo, marca, precio, stock, estado, "Eliminar"};
+            datos[i] = new Object[]{p.getFoto(), nombre, tipo, marca, precio, stock, estado, "Editar", "Eliminar"};
         }
 
         DefaultTableModel modelo = new DefaultTableModel(datos, cols) {
-            public boolean isCellEditable(int r, int cc) { return cc == 7; } // solo col Eliminar
+            public boolean isCellEditable(int r, int cc) { return cc == 7 || cc == 8; }
             public Class<?> getColumnClass(int col) {
                 if (col == 0) return byte[].class;
                 return String.class;
@@ -141,7 +139,7 @@ public class PanelAdminInventario {
         th.setReorderingAllowed(false); th.setPreferredSize(new Dimension(0,36));
 
         // Anchos
-        int[] anchos = {52, 180, 100, 110, 100, 70, 100, 90};
+        int[] anchos = {52, 170, 90, 100, 90, 60, 90, 75, 85};
         for (int i = 0; i < anchos.length; i++)
             tabla.getColumnModel().getColumn(i).setPreferredWidth(anchos[i]);
 
@@ -184,8 +182,40 @@ public class PanelAdminInventario {
             }
         });
 
-        // ── Renderer + Editor: Eliminar (col 7) ───────────
+        // ── Renderer + Editor: Editar (col 7) ────────────
         tabla.getColumnModel().getColumn(7).setCellRenderer(new TableCellRenderer() {
+            public Component getTableCellRendererComponent(JTable t, Object v, boolean s, boolean f, int r, int col) {
+                JButton btn = new JButton("Editar");
+                btn.setFont(new Font("Arial", Font.BOLD, 11));
+                btn.setBackground(new Color(37, 99, 235));
+                btn.setForeground(Color.WHITE);
+                btn.setOpaque(true); btn.setBorderPainted(false);
+                btn.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+                return btn;
+            }
+        });
+        tabla.getColumnModel().getColumn(7).setCellEditor(new DefaultCellEditor(new JCheckBox()) {
+            private final JButton btn = new JButton("Editar");
+            {
+                btn.setFont(new Font("Arial", Font.BOLD, 11));
+                btn.setBackground(new Color(37, 99, 235));
+                btn.setForeground(Color.WHITE);
+                btn.setOpaque(true); btn.setBorderPainted(false);
+                btn.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+                btn.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
+                btn.addActionListener(e -> {
+                    int row = tabla.getSelectedRow();
+                    if (row < 0) return;
+                    fireEditingStopped();
+                    mostrarFormEditar(lista.get(row));
+                });
+            }
+            public Component getTableCellEditorComponent(JTable t, Object v, boolean s, int r, int col) { return btn; }
+            public Object getCellEditorValue() { return "Editar"; }
+        });
+
+        // ── Renderer + Editor: Eliminar (col 8) ───────────
+        tabla.getColumnModel().getColumn(8).setCellRenderer(new TableCellRenderer() {
             public Component getTableCellRendererComponent(JTable t, Object v, boolean s, boolean f, int r, int col) {
                 JButton btn = new JButton(" Eliminar");
                 btn.setFont(new Font("Arial", Font.BOLD, 11));
@@ -197,8 +227,8 @@ public class PanelAdminInventario {
             }
         });
 
-        tabla.getColumnModel().getColumn(7).setCellEditor(new DefaultCellEditor(new JCheckBox()) {
-            private JButton btn = new JButton(" Eliminar");
+        tabla.getColumnModel().getColumn(8).setCellEditor(new DefaultCellEditor(new JCheckBox()) {
+            private final JButton btn = new JButton(" Eliminar");
             {
                 btn.setFont(new Font("Arial", Font.BOLD, 11));
                 btn.setBackground(new Color(220, 38, 38));
@@ -416,6 +446,158 @@ public class PanelAdminInventario {
                 BorderFactory.createLineBorder(new Color(187,224,200),1),
                 BorderFactory.createEmptyBorder(4,10,4,10)));
         return tf;
+    }
+
+    // ── Formulario editar producto ────────────────────────
+    private void mostrarFormEditar(Productos prod) {
+        JDialog dlg = new JDialog();
+        dlg.setTitle("Editar producto");
+        dlg.setModal(true);
+        dlg.setResizable(false);
+        dlg.setLocationRelativeTo(panel);
+
+        JPanel root = new JPanel();
+        root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
+        root.setBackground(new Color(240,253,244));
+        root.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
+
+        Color verde = new Color(22,101,52);
+        Color gris  = new Color(100,116,139);
+        Color borde = new Color(187,224,200);
+
+        JLabel tit = new JLabel("Editar: " + prod.getNombre());
+        tit.setFont(new Font("Arial",Font.BOLD,16)); tit.setForeground(verde);
+        tit.setAlignmentX(Component.LEFT_ALIGNMENT); root.add(tit);
+        root.add(Box.createVerticalStrut(16));
+
+        JTextField tfNombre = tf(); tfNombre.setText(prod.getNombre() != null ? prod.getNombre() : "");
+        JTextField tfTipo   = tf(); tfTipo.setText(prod.getTipo()    != null ? prod.getTipo()    : "");
+        JTextField tfMarca  = tf(); tfMarca.setText(prod.getMarca()  != null ? prod.getMarca()   : "");
+        JTextField tfPrecio = tf(); tfPrecio.setText(prod.getPrecio()!= null ? prod.getPrecio().toPlainString() : "");
+        JTextField tfStock  = tf(); tfStock.setText(prod.getStock()  != null ? String.valueOf(prod.getStock()) : "");
+
+        root.add(campo(root, "Nombre *", tfNombre, gris, borde)); root.add(Box.createVerticalStrut(8));
+        root.add(campo(root, "Tipo",     tfTipo,   gris, borde)); root.add(Box.createVerticalStrut(8));
+        root.add(campo(root, "Marca",    tfMarca,  gris, borde)); root.add(Box.createVerticalStrut(8));
+        root.add(campo(root, "Precio *", tfPrecio, gris, borde)); root.add(Box.createVerticalStrut(8));
+        root.add(campo(root, "Stock *",  tfStock,  gris, borde)); root.add(Box.createVerticalStrut(14));
+
+        // Foto
+        JLabel lblFoto = new JLabel("Foto del producto (dejar vacío para conservar la actual)");
+        lblFoto.setFont(new Font("Arial",Font.PLAIN,12));
+        lblFoto.setForeground(gris); lblFoto.setAlignmentX(Component.LEFT_ALIGNMENT);
+        root.add(lblFoto); root.add(Box.createVerticalStrut(6));
+
+        JPanel fotoPanel = new JPanel(new BorderLayout(10,0));
+        fotoPanel.setBackground(new Color(240,253,244));
+        fotoPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        fotoPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
+
+        JLabel previewFoto = new JLabel();
+        previewFoto.setPreferredSize(new Dimension(70,70));
+        previewFoto.setHorizontalAlignment(SwingConstants.CENTER);
+        previewFoto.setOpaque(true);
+        previewFoto.setBackground(Color.WHITE);
+        previewFoto.setBorder(BorderFactory.createLineBorder(borde,1));
+
+        // Mostrar foto actual si existe
+        final byte[][] fotoBytes = {prod.getFoto()};
+        if (prod.getFoto() != null && prod.getFoto().length > 0) {
+            try {
+                BufferedImage img = ImageIO.read(new ByteArrayInputStream(prod.getFoto()));
+                if (img != null) {
+                    previewFoto.setIcon(new ImageIcon(img.getScaledInstance(66,66,Image.SCALE_SMOOTH)));
+                }
+            } catch (Exception ignored) {}
+        } else {
+            previewFoto.setText("Sin foto");
+            previewFoto.setFont(new Font("Arial",Font.PLAIN,10));
+            previewFoto.setForeground(gris);
+        }
+
+        JButton btnFoto = new JButton("Cambiar imagen");
+        btnFoto.setFont(new Font("Arial",Font.PLAIN,12));
+        btnFoto.setBackground(Color.WHITE); btnFoto.setForeground(verde);
+        btnFoto.setBorder(BorderFactory.createLineBorder(verde,1));
+        btnFoto.setFocusPainted(false);
+        btnFoto.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
+        btnFoto.addActionListener(e -> {
+            JFileChooser fc = new JFileChooser();
+            fc.setDialogTitle("Seleccionar foto");
+            fc.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                    "Imagenes (jpg, png, gif)", "jpg","jpeg","png","gif","bmp"));
+            if (fc.showOpenDialog(dlg) == JFileChooser.APPROVE_OPTION) {
+                try {
+                    fotoBytes[0] = Files.readAllBytes(fc.getSelectedFile().toPath());
+                    BufferedImage img = ImageIO.read(fc.getSelectedFile());
+                    if (img != null) {
+                        previewFoto.setIcon(new ImageIcon(img.getScaledInstance(66,66,Image.SCALE_SMOOTH)));
+                        previewFoto.setText("");
+                    }
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(dlg,"No se pudo cargar la imagen.","Error",JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        JPanel fotoDer = new JPanel();
+        fotoDer.setLayout(new BoxLayout(fotoDer, BoxLayout.Y_AXIS));
+        fotoDer.setBackground(new Color(240,253,244));
+        fotoDer.add(btnFoto);
+        fotoDer.add(Box.createVerticalStrut(4));
+        JLabel hint = new JLabel("JPG, PNG, GIF — conserva la actual si no cambias");
+        hint.setFont(new Font("Arial",Font.PLAIN,10)); hint.setForeground(gris);
+        fotoDer.add(hint);
+
+        fotoPanel.add(previewFoto, BorderLayout.WEST);
+        fotoPanel.add(fotoDer,     BorderLayout.CENTER);
+        root.add(fotoPanel);
+        root.add(Box.createVerticalStrut(20));
+
+        JPanel bots = new JPanel(new GridLayout(1,2,10,0));
+        bots.setBackground(new Color(240,253,244));
+        bots.setAlignmentX(Component.LEFT_ALIGNMENT);
+        bots.setMaximumSize(new Dimension(Integer.MAX_VALUE,40));
+
+        JButton btnCancelar = new JButton("Cancelar");
+        btnCancelar.setFont(new Font("Arial",Font.PLAIN,13));
+        btnCancelar.setBackground(Color.WHITE); btnCancelar.setForeground(verde);
+        btnCancelar.setBorder(BorderFactory.createLineBorder(verde,1));
+        btnCancelar.setFocusPainted(false);
+        btnCancelar.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
+        btnCancelar.addActionListener(e -> dlg.dispose());
+
+        JButton btnGuardar = new JButton("Guardar cambios");
+        btnGuardar.setFont(new Font("Arial",Font.BOLD,13));
+        btnGuardar.setBackground(verde); btnGuardar.setForeground(Color.WHITE);
+        btnGuardar.setOpaque(true); btnGuardar.setBorderPainted(false);
+        btnGuardar.setFocusPainted(false);
+        btnGuardar.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
+        btnGuardar.addActionListener(e -> {
+            try {
+                String nombre = tfNombre.getText().trim();
+                if (nombre.isEmpty()) { JOptionPane.showMessageDialog(dlg,"El nombre es obligatorio.","Error",JOptionPane.ERROR_MESSAGE); return; }
+                prod.setNombre(nombre);
+                prod.setTipo(tfTipo.getText().trim().isEmpty()  ? null : tfTipo.getText().trim());
+                prod.setMarca(tfMarca.getText().trim().isEmpty() ? null : tfMarca.getText().trim());
+                prod.setPrecio(new java.math.BigDecimal(tfPrecio.getText().trim()));
+                prod.setStock(Integer.parseInt(tfStock.getText().trim()));
+                prod.setFoto(fotoBytes[0]);
+                boolean ok = ctrl.actualizarProducto(prod, panel);
+                if (ok) { dlg.dispose(); recargar(); }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(dlg,"Precio y stock deben ser números válidos.","Error",JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        bots.add(btnCancelar); bots.add(btnGuardar);
+        root.add(bots);
+
+        dlg.add(root);
+        dlg.pack();
+        dlg.setMinimumSize(new Dimension(400, dlg.getHeight()));
+        dlg.setLocationRelativeTo(panel);
+        dlg.setVisible(true);
     }
 
     private void estilizarTema(JButton b){

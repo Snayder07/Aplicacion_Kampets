@@ -39,4 +39,15 @@ public class InventarioController {
             JOptionPane.showMessageDialog(panel, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    public boolean actualizarProducto(Productos producto, JPanel panel) {
+        try {
+            productoService.actualizar(producto);
+            JOptionPane.showMessageDialog(panel, "Producto actualizado exitosamente.");
+            return true;
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(panel, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+    }
 }

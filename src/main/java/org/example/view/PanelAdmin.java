@@ -102,14 +102,14 @@ public class PanelAdmin {
         JPanel der = new JPanel(new FlowLayout(FlowLayout.RIGHT,10,0));
         der.setBackground(C[2]);
 
-        JButton btnExportar = btn("⬇  Exportar reporte", C[2], C[1]);
+        JButton btnExportar = btn(" Exportar reporte", C[2], C[1]);
         btnExportar.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(C[9],1), BorderFactory.createEmptyBorder(8,16,8,16)));
         btnExportar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { exportarReporte(); }
         });
 
-        JButton btnNuevo = btn("+ Nuevo admin", new Color(22,163,74), Color.WHITE);
+        JButton btnNuevo = btn(" Nuevo admin", new Color(22,163,74), Color.WHITE);
         btnNuevo.setBorder(BorderFactory.createEmptyBorder(9,18,9,18));
         btnNuevo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { mostrarFormularioNuevoAdmin(); }
@@ -228,7 +228,7 @@ public class PanelAdmin {
                 try {
                     empleadoService.registrarAdmin(nombre, apellido, correo, pass, cargo);
                     JOptionPane.showMessageDialog(dlg,
-                            "✅ Administrador registrado exitosamente.\n\nCorreo: " + correo,
+                            " Administrador registrado exitosamente.\n\nCorreo: " + correo,
                             "Éxito", JOptionPane.INFORMATION_MESSAGE);
                     dlg.dispose();
                 } catch (Exception ex) {
@@ -436,9 +436,7 @@ public class PanelAdmin {
         }).count();
 
         try (PrintWriter pw = new PrintWriter(new FileWriter(chooser.getSelectedFile()))) {
-            pw.println("========================================");
             pw.println("       REPORTE KAMPETS VETERINARIA      ");
-            pw.println("========================================");
             pw.println("Fecha: " + LocalDate.now());
             pw.println(); pw.println("ESTADÍSTICAS DEL DÍA");
             pw.println("  Citas hoy:           " + citasHoy.size());
@@ -456,9 +454,9 @@ public class PanelAdmin {
                 }
                 pw.println();
             }
-            pw.println("========================================");
+
             pw.println("  Generado por Kampets · Sistema interno");
-            pw.println("========================================");
+
             JOptionPane.showMessageDialog(panel,"Reporte exportado:\n"+chooser.getSelectedFile().getAbsolutePath(),"Listo",JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(panel,"Error: "+ex.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);

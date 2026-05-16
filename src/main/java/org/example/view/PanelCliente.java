@@ -2,6 +2,8 @@ package org.example.view;
 
 import org.example.controller.CitaAdminController;
 import org.example.model.Citas;
+import org.example.model.Cliente;
+import org.example.repository.ClienteRepositoryImpl;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -245,7 +247,13 @@ public class PanelCliente {
             public void actionPerformed(ActionEvent e) { Main.cambiarPantalla("agendarCita"); }
         });
 
-        topRight.add(btnMascotas); topRight.add(btnAgendar);
+        JButton btnEditar = crearBoton("Editar perfil", C[4], C[1], true);
+        btnEditar.setFont(new Font("Arial", Font.PLAIN, 13));
+        btnEditar.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(C[9], 1), BorderFactory.createEmptyBorder(7, 14, 7, 14)));
+        btnEditar.addActionListener(e -> mostrarFormEditarPerfil());
+
+        topRight.add(btnEditar); topRight.add(btnMascotas); topRight.add(btnAgendar);
         topbar.add(topLeft, BorderLayout.WEST); topbar.add(topRight, BorderLayout.EAST);
         contenido.add(topbar, BorderLayout.NORTH);
 
@@ -382,5 +390,176 @@ public class PanelCliente {
         outerScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         contenido.add(outerScroll, BorderLayout.CENTER);
         return contenido;
+    }
+
+    // ── Formulario editar perfil del cliente ─────────────────
+    private void mostrarFormEditarPerfil() {
+        Cliente cli = Main.clienteActual;
+        if (cli == null) return;
+
+        JDialog dlg = new JDialog(Main.frame, "Editar perfil", true);
+        dlg.setResizable(false);
+        dlg.setLocationRelativeTo(panel);
+
+        Color azul   = C[1];
+        Color fondo  = new Color(240, 246, 252);
+        Color gris   = new Color(100, 116, 139);
+        Color borde  = new Color(208, 228, 244);
+
+        JPanel root = new JPanel();
+        root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
+        root.setBackground(fondo);
+        root.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
+
+        JLabel tit = new JLabel("Editar informacion personal");
+        tit.setFont(new Font("Arial", Font.BOLD, 16));
+        tit.setForeground(azul);
+        tit.setAlignmentX(Component.LEFT_ALIGNMENT);
+        root.add(tit);
+        root.add(Box.createVerticalStrut(6));
+
+        JLabel sub = new JLabel("Correo: " + (cli.getCorreo() != null ? cli.getCorreo() : "—"));
+        sub.setFont(new Font("Arial", Font.PLAIN, 12));
+        sub.setForeground(gris);
+        sub.setAlignmentX(Component.LEFT_ALIGNMENT);
+        root.add(sub);
+        root.add(Box.createVerticalStrut(18));
+
+        // Campos editables
+        JTextField tfNombre    = campo("Nombre completo *", cli.getNombre()   != null ? cli.getNombre()   : "", root, gris, borde);
+        JTextField tfTelefono  = campo("Telefono",          cli.getTelefono() != null ? cli.getTelefono() : "", root, gris, borde);
+        JTextField tfDireccion = campo("Direccion",         cli.getDireccion()!= null ? cli.getDireccion(): "", root, gris, borde);
+
+        // Separador para contraseña
+        root.add(Box.createVerticalStrut(14));
+        JSeparator sep = new JSeparator();
+        sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
+        sep.setForeground(borde);
+        sep.setAlignmentX(Component.LEFT_ALIGNMENT);
+        root.add(sep);
+        root.add(Box.createVerticalStrut(12));
+
+        JLabel lblPass = new JLabel("Cambiar contrasena (opcional)");
+        lblPass.setFont(new Font("Arial", Font.BOLD, 12));
+        lblPass.setForeground(azul);
+        lblPass.setAlignmentX(Component.LEFT_ALIGNMENT);
+        root.add(lblPass);
+        root.add(Box.createVerticalStrut(8));
+
+        JPasswordField tfPassActual = passField("Contrasena actual", root, gris, borde);
+        JPasswordField tfPassNueva  = passField("Nueva contrasena",  root, gris, borde);
+        JPasswordField tfPassConf   = passField("Confirmar nueva contrasena", root, gris, borde);
+
+        root.add(Box.createVerticalStrut(20));
+
+        // Botones
+        JPanel bots = new JPanel(new GridLayout(1, 2, 12, 0));
+        bots.setBackground(fondo);
+        bots.setAlignmentX(Component.LEFT_ALIGNMENT);
+        bots.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+
+        JButton btnCancelar = new JButton("Cancelar");
+        btnCancelar.setFont(new Font("Arial", Font.PLAIN, 13));
+        btnCancelar.setBackground(Color.WHITE); btnCancelar.setForeground(azul);
+        btnCancelar.setBorder(BorderFactory.createLineBorder(azul, 1));
+        btnCancelar.setFocusPainted(false);
+        btnCancelar.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
+        btnCancelar.addActionListener(e -> dlg.dispose());
+
+        JButton btnGuardar = new JButton("Guardar cambios");
+        btnGuardar.setFont(new Font("Arial", Font.BOLD, 13));
+        btnGuardar.setBackground(azul); btnGuardar.setForeground(Color.WHITE);
+        btnGuardar.setOpaque(true); btnGuardar.setBorderPainted(false);
+        btnGuardar.setFocusPainted(false);
+        btnGuardar.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
+        btnGuardar.addActionListener(e -> {
+            String nombre = tfNombre.getText().trim();
+            if (nombre.isEmpty()) {
+                JOptionPane.showMessageDialog(dlg, "El nombre es obligatorio.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Validar cambio de contrasena si llenaron el campo
+            String passActual = new String(tfPassActual.getPassword()).trim();
+            String passNueva  = new String(tfPassNueva.getPassword()).trim();
+            String passConf   = new String(tfPassConf.getPassword()).trim();
+
+            if (!passNueva.isEmpty() || !passActual.isEmpty()) {
+                if (!passActual.equals(cli.getContrasena())) {
+                    JOptionPane.showMessageDialog(dlg, "La contrasena actual es incorrecta.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                if (passNueva.length() < 6) {
+                    JOptionPane.showMessageDialog(dlg, "La nueva contrasena debe tener al menos 6 caracteres.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                if (!passNueva.equals(passConf)) {
+                    JOptionPane.showMessageDialog(dlg, "Las contrasenas nuevas no coinciden.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                cli.setContrasena(passNueva);
+            }
+
+            cli.setNombre(nombre);
+            cli.setTelefono(tfTelefono.getText().trim().isEmpty() ? null : tfTelefono.getText().trim());
+            cli.setDireccion(tfDireccion.getText().trim().isEmpty() ? null : tfDireccion.getText().trim());
+
+            try {
+                new ClienteRepositoryImpl().actualizar(cli);
+                Main.clienteActual = cli;
+                JOptionPane.showMessageDialog(dlg, "Perfil actualizado correctamente.");
+                dlg.dispose();
+                construir();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(dlg, "Error al guardar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        bots.add(btnCancelar); bots.add(btnGuardar);
+        root.add(bots);
+
+        dlg.add(root);
+        dlg.pack();
+        dlg.setMinimumSize(new Dimension(400, dlg.getHeight()));
+        dlg.setLocationRelativeTo(panel);
+        dlg.setVisible(true);
+    }
+
+    private JTextField campo(String label, String valor, JPanel root, Color gris, Color borde) {
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(new Font("Arial", Font.PLAIN, 12));
+        lbl.setForeground(gris);
+        lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JTextField tf = new JTextField(valor);
+        tf.setFont(new Font("Arial", Font.PLAIN, 13));
+        tf.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(borde, 1),
+                BorderFactory.createEmptyBorder(6, 10, 6, 10)));
+        tf.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        tf.setAlignmentX(Component.LEFT_ALIGNMENT);
+        root.add(lbl);
+        root.add(Box.createVerticalStrut(3));
+        root.add(tf);
+        root.add(Box.createVerticalStrut(10));
+        return tf;
+    }
+
+    private JPasswordField passField(String label, JPanel root, Color gris, Color borde) {
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(new Font("Arial", Font.PLAIN, 12));
+        lbl.setForeground(gris);
+        lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JPasswordField pf = new JPasswordField();
+        pf.setFont(new Font("Arial", Font.PLAIN, 13));
+        pf.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(borde, 1),
+                BorderFactory.createEmptyBorder(6, 10, 6, 10)));
+        pf.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        pf.setAlignmentX(Component.LEFT_ALIGNMENT);
+        root.add(lbl);
+        root.add(Box.createVerticalStrut(3));
+        root.add(pf);
+        root.add(Box.createVerticalStrut(10));
+        return pf;
     }
 }

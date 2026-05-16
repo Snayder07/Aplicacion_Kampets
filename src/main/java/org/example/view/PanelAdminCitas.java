@@ -167,8 +167,8 @@ public class PanelAdminCitas {
         }
 
         // Construir datos para la tabla
-        String[] cols = {"Mascota","Dueño","Direccion","Veterinario","Fecha","Hora","Estado"};
-        Object[][] datos = new Object[citasFiltradas.size()][7];
+        String[] cols = {"Mascota","Dueño","Direccion","Fecha","Hora","Estado"};
+        Object[][] datos = new Object[citasFiltradas.size()][6];
         for (int i = 0; i < citasFiltradas.size(); i++) {
             Citas cita = citasFiltradas.get(i);
             String mascotaNombre = cita.getMascota() != null ? cita.getMascota().getNombre() : "—";
@@ -176,16 +176,14 @@ public class PanelAdminCitas {
             if (cita.getMascota() != null && cita.getMascota().getCliente() != null
                     && cita.getMascota().getCliente().getNombre() != null)
                 duenio = cita.getMascota().getCliente().getNombre();
-            // Dirección solo cuando el cliente pidió servicio a domicilio
             String direccion = (cita.getDireccionDomicilio() != null && !cita.getDireccionDomicilio().isEmpty())
                     ? "Domicilio: " + cita.getDireccionDomicilio() : "Presencial";
             datos[i][0] = mascotaNombre;
             datos[i][1] = duenio;
             datos[i][2] = direccion;
-            datos[i][3] = cita.getEmpleado()  != null ? cita.getEmpleado().getNombre()  : "—";
-            datos[i][4] = cita.getFechaCita() != null ? cita.getFechaCita().toString()  : "—";
-            datos[i][5] = cita.getHoraCita()  != null ? cita.getHoraCita().toString()   : "—";
-            datos[i][6] = cita.getEstadoCita()!= null ? cita.getEstadoCita().toString() : "—";
+            datos[i][3] = cita.getFechaCita() != null ? cita.getFechaCita().toString()  : "—";
+            datos[i][4] = cita.getHoraCita()  != null ? cita.getHoraCita().toString()   : "—";
+            datos[i][5] = cita.getEstadoCita()!= null ? cita.getEstadoCita().toString() : "—";
         }
 
         DefaultTableModel modelo = new DefaultTableModel(datos,cols) {
@@ -203,7 +201,7 @@ public class PanelAdminCitas {
         th.setReorderingAllowed(false); th.setPreferredSize(new Dimension(0,36));
 
         // Renderer columna Estado
-        tabla.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer(){
+        tabla.getColumnModel().getColumn(5).setCellRenderer(new DefaultTableCellRenderer(){
             public Component getTableCellRendererComponent(JTable t,Object v,boolean s,boolean f,int r,int col){
                 JLabel l=(JLabel)super.getTableCellRendererComponent(t,v,s,f,r,col);
                 l.setFont(new Font("Arial",Font.BOLD,12)); l.setHorizontalAlignment(SwingConstants.CENTER);
@@ -229,10 +227,10 @@ public class PanelAdminCitas {
                 setBorder(BorderFactory.createEmptyBorder(0,14,0,14)); return this;
             }
         };
-        for(int i=0;i<6;i++) tabla.getColumnModel().getColumn(i).setCellRenderer(base);
+        for(int i=0;i<5;i++) tabla.getColumnModel().getColumn(i).setCellRenderer(base);
 
         // Anchos de columna
-        int[] anchos = {110, 140, 180, 140, 100, 70, 130};
+        int[] anchos = {120, 160, 220, 110, 80, 140};
         for (int i=0;i<anchos.length;i++) tabla.getColumnModel().getColumn(i).setPreferredWidth(anchos[i]);
 
         JScrollPane sp = new JScrollPane(tabla); sp.setBorder(null); sp.getVerticalScrollBar().setUnitIncrement(16);
