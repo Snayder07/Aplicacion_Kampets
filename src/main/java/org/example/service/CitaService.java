@@ -48,14 +48,24 @@ public class CitaService {
     }
 
     // ─────────────────────────────────────────────────────────
-    // CANCELAR CITA
-    // P3 llama a esto cuando el cliente cancela (RF-03)
+    // CANCELAR CITA  (cambia estado a CANCELADA, no elimina)
     // ─────────────────────────────────────────────────────────
     public void cancelarCita(Integer idCita) throws Exception {
         Citas cita = repositorio.buscarPorId(idCita);
         if (cita == null) {
             throw new Exception("No se encontró la cita con ID: " + idCita);
         }
-        repositorio.eliminar(idCita);
+        repositorio.actualizarEstado(idCita, org.example.model.EstadoCita.CANCELADA);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // CAMBIAR ESTADO DE CITA (admin)
+    // ─────────────────────────────────────────────────────────
+    public void cambiarEstado(Integer idCita, org.example.model.EstadoCita nuevoEstado) throws Exception {
+        Citas cita = repositorio.buscarPorId(idCita);
+        if (cita == null) {
+            throw new Exception("No se encontró la cita con ID: " + idCita);
+        }
+        repositorio.actualizarEstado(idCita, nuevoEstado);
     }
 }
