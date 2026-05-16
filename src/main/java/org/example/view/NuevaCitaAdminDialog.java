@@ -123,6 +123,22 @@ public class NuevaCitaAdminDialog extends JDialog {
 
         JTextField tfCaracteristica = campo("");
         tfCaracteristica.setToolTipText("Solo requerida si ya existe otra mascota con el mismo nombre y especie");
+        // Mensaje de error inline para duplicados
+        JLabel lblCarError = new JLabel("");
+        lblCarError.setFont(new Font("Arial", Font.BOLD, 11));
+        lblCarError.setForeground(new Color(220, 38, 38));
+        lblCarError.setAlignmentX(LEFT_ALIGNMENT);
+        lblCarError.setVisible(false);
+        // Limpiar error al escribir
+        tfCaracteristica.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            void limpiar() {
+                tfCaracteristica.setBorder(BorderFactory.createLineBorder(BORDE, 1));
+                lblCarError.setVisible(false);
+            }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { limpiar(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { limpiar(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { limpiar(); }
+        });
 
         // Panel de nueva mascota (se oculta si elige una existente)
         JPanel panelNueva = new JPanel();
@@ -134,6 +150,7 @@ public class NuevaCitaAdminDialog extends JDialog {
         panelNueva.add(filaCombo("Especie *", cbEspecie));
         panelNueva.add(Box.createVerticalStrut(8));
         panelNueva.add(fila("Característica diferenciadora (si hay duplicado)", tfCaracteristica));
+        panelNueva.add(lblCarError);
         root.add(panelNueva);
 
         // Mostrar/ocultar panel de nueva mascota según selección del combo
@@ -301,15 +318,30 @@ public class NuevaCitaAdminDialog extends JDialog {
                                     m.getEspecie().getNombre().equalsIgnoreCase(especie.getNombre()));
                     String car = tfCaracteristica.getText().trim();
                     if (hayConflicto) {
-                        if (car.isEmpty()) throw new Exception(
-                                "Ya existe una mascota llamada \"" + nmMascota + "\" de especie " + especie.getNombre() + ".\n" +
-                                        "Ingresa una característica diferenciadora (ej: collar rojo, pelaje negro).");
+                        if (car.isEmpty()) {
+                            // Resaltar campo en rojo y enfocar
+                            tfCaracteristica.setBorder(BorderFactory.createLineBorder(new Color(220,38,38), 2));
+                            lblCarError.setText("⚠ Obligatorio: ya existe \"" + nmMascota + "\" de especie " + especie.getNombre());
+                            lblCarError.setVisible(true);
+                            tfCaracteristica.requestFocusInWindow();
+                            pack();
+                            throw new Exception(
+                                    "Ya existe una mascota llamada \"" + nmMascota + "\" de especie " + especie.getNombre() + ".\n" +
+                                            "Ingresa una característica diferenciadora (ej: collar rojo, pelaje negro).");
+                        }
                         boolean carDup = todasMascotas.stream().anyMatch(m ->
                                 m.getNombre().equalsIgnoreCase(nmMascota) &&
                                         m.getEspecie() != null &&
                                         m.getEspecie().getNombre().equalsIgnoreCase(especie.getNombre()) &&
                                         car.equalsIgnoreCase(m.getCaracteristica() != null ? m.getCaracteristica().trim() : ""));
-                        if (carDup) throw new Exception("Ya existe una mascota con ese nombre, especie y característica. Elige otra diferenciadora.");
+                        if (carDup) {
+                            tfCaracteristica.setBorder(BorderFactory.createLineBorder(new Color(220,38,38), 2));
+                            lblCarError.setText("⚠ Esa característica ya existe, usa otra diferente");
+                            lblCarError.setVisible(true);
+                            tfCaracteristica.requestFocusInWindow();
+                            pack();
+                            throw new Exception("Ya existe una mascota con ese nombre, especie y característica. Elige otra diferenciadora.");
+                        }
                     }
 
                     mascota = new Mascotas();

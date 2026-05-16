@@ -496,13 +496,30 @@ public class PanelMisMascotas {
         tfCaracteristica.setFont(new Font("Arial",Font.PLAIN,13));
         tfCaracteristica.setMaximumSize(new Dimension(Integer.MAX_VALUE,46));
         tfCaracteristica.setToolTipText("Ej: pelaje dorado, collar azul — solo si hay otra mascota con igual nombre y especie");
+        final Color bordeNormalCar = C[9];
+        final Color bordeErrorCar  = new Color(220,38,38);
         tfCaracteristica.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(C[9],1),
+                BorderFactory.createLineBorder(bordeNormalCar,1),
                 BorderFactory.createEmptyBorder(6,10,6,10)));
         JLabel lblCarHint = lbl("<html><i>Solo necesaria si ya existe otra mascota con el mismo nombre y especie.</i></html>", 10, Font.PLAIN, C[7]);
         lblCarHint.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JLabel lblCarError = lbl("", 11, Font.BOLD, new Color(220,38,38));
+        lblCarError.setAlignmentX(Component.LEFT_ALIGNMENT);
+        lblCarError.setVisible(false);
+        // Limpiar error al escribir
+        tfCaracteristica.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            void limpiar() {
+                tfCaracteristica.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(bordeNormalCar,1), BorderFactory.createEmptyBorder(6,10,6,10)));
+                lblCarError.setVisible(false);
+            }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { limpiar(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { limpiar(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { limpiar(); }
+        });
         form.add(tfCaracteristica); form.add(Box.createVerticalStrut(4));
-        form.add(lblCarHint); form.add(Box.createVerticalStrut(16));
+        form.add(lblCarHint); form.add(Box.createVerticalStrut(2));
+        form.add(lblCarError); form.add(Box.createVerticalStrut(14));
 
         // Botones
         JPanel bots = new JPanel(new FlowLayout(FlowLayout.RIGHT,10,0));
@@ -553,7 +570,17 @@ public class PanelMisMascotas {
                     fecha = sdf.format(dateChooser.getDate());
                 }
 
-                boolean ok = ctrl.registrarMascota(nombre, especie, cliente, fecha, sexo, tfCaracteristica.getText(), panel);
+                boolean ok = ctrl.registrarMascota(nombre, especie, cliente, fecha, sexo,
+                        tfCaracteristica.getText(), panel,
+                        () -> {
+                            tfCaracteristica.setBorder(BorderFactory.createCompoundBorder(
+                                    BorderFactory.createLineBorder(bordeErrorCar, 2),
+                                    BorderFactory.createEmptyBorder(6,10,6,10)));
+                            lblCarError.setText("⚠ Obligatorio para distinguir esta mascota");
+                            lblCarError.setVisible(true);
+                            tfCaracteristica.requestFocusInWindow();
+                            form.revalidate();
+                        });
                 if (ok) {
                     dlg.dispose();
                     construir();

@@ -182,7 +182,26 @@ public class PanelAdminMascotas {
         JLabel hint = new JLabel("<html><i>Solo requerida si otra mascota tiene el mismo nombre y especie.</i></html>");
         hint.setFont(new Font("Arial",Font.PLAIN,11)); hint.setForeground(C[7]);
         hint.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
-        form.add(hint); form.add(Box.createVerticalStrut(22));
+        // Mensaje de error inline para duplicados
+        JLabel lblError = new JLabel("");
+        lblError.setFont(new Font("Arial",Font.BOLD,11)); lblError.setForeground(new Color(220,38,38));
+        lblError.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+        lblError.setVisible(false);
+        // Al escribir, limpiar el resaltado de error
+        Color bordeNormal = C[9];
+        Color bordeError  = new Color(220,38,38);
+        tfCar.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            void limpiar() {
+                tfCar.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(bordeNormal,1), BorderFactory.createEmptyBorder(8,10,8,10)));
+                lblError.setVisible(false);
+            }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { limpiar(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { limpiar(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { limpiar(); }
+        });
+        form.add(hint); form.add(Box.createVerticalStrut(2));
+        form.add(lblError); form.add(Box.createVerticalStrut(18));
 
         JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.RIGHT,10,0));
         btnRow.setBackground(C[2]); btnRow.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
@@ -203,7 +222,17 @@ public class PanelAdminMascotas {
             boolean ok = ctrl.registrarMascota(
                     tfNombre.getText(), esp, cl,
                     tfFecha.getText(), (sexo==null||sexo.isBlank())?null:sexo,
-                    tfCar.getText(), form);
+                    tfCar.getText(), form,
+                    () -> {
+                        // Resaltar campo en rojo y enfocar
+                        tfCar.setBorder(BorderFactory.createCompoundBorder(
+                                BorderFactory.createLineBorder(bordeError, 2),
+                                BorderFactory.createEmptyBorder(8,10,8,10)));
+                        lblError.setText("⚠ Este campo es obligatorio para distinguir la mascota");
+                        lblError.setVisible(true);
+                        tfCar.requestFocusInWindow();
+                        form.revalidate();
+                    });
             if (ok) { dlg.dispose(); recargar(); }
         });
         btnRow.add(btnCancel); btnRow.add(btnGuardar);

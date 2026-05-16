@@ -54,9 +54,24 @@ public class MascotaAdminController {
         }
     }
 
+    /** Excepción especial para indicar que se necesita una característica diferenciadora */
+    public static class NecesitaCaracteristicaException extends Exception {
+        public NecesitaCaracteristicaException(String msg) { super(msg); }
+    }
+
     public boolean registrarMascota(String nombre, Especies especie, Cliente cliente,
                                     String fechaNacStr, String sexo, String caracteristica,
                                     JPanel panel) {
+        return registrarMascota(nombre, especie, cliente, fechaNacStr, sexo, caracteristica, panel, null);
+    }
+
+    /**
+     * Versión extendida: si onNecesitaCaracteristica != null, en vez de mostrar popup
+     * llama ese Runnable (la vista resalta el campo) y retorna false sin popup propio.
+     */
+    public boolean registrarMascota(String nombre, Especies especie, Cliente cliente,
+                                    String fechaNacStr, String sexo, String caracteristica,
+                                    JPanel panel, Runnable onNecesitaCaracteristica) {
         try {
             if (nombre == null || nombre.trim().isEmpty())
                 throw new Exception("El nombre de la mascota es obligatorio.");
@@ -72,8 +87,6 @@ public class MascotaAdminController {
             }
 
             // ── Detección de duplicados ──────────────────────────────────
-            // Si ya existe una mascota con mismo nombre Y misma especie,
-            // exigimos una característica diferenciadora.
             List<Mascotas> todas = mascotaService.listarTodas();
             boolean hayConflicto = todas.stream().anyMatch(m ->
                     m.getNombre().equalsIgnoreCase(nombre.trim()) &&
@@ -83,11 +96,11 @@ public class MascotaAdminController {
             String car = (caracteristica != null) ? caracteristica.trim() : "";
             if (hayConflicto) {
                 if (car.isEmpty()) {
-                    throw new Exception(
+                    throw new NecesitaCaracteristicaException(
                             "Ya existe una mascota llamada \"" + nombre.trim() + "\" de especie " +
                                     especie.getNombre() + ".\n" +
-                                    "Por favor ingresa una característica que la distinga\n" +
-                                    "(ej: color de pelaje, marca, collar rojo, etc.)."
+                                    "Ingresa una característica que la distinga\n" +
+                                    "(ej: color de pelaje, collar rojo, mancha en la oreja...)."
                     );
                 }
                 boolean carDuplicada = todas.stream().anyMatch(m ->
@@ -97,8 +110,8 @@ public class MascotaAdminController {
                                 car.equalsIgnoreCase(m.getCaracteristica() != null ? m.getCaracteristica().trim() : "")
                 );
                 if (carDuplicada) {
-                    throw new Exception(
-                            "Ya existe una mascota con ese nombre, especie y característica.\n" +
+                    throw new NecesitaCaracteristicaException(
+                            "Ya existe una mascota con ese nombre, especie y esa misma característica.\n" +
                                     "Ingresa una característica diferente para distinguirla."
                     );
                 }
@@ -114,6 +127,15 @@ public class MascotaAdminController {
             mascotaService.registrarMascota(m);
             JOptionPane.showMessageDialog(panel, "Mascota registrada exitosamente.");
             return true;
+        } catch (NecesitaCaracteristicaException e) {
+            if (onNecesitaCaracteristica != null) {
+                // La vista maneja el resaltado; solo mostramos el mensaje
+                JOptionPane.showMessageDialog(panel, e.getMessage(), "Campo requerido", JOptionPane.WARNING_MESSAGE);
+                onNecesitaCaracteristica.run();
+            } else {
+                JOptionPane.showMessageDialog(panel, e.getMessage(), "Campo requerido", JOptionPane.WARNING_MESSAGE);
+            }
+            return false;
         } catch (Exception e) {
             JOptionPane.showMessageDialog(panel, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             return false;

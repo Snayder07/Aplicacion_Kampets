@@ -181,7 +181,7 @@ public class PanelAdminReportes {
     private void generarReporteCitas(File archivo) throws IOException {
         List<Citas> citas = citaCtrl.listarTodas();
         String[] cols = {"Mascota","Dueno","Veterinario","Fecha","Hora","Estado"};
-        float[]  anchos = {110, 120, 120, 90, 70, 90};
+        float[]  anchos = {101, 101, 101, 76, 50, 76};  // suma=505 = ancho util A4
 
         Object[][] filas = new Object[citas.size()][];
         for (int i = 0; i < citas.size(); i++) {
@@ -202,7 +202,7 @@ public class PanelAdminReportes {
     private void generarReporteVacunas(File archivo) throws IOException {
         List<Control_vacunas> lista = vacunaCtrl.listarTodas();
         String[] cols = {"Mascota","Dueno","Vacuna","Fecha aplic.","Prox. fecha","Estado"};
-        float[]  anchos = {100, 110, 120, 90, 90, 80};
+        float[]  anchos = {91, 101, 101, 76, 76, 61};  // suma=506 = ancho util A4
 
         Object[][] filas = new Object[lista.size()][];
         for (int i = 0; i < lista.size(); i++) {
@@ -222,18 +222,20 @@ public class PanelAdminReportes {
     // ── Reporte de mascotas ──────────────────────────────────────────────
     private void generarReporteMascotas(File archivo) throws IOException {
         List<Mascotas> lista = mascotaCtrl.listarTodas();
-        String[] cols = {"Nombre","Especie","Dueno","Fecha nac.","Sexo"};
-        float[]  anchos = {120, 110, 140, 90, 70};
+        String[] cols = {"Nombre","Especie","Caracteristica","Dueno","Fecha nac.","Sexo"};
+        float[]  anchos = {87, 70, 116, 104, 75, 52};  // suma=504 = ancho util A4
 
         Object[][] filas = new Object[lista.size()][];
         for (int i = 0; i < lista.size(); i++) {
             Mascotas m = lista.get(i);
             String nom    = m.getNombre() != null ? m.getNombre() : "—";
             String esp    = m.getEspecie() != null ? m.getEspecie().getNombre() : "—";
+            String car    = (m.getCaracteristica() != null && !m.getCaracteristica().isBlank())
+                    ? m.getCaracteristica() : "—";
             String dueno  = m.getCliente() != null ? m.getCliente().getNombre() : "—";
             String fnac   = m.getFechaNac() != null ? m.getFechaNac().format(FMT) : "—";
             String sexo   = m.getSexo() != null ? m.getSexo() : "—";
-            filas[i] = new Object[]{nom, esp, dueno, fnac, sexo};
+            filas[i] = new Object[]{nom, esp, car, dueno, fnac, sexo};
         }
         generarPDF(archivo, "REPORTE DE MASCOTAS", cols, anchos, filas);
     }
@@ -242,7 +244,7 @@ public class PanelAdminReportes {
     private void generarReporteInventario(File archivo) throws IOException {
         List<Productos> lista = invCtrl.listarTodos();
         String[] cols = {"Producto","Tipo","Marca","Precio","Stock","Estado"};
-        float[]  anchos = {150, 90, 90, 80, 60, 80};
+        float[]  anchos = {158, 76, 76, 76, 50, 69};  // suma=505 = ancho util A4
 
         Object[][] filas = new Object[lista.size()][];
         for (int i = 0; i < lista.size(); i++) {
@@ -263,7 +265,7 @@ public class PanelAdminReportes {
     private void generarReporteUsuarios(File archivo) throws IOException {
         List<Cliente> lista = clienteSvc.listarTodos();
         String[] cols = {"Nombre","Correo","Telefono","Fecha registro"};
-        float[]  anchos = {160, 160, 100, 90};
+        float[]  anchos = {135, 168, 101, 101};  // suma=505 = ancho util A4
 
         Object[][] filas = new Object[lista.size()][];
         for (int i = 0; i < lista.size(); i++) {
@@ -322,11 +324,11 @@ public class PanelAdminReportes {
 
                 texto(cs, PDType1Font.HELVETICA_BOLD, 13, margin, y, "ULTIMAS 5 CITAS");
                 y -= 18;
-                // Encabezados con posición X absoluta
+                // Encabezados — posiciones X ajustadas al ancho util (505pt)
                 texto(cs, PDType1Font.HELVETICA_BOLD, 10, margin,       y, "Mascota");
-                texto(cs, PDType1Font.HELVETICA_BOLD, 10, margin + 130, y, "Veterinario");
-                texto(cs, PDType1Font.HELVETICA_BOLD, 10, margin + 260, y, "Fecha");
-                texto(cs, PDType1Font.HELVETICA_BOLD, 10, margin + 340, y, "Estado");
+                texto(cs, PDType1Font.HELVETICA_BOLD, 10, margin + 120, y, "Veterinario");
+                texto(cs, PDType1Font.HELVETICA_BOLD, 10, margin + 240, y, "Fecha");
+                texto(cs, PDType1Font.HELVETICA_BOLD, 10, margin + 330, y, "Estado");
                 y -= 16;
                 int maxCitas = Math.min(5, citas.size());
                 for (int i = 0; i < maxCitas; i++) {
@@ -335,10 +337,10 @@ public class PanelAdminReportes {
                     String vet    = ci.getEmpleado() != null ? ci.getEmpleado().getNombre() : "-";
                     String fecha  = ci.getFechaCita() != null ? ci.getFechaCita().format(FMT) : "-";
                     String estado = ci.getEstadoCita() != null ? ci.getEstadoCita().name() : "-";
-                    texto(cs, PDType1Font.HELVETICA, 10, margin,       y, truncar(masc,   125));
-                    texto(cs, PDType1Font.HELVETICA, 10, margin + 130, y, truncar(vet,    125));
-                    texto(cs, PDType1Font.HELVETICA, 10, margin + 260, y, truncar(fecha,  75));
-                    texto(cs, PDType1Font.HELVETICA, 10, margin + 340, y, truncar(estado, 110));
+                    texto(cs, PDType1Font.HELVETICA, 10, margin,       y, truncar(masc,   115));
+                    texto(cs, PDType1Font.HELVETICA, 10, margin + 120, y, truncar(vet,    115));
+                    texto(cs, PDType1Font.HELVETICA, 10, margin + 240, y, truncar(fecha,   85));
+                    texto(cs, PDType1Font.HELVETICA, 10, margin + 330, y, truncar(estado, 175));
                     y -= 15;
                 }
                 y -= 10;
@@ -366,9 +368,10 @@ public class PanelAdminReportes {
             float rowH   = 15f;
             int pageNum  = 1;
 
-            // Posiciones X absolutas de cada columna
+            // Posiciones X absolutas de cada columna (con 4pt de padding interno)
+            float PAD = 4f;
             float[] colX = new float[cols.length];
-            colX[0] = margin;
+            colX[0] = margin + PAD;
             for (int i = 1; i < cols.length; i++) colX[i] = colX[i - 1] + anchos[i - 1];
 
             PDPageContentStream cs = new PDPageContentStream(doc, page);
@@ -381,15 +384,16 @@ public class PanelAdminReportes {
             y -= 12;
             linea(cs, margin, y, pageW - margin); y -= 16;
 
-            // ── Encabezados de columnas ──────────────────────────────
+            // ── Fondo de encabezados de columnas ────────────────────
+            rellenarFila(cs, margin, y - 2, pageW - margin, rowH + 4, 0.88f);
             for (int j = 0; j < cols.length; j++)
-                texto(cs, PDType1Font.HELVETICA_BOLD, 10, colX[j], y, truncar(cols[j], anchos[j]));
+                texto(cs, PDType1Font.HELVETICA_BOLD, 9, colX[j], y, truncar(cols[j], anchos[j] - PAD*2));
             y -= rowH;
-            linea(cs, margin, y, pageW - margin); y -= 5;
+            linea(cs, margin, y, pageW - margin); y -= 4;
 
             // ── Filas de datos ───────────────────────────────────────
+            boolean sombreado = false;
             for (Object[] fila : filas) {
-                // Nueva página si no hay espacio
                 if (y < 60) {
                     piePagina(cs, margin, pageNum);
                     cs.close();
@@ -398,21 +402,24 @@ public class PanelAdminReportes {
                     cs = new PDPageContentStream(doc, page);
                     y = pageH - margin;
                     pageNum++;
-                    // Repetir encabezados en nueva página
+                    rellenarFila(cs, margin, y - 2, pageW - margin, rowH + 4, 0.88f);
                     for (int j = 0; j < cols.length; j++)
-                        texto(cs, PDType1Font.HELVETICA_BOLD, 10, colX[j], y, truncar(cols[j], anchos[j]));
+                        texto(cs, PDType1Font.HELVETICA_BOLD, 9, colX[j], y, truncar(cols[j], anchos[j] - PAD*2));
                     y -= rowH;
-                    linea(cs, margin, y, pageW - margin); y -= 5;
+                    linea(cs, margin, y, pageW - margin); y -= 4;
+                    sombreado = false;
                 }
-                // Escribir cada celda en su columna X
+                // Filas alternas con fondo muy sutil
+                if (sombreado) rellenarFila(cs, margin, y - 3, pageW - margin, rowH, 0.96f);
+                sombreado = !sombreado;
+
                 for (int j = 0; j < Math.min(fila.length, cols.length); j++) {
                     String cel = fila[j] != null ? limpiarTexto(fila[j].toString()) : "-";
-                    texto(cs, PDType1Font.HELVETICA, 9, colX[j], y, truncar(cel, anchos[j]));
+                    texto(cs, PDType1Font.HELVETICA, 9, colX[j], y, truncar(cel, anchos[j] - PAD*2));
                 }
                 y -= rowH;
             }
 
-            // ── Pie de última página ─────────────────────────────────
             piePagina(cs, margin, pageNum);
             cs.close();
             doc.save(archivo);
@@ -422,6 +429,15 @@ public class PanelAdminReportes {
     // ─────────────────────────────────────────────────────────────────────
     //  HELPERS
     // ─────────────────────────────────────────────────────────────────────
+
+    /** Rellena un rectángulo con un gris claro (para encabezado y filas alternas) */
+    private void rellenarFila(PDPageContentStream cs, float x, float y,
+                              float x2, float h, float gris) throws IOException {
+        cs.setNonStrokingColor(gris, gris, gris);
+        cs.addRect(x, y, x2 - x, h);
+        cs.fill();
+        cs.setNonStrokingColor(0f, 0f, 0f);
+    }
 
     /** Escribe texto en coordenadas X, Y absolutas de la página */
     private void texto(PDPageContentStream cs, PDType1Font fuente, float tam,
@@ -447,18 +463,12 @@ public class PanelAdminReportes {
                 "Pag. " + num + " — Generado por Kampets Sistema de Gestion Veterinaria");
     }
 
-    /**
-     * Trunca el texto para que no se salga del ancho de la columna.
-     * Aprox. 5.2 pt por caracter a tamaño 9 en Helvetica.
-     */
     private String truncar(String s, float anchoPts) {
         if (s == null || s.isEmpty()) return "-";
         int maxChars = Math.max(1, (int)(anchoPts / 5.2f));
         if (s.length() <= maxChars) return s;
         return s.substring(0, maxChars - 1) + ".";
     }
-
-    /** Sustituye caracteres fuera de Latin-1/WinAnsi para que PDFBox no lance error */
     private String limpiarTexto(String s) {
         if (s == null) return "";
         StringBuilder sb = new StringBuilder(s.length());
