@@ -32,6 +32,14 @@ public class MascotaRepositoryImpl implements MascotaRepository {
         return mascotas;
     }
 
+    public void actualizar(Mascotas mascota) {
+        EntityManager em = JPAUtil.getEntityManager();
+        em.getTransaction().begin();
+        em.merge(mascota);
+        em.getTransaction().commit();
+        em.close();
+    }
+
     @Override
     public void eliminar(Integer id) {
         EntityManager em = JPAUtil.getEntityManager();

@@ -218,10 +218,24 @@ public class PanelMisMascotas {
                 izq.add(lbl(especie + "  ·  Nacimiento: " + fechaNac + "  ·  Sexo: " + sexo,
                         12,Font.PLAIN,C[7]));
 
-                // Botón eliminar
+                // Botones Editar / Eliminar
                 final Integer idMascota = m.getId();
-                JPanel der = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+                final Mascotas mascotaRef = m;
+                JPanel der = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
                 der.setBackground(C[2]);
+
+                JButton btnEditar = new JButton("✏ Editar");
+                btnEditar.setFont(new Font("Arial", Font.PLAIN, 11));
+                btnEditar.setBackground(C[1]);
+                btnEditar.setForeground(Color.WHITE);
+                btnEditar.setOpaque(true); btnEditar.setBorderPainted(false); btnEditar.setFocusPainted(false);
+                btnEditar.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
+                btnEditar.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        mostrarFormularioEditar(mascotaRef);
+                    }
+                });
+
                 JButton btnEliminar = new JButton("Eliminar");
                 btnEliminar.setFont(new Font("Arial", Font.PLAIN, 11));
                 btnEliminar.setBackground(new Color(220,38,38));
@@ -241,6 +255,7 @@ public class PanelMisMascotas {
                         }
                     }
                 });
+                der.add(btnEditar);
                 der.add(btnEliminar);
 
                 card.add(izq,BorderLayout.CENTER);
@@ -272,6 +287,109 @@ public class PanelMisMascotas {
 
         contenido.add(cuerpo,BorderLayout.CENTER);
         return contenido;
+    }
+
+    private void mostrarFormularioEditar(Mascotas mascota) {
+        JDialog dlg = new JDialog((java.awt.Frame) SwingUtilities.getWindowAncestor(panel),
+                "Editar mascota", true);
+        dlg.setSize(420, 420);
+        dlg.setLocationRelativeTo(panel);
+
+        JPanel form = new JPanel();
+        form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
+        form.setBackground(C[2]);
+        form.setBorder(BorderFactory.createEmptyBorder(24,28,24,28));
+
+        // Nombre
+        form.add(lbl("Nombre de la mascota", 12, Font.BOLD, C[6]));
+        form.add(Box.createVerticalStrut(6));
+        JTextField tfNombre = new JTextField(mascota.getNombre());
+        tfNombre.setFont(new Font("Arial",Font.PLAIN,13));
+        tfNombre.setMaximumSize(new Dimension(Integer.MAX_VALUE,46));
+        tfNombre.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(C[9],1),
+                BorderFactory.createEmptyBorder(6,10,6,10)));
+        form.add(tfNombre); form.add(Box.createVerticalStrut(14));
+
+        // Especie
+        form.add(lbl("Especie", 12, Font.BOLD, C[6]));
+        form.add(Box.createVerticalStrut(6));
+        JComboBox<Especies> cbEspecie = new JComboBox<>();
+        cbEspecie.setFont(new Font("Arial",Font.PLAIN,13));
+        cbEspecie.setMaximumSize(new Dimension(Integer.MAX_VALUE,46));
+        List<Especies> especies = ctrl.listarEspecies();
+        for (Especies esp : especies) {
+            cbEspecie.addItem(esp);
+            if (mascota.getEspecie() != null && esp.getId().equals(mascota.getEspecie().getId()))
+                cbEspecie.setSelectedItem(esp);
+        }
+        cbEspecie.setRenderer(new DefaultListCellRenderer() {
+            public Component getListCellRendererComponent(JList<?> list, Object value,
+                                                          int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
+                if (value instanceof Especies) setText(((Especies)value).getNombre());
+                return this;
+            }
+        });
+        form.add(cbEspecie); form.add(Box.createVerticalStrut(14));
+
+        // Fecha de nacimiento
+        form.add(lbl("Fecha de nacimiento", 12, Font.BOLD, C[6]));
+        form.add(Box.createVerticalStrut(6));
+        com.toedter.calendar.JDateChooser dateChooser = new com.toedter.calendar.JDateChooser();
+        dateChooser.setFont(new Font("Arial",Font.PLAIN,13));
+        dateChooser.setMaximumSize(new Dimension(Integer.MAX_VALUE,46));
+        dateChooser.setDateFormatString("yyyy-MM-dd");
+        dateChooser.setBorder(BorderFactory.createLineBorder(C[9],1));
+        if (mascota.getFechaNac() != null) {
+            java.util.Calendar cal = java.util.Calendar.getInstance();
+            cal.set(mascota.getFechaNac().getYear(), mascota.getFechaNac().getMonthValue()-1, mascota.getFechaNac().getDayOfMonth());
+            dateChooser.setDate(cal.getTime());
+        }
+        form.add(dateChooser); form.add(Box.createVerticalStrut(14));
+
+        // Sexo
+        form.add(lbl("Sexo", 12, Font.BOLD, C[6]));
+        form.add(Box.createVerticalStrut(6));
+        JComboBox<String> cbSexo = new JComboBox<>(new String[]{"Macho","Hembra"});
+        cbSexo.setFont(new Font("Arial",Font.PLAIN,13));
+        cbSexo.setMaximumSize(new Dimension(Integer.MAX_VALUE,46));
+        if (mascota.getSexo() != null) cbSexo.setSelectedItem(mascota.getSexo());
+        form.add(cbSexo); form.add(Box.createVerticalStrut(20));
+
+        // Botones
+        JPanel bots = new JPanel(new FlowLayout(FlowLayout.RIGHT,10,0));
+        bots.setBackground(C[2]);
+        JButton btnCancel = btn("Cancelar",C[4],C[1],true);
+        btnCancel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(C[9],1), BorderFactory.createEmptyBorder(8,16,8,16)));
+        btnCancel.addActionListener(e -> dlg.dispose());
+        JButton btnGuardar = btn("Guardar cambios",C[1],C[5],false);
+        btnGuardar.setFont(new Font("Arial",Font.BOLD,13));
+        btnGuardar.setBorder(BorderFactory.createEmptyBorder(8,16,8,16));
+        btnGuardar.addActionListener(e -> {
+            String nuevoNombre = tfNombre.getText().trim();
+            Especies nuevaEspecie = (Especies) cbEspecie.getSelectedItem();
+            String nuevoSexo = (String) cbSexo.getSelectedItem();
+            java.time.LocalDate nuevaFecha = null;
+            if (dateChooser.getDate() != null) {
+                java.util.Calendar cal = java.util.Calendar.getInstance();
+                cal.setTime(dateChooser.getDate());
+                nuevaFecha = java.time.LocalDate.of(cal.get(java.util.Calendar.YEAR),
+                        cal.get(java.util.Calendar.MONTH)+1, cal.get(java.util.Calendar.DAY_OF_MONTH));
+            }
+            ctrl.actualizarMascota(mascota, nuevoNombre, nuevaEspecie, nuevaFecha, nuevoSexo, panel);
+            dlg.dispose();
+            construir();
+        });
+        bots.add(btnCancel); bots.add(btnGuardar);
+        bots.setAlignmentX(Component.LEFT_ALIGNMENT);
+        form.add(bots);
+
+        JScrollPane scroll = new JScrollPane(form);
+        scroll.setBorder(null);
+        dlg.setContentPane(scroll);
+        dlg.setVisible(true);
     }
 
     private void mostrarFormularioAgregar() {

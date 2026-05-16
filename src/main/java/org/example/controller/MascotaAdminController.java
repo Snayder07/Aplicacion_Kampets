@@ -86,6 +86,23 @@ public class MascotaAdminController {
         }
     }
 
+    public void actualizarMascota(Mascotas mascota, String nuevoNombre,
+                                  Especies nuevaEspecie, java.time.LocalDate nuevaFecha,
+                                  String nuevoSexo, JPanel panel) {
+        try {
+            if (nuevoNombre == null || nuevoNombre.trim().isEmpty())
+                throw new Exception("El nombre no puede estar vacío.");
+            mascota.setNombre(nuevoNombre.trim());
+            mascota.setEspecie(nuevaEspecie);
+            mascota.setFechaNac(nuevaFecha);
+            mascota.setSexo(nuevoSexo);
+            new org.example.repository.MascotaRepositoryImpl().actualizar(mascota);
+            JOptionPane.showMessageDialog(panel, "Mascota actualizada correctamente.");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(panel, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     public void eliminarMascota(Integer id, JPanel panel) {
         try {
             mascotaService.eliminarMascota(id);
