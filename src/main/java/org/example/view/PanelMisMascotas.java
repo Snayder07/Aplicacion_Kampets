@@ -487,7 +487,22 @@ public class PanelMisMascotas {
         JComboBox<String> cbSexo = new JComboBox<>(new String[]{"Macho","Hembra"});
         cbSexo.setFont(new Font("Arial",Font.PLAIN,13));
         cbSexo.setMaximumSize(new Dimension(Integer.MAX_VALUE,46));
-        form.add(cbSexo); form.add(Box.createVerticalStrut(20));
+        form.add(cbSexo); form.add(Box.createVerticalStrut(14));
+
+        // Característica diferenciadora
+        form.add(lbl("Característica (si hay duplicado)", 12, Font.BOLD, C[6]));
+        form.add(Box.createVerticalStrut(6));
+        JTextField tfCaracteristica = new JTextField();
+        tfCaracteristica.setFont(new Font("Arial",Font.PLAIN,13));
+        tfCaracteristica.setMaximumSize(new Dimension(Integer.MAX_VALUE,46));
+        tfCaracteristica.setToolTipText("Ej: pelaje dorado, collar azul — solo si hay otra mascota con igual nombre y especie");
+        tfCaracteristica.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(C[9],1),
+                BorderFactory.createEmptyBorder(6,10,6,10)));
+        JLabel lblCarHint = lbl("<html><i>Solo necesaria si ya existe otra mascota con el mismo nombre y especie.</i></html>", 10, Font.PLAIN, C[7]);
+        lblCarHint.setAlignmentX(Component.LEFT_ALIGNMENT);
+        form.add(tfCaracteristica); form.add(Box.createVerticalStrut(4));
+        form.add(lblCarHint); form.add(Box.createVerticalStrut(16));
 
         // Botones
         JPanel bots = new JPanel(new FlowLayout(FlowLayout.RIGHT,10,0));
@@ -538,7 +553,7 @@ public class PanelMisMascotas {
                     fecha = sdf.format(dateChooser.getDate());
                 }
 
-                boolean ok = ctrl.registrarMascota(nombre, especie, cliente, fecha, sexo, panel);
+                boolean ok = ctrl.registrarMascota(nombre, especie, cliente, fecha, sexo, tfCaracteristica.getText(), panel);
                 if (ok) {
                     dlg.dispose();
                     construir();

@@ -55,7 +55,8 @@ public class MascotaAdminController {
     }
 
     public boolean registrarMascota(String nombre, Especies especie, Cliente cliente,
-                                    String fechaNacStr, String sexo, JPanel panel) {
+                                    String fechaNacStr, String sexo, String caracteristica,
+                                    JPanel panel) {
         try {
             if (nombre == null || nombre.trim().isEmpty())
                 throw new Exception("El nombre de la mascota es obligatorio.");
@@ -70,6 +71,38 @@ public class MascotaAdminController {
                 }
             }
 
+            // ── Detección de duplicados ──────────────────────────────────
+            // Si ya existe una mascota con mismo nombre Y misma especie,
+            // exigimos una característica diferenciadora.
+            List<Mascotas> todas = mascotaService.listarTodas();
+            boolean hayConflicto = todas.stream().anyMatch(m ->
+                    m.getNombre().equalsIgnoreCase(nombre.trim()) &&
+                            m.getEspecie() != null &&
+                            m.getEspecie().getNombre().equalsIgnoreCase(especie.getNombre())
+            );
+            String car = (caracteristica != null) ? caracteristica.trim() : "";
+            if (hayConflicto) {
+                if (car.isEmpty()) {
+                    throw new Exception(
+                            "Ya existe una mascota llamada \"" + nombre.trim() + "\" de especie " +
+                                    especie.getNombre() + ".\n" +
+                                    "Por favor ingresa una característica que la distinga\n" +
+                                    "(ej: color de pelaje, marca, collar rojo, etc.)."
+                    );
+                }
+                boolean carDuplicada = todas.stream().anyMatch(m ->
+                        m.getNombre().equalsIgnoreCase(nombre.trim()) &&
+                                m.getEspecie() != null &&
+                                m.getEspecie().getNombre().equalsIgnoreCase(especie.getNombre()) &&
+                                car.equalsIgnoreCase(m.getCaracteristica() != null ? m.getCaracteristica().trim() : "")
+                );
+                if (carDuplicada) {
+                    throw new Exception(
+                            "Ya existe una mascota con ese nombre, especie y característica.\n" +
+                                    "Ingresa una característica diferente para distinguirla."
+                    );
+                }
+            }
 
             Mascotas m = new Mascotas();
             m.setNombre(nombre.trim());
@@ -77,6 +110,7 @@ public class MascotaAdminController {
             m.setCliente(cliente);
             m.setFechaNac(fechaNac);
             m.setSexo(sexo);
+            m.setCaracteristica(car.isEmpty() ? null : car);
             mascotaService.registrarMascota(m);
             JOptionPane.showMessageDialog(panel, "Mascota registrada exitosamente.");
             return true;

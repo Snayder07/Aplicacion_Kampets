@@ -222,7 +222,7 @@ public class PanelAgendarCita {
             public Component getListCellRendererComponent(JList<?> list, Object value,
                                                           int index, boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof Mascotas) setText(((Mascotas) value).getNombre());
+                if (value instanceof Mascotas) setText(((Mascotas) value).getEtiqueta());
                 else setText("Selecciona una mascota...");
                 return this;
             }

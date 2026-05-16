@@ -28,6 +28,9 @@ public class Mascotas {
     @Column(name = "sexo", length = 10)
     private String sexo;
 
+    @Column(name = "caracteristica", length = 200)
+    private String caracteristica;
+
     public Mascotas() {}
 
     public Integer getId() { return id; }
@@ -47,4 +50,21 @@ public class Mascotas {
 
     public String getSexo() { return sexo; }
     public void setSexo(String sexo) { this.sexo = sexo; }
+
+    public String getCaracteristica() { return caracteristica; }
+    public void setCaracteristica(String caracteristica) { this.caracteristica = caracteristica; }
+
+    /**
+     * Devuelve una etiqueta única para mostrar en combos y reportes.
+     * Ej: "Max (Golden Retriever)" o "Max (Golden Retriever — pelaje dorado)"
+     */
+    public String getEtiqueta() {
+        String base = nombre != null ? nombre : "?";
+        String esp  = (especie != null) ? especie.getNombre() : null;
+        String car  = (caracteristica != null && !caracteristica.trim().isEmpty()) ? caracteristica.trim() : null;
+        if (esp != null && car != null) return base + " (" + esp + " — " + car + ")";
+        if (esp != null)                return base + " (" + esp + ")";
+        if (car != null)                return base + " [" + car + "]";
+        return base;
+    }
 }

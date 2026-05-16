@@ -80,6 +80,32 @@ public class NuevaCitaAdminDialog extends JDialog {
         root.add(seccion("Datos de la mascota"));
         root.add(Box.createVerticalStrut(8));
 
+        // Combo: elegir mascota existente
+        List<Mascotas> mascotasList = new MascotaRepositoryImpl().buscarTodos();
+        JComboBox<Object> cbMascota = new JComboBox<>();
+        cbMascota.addItem("-- Nueva mascota (no registrada) --");
+        for (Mascotas m : mascotasList) cbMascota.addItem(m);
+        cbMascota.setFont(new Font("Arial", Font.PLAIN, 13));
+        cbMascota.setBackground(Color.WHITE);
+        cbMascota.setAlignmentX(LEFT_ALIGNMENT);
+        cbMascota.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        cbMascota.setRenderer(new DefaultListCellRenderer(){
+            public Component getListCellRendererComponent(JList<?> l,Object v,int i,boolean s,boolean f){
+                super.getListCellRendererComponent(l,v,i,s,f);
+                if (v instanceof Mascotas) setText(((Mascotas)v).getEtiqueta());
+                return this;
+            }
+        });
+        root.add(filaCombo("Seleccionar mascota registrada", cbMascota));
+        root.add(Box.createVerticalStrut(6));
+
+        JLabel lblOSep = new JLabel("— o ingresa datos de mascota nueva —");
+        lblOSep.setFont(new Font("Arial", Font.ITALIC, 11));
+        lblOSep.setForeground(GRIS);
+        lblOSep.setAlignmentX(LEFT_ALIGNMENT);
+        root.add(lblOSep);
+        root.add(Box.createVerticalStrut(6));
+
         JTextField tfNombreMascota = campo("");
 
         // Cargar especies desde BD
@@ -95,9 +121,27 @@ public class NuevaCitaAdminDialog extends JDialog {
         cbEspecie.setAlignmentX(LEFT_ALIGNMENT);
         cbEspecie.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
 
-        root.add(fila("Nombre de la mascota *", tfNombreMascota));
-        root.add(Box.createVerticalStrut(8));
-        root.add(filaCombo("Especie *", cbEspecie));
+        JTextField tfCaracteristica = campo("");
+        tfCaracteristica.setToolTipText("Solo requerida si ya existe otra mascota con el mismo nombre y especie");
+
+        // Panel de nueva mascota (se oculta si elige una existente)
+        JPanel panelNueva = new JPanel();
+        panelNueva.setLayout(new BoxLayout(panelNueva, BoxLayout.Y_AXIS));
+        panelNueva.setBackground(VERDE_LT);
+        panelNueva.setAlignmentX(LEFT_ALIGNMENT);
+        panelNueva.add(fila("Nombre de la mascota *", tfNombreMascota));
+        panelNueva.add(Box.createVerticalStrut(8));
+        panelNueva.add(filaCombo("Especie *", cbEspecie));
+        panelNueva.add(Box.createVerticalStrut(8));
+        panelNueva.add(fila("Característica diferenciadora (si hay duplicado)", tfCaracteristica));
+        root.add(panelNueva);
+
+        // Mostrar/ocultar panel de nueva mascota según selección del combo
+        cbMascota.addActionListener(ev -> {
+            boolean esNueva = !(cbMascota.getSelectedItem() instanceof Mascotas);
+            panelNueva.setVisible(esNueva);
+        });
+
         root.add(Box.createVerticalStrut(18));
 
         // ── Seccion: Datos de la cita ─────────────────────
@@ -213,13 +257,11 @@ public class NuevaCitaAdminDialog extends JDialog {
                 String nombreDueno   = tfNombreDueno.getText().trim();
                 String celular       = tfCelular.getText().trim();
                 String correo        = tfCorreo.getText().trim();
-                String nombreMascota = tfNombreMascota.getText().trim();
                 String horaStr       = (String) cbHora.getSelectedItem();
                 boolean esDomicilio  = rbDomicilio.isSelected();
                 String direccion     = tfDireccion.getText().trim();
 
                 if (nombreDueno.isEmpty())   throw new Exception("El nombre del dueno es obligatorio.");
-                if (nombreMascota.isEmpty()) throw new Exception("El nombre de la mascota es obligatorio.");
                 if (dateChooser.getDate() == null) throw new Exception("Selecciona la fecha de la cita.");
                 if (horaStr == null || horaStr.startsWith("Selecciona")) throw new Exception("Selecciona la hora de la cita.");
                 if (esDomicilio && direccion.isEmpty()) throw new Exception("Ingresa la direccion del domicilio.");
@@ -237,17 +279,47 @@ public class NuevaCitaAdminDialog extends JDialog {
                 cliente.setFechaRegistro(LocalDate.now());
                 new ClienteRepositoryImpl().guardar(cliente);
 
-                // 2) Crear mascota
-                int especieIdx = cbEspecie.getSelectedIndex();
-                Especies especie = (especieIdx >= 0 && especieIdx < especiesList.size())
-                        ? especiesList.get(especieIdx) : null;
-                if (especie == null) throw new Exception("No hay especies registradas. Registra una especie primero.");
+                // 2) Mascota: existente o nueva
+                Mascotas mascota;
+                String nombreMascota;
+                if (cbMascota.getSelectedItem() instanceof Mascotas) {
+                    mascota = (Mascotas) cbMascota.getSelectedItem();
+                    nombreMascota = mascota.getEtiqueta();
+                } else {
+                    String nmMascota = tfNombreMascota.getText().trim();
+                    if (nmMascota.isEmpty()) throw new Exception("El nombre de la mascota es obligatorio.");
+                    int especieIdx = cbEspecie.getSelectedIndex();
+                    Especies especie = (especieIdx >= 0 && especieIdx < especiesList.size())
+                            ? especiesList.get(especieIdx) : null;
+                    if (especie == null) throw new Exception("No hay especies registradas. Registra una especie primero.");
 
-                Mascotas mascota = new Mascotas();
-                mascota.setNombre(nombreMascota);
-                mascota.setCliente(cliente);
-                mascota.setEspecie(especie);
-                new MascotaRepositoryImpl().guardar(mascota);
+                    // Verificar duplicados
+                    List<Mascotas> todasMascotas = new MascotaRepositoryImpl().buscarTodos();
+                    boolean hayConflicto = todasMascotas.stream().anyMatch(m ->
+                            m.getNombre().equalsIgnoreCase(nmMascota) &&
+                                    m.getEspecie() != null &&
+                                    m.getEspecie().getNombre().equalsIgnoreCase(especie.getNombre()));
+                    String car = tfCaracteristica.getText().trim();
+                    if (hayConflicto) {
+                        if (car.isEmpty()) throw new Exception(
+                                "Ya existe una mascota llamada \"" + nmMascota + "\" de especie " + especie.getNombre() + ".\n" +
+                                        "Ingresa una característica diferenciadora (ej: collar rojo, pelaje negro).");
+                        boolean carDup = todasMascotas.stream().anyMatch(m ->
+                                m.getNombre().equalsIgnoreCase(nmMascota) &&
+                                        m.getEspecie() != null &&
+                                        m.getEspecie().getNombre().equalsIgnoreCase(especie.getNombre()) &&
+                                        car.equalsIgnoreCase(m.getCaracteristica() != null ? m.getCaracteristica().trim() : ""));
+                        if (carDup) throw new Exception("Ya existe una mascota con ese nombre, especie y característica. Elige otra diferenciadora.");
+                    }
+
+                    mascota = new Mascotas();
+                    mascota.setNombre(nmMascota);
+                    mascota.setCliente(cliente);
+                    mascota.setEspecie(especie);
+                    mascota.setCaracteristica(car.isEmpty() ? null : car);
+                    new MascotaRepositoryImpl().guardar(mascota);
+                    nombreMascota = mascota.getEtiqueta();
+                }
 
                 // 3) Crear cita — veterinario = admin logueado o primero disponible
                 Empleados empleado = Main.empleadoActual;

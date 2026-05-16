@@ -1,15 +1,14 @@
 package org.example.view;
 
 import org.example.controller.MascotaAdminController;
+import org.example.model.Cliente;
+import org.example.model.Especies;
 import org.example.model.Mascotas;
 
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public class PanelAdminMascotas {
@@ -43,7 +42,7 @@ public class PanelAdminMascotas {
         panel.revalidate(); panel.repaint();
     }
 
-    private JLabel lbl(String t,int sz,int st,Color c){JLabel l=new JLabel(t);l.setFont(new Font("Arial",st,sz + 2));l.setForeground(c);return l;}
+    private JLabel lbl(String t,int sz,int st,Color c){JLabel l=new JLabel(t);l.setFont(new Font("Arial",st,sz+2));l.setForeground(c);return l;}
 
     private JPanel crearContenido() {
         JPanel c = new JPanel(new BorderLayout()); c.setBackground(C[0]);
@@ -57,29 +56,22 @@ public class PanelAdminMascotas {
         JButton btnNueva = new JButton("+ Registrar mascota");
         btnNueva.setFont(new Font("Arial",Font.BOLD,13)); btnNueva.setBackground(new Color(22,163,74));
         btnNueva.setForeground(Color.WHITE); btnNueva.setOpaque(true); btnNueva.setBorderPainted(false);
-        btnNueva.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR)); btnNueva.setBorder(BorderFactory.createEmptyBorder(9,18,9,18));
+        btnNueva.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
+        btnNueva.setBorder(BorderFactory.createEmptyBorder(9,18,9,18));
+        btnNueva.addActionListener(e -> abrirDialogoRegistro());
         tr.add(btnNueva);
         tb.add(tl,BorderLayout.WEST); tb.add(tr,BorderLayout.EAST); c.add(tb,BorderLayout.NORTH);
 
         JPanel body = new JPanel(new BorderLayout(0,16)); body.setBackground(C[0]); body.setBorder(BorderFactory.createEmptyBorder(24,28,28,28));
 
-        // ── Datos reales desde BD ─────────────────────────
         List<Mascotas> todas = ctrl.listarTodas();
-        long total   = todas.size();
-        long perros  = todas.stream().filter(m -> m.getEspecie() != null &&
-                m.getEspecie().getNombre().equalsIgnoreCase("Perro")).count();
-        long gatos   = todas.stream().filter(m -> m.getEspecie() != null &&
-                m.getEspecie().getNombre().equalsIgnoreCase("Gato")).count();
-        long otros   = total - perros - gatos;
+        long total  = todas.size();
+        long perros = todas.stream().filter(m -> m.getEspecie()!=null && m.getEspecie().getNombre().equalsIgnoreCase("Perro")).count();
+        long gatos  = todas.stream().filter(m -> m.getEspecie()!=null && m.getEspecie().getNombre().equalsIgnoreCase("Gato")).count();
+        long otros  = total - perros - gatos;
 
-        // Stats
         JPanel stats = new JPanel(new GridLayout(1,4,16,0)); stats.setBackground(C[0]);
-        Object[][] st = {
-                {"Total mascotas", String.valueOf(total)},
-                {"Perros",         String.valueOf(perros)},
-                {"Gatos",          String.valueOf(gatos)},
-                {"Otros",          String.valueOf(otros)},
-        };
+        Object[][] st = {{"Total mascotas",String.valueOf(total)},{"Perros",String.valueOf(perros)},{"Gatos",String.valueOf(gatos)},{"Otros",String.valueOf(otros)}};
         for (Object[] s : st) {
             JPanel card = new JPanel(new BorderLayout(0,4)); card.setBackground(C[2]);
             card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(C[9],1),BorderFactory.createEmptyBorder(16,20,16,20)));
@@ -89,16 +81,18 @@ public class PanelAdminMascotas {
         }
         body.add(stats,BorderLayout.NORTH);
 
-        // ── Tabla con columnas reales ─────────────────────
-        String[] cols = {"Nombre","Especie","Dueño","Fecha nac.","Sexo"};
-        Object[][] datos = new Object[todas.size()][5];
+        String[] cols = {"Nombre","Especie","Característica","Dueño","Fecha nac.","Sexo"};
+        Object[][] datos = new Object[todas.size()][6];
         for (int i = 0; i < todas.size(); i++) {
             Mascotas m = todas.get(i);
-            String especie  = m.getEspecie()  != null ? m.getEspecie().getNombre()  : "—";
-            String duenio   = m.getCliente()  != null ? m.getCliente().getNombre()  : "—";
-            String fechaNac = m.getFechaNac() != null ? m.getFechaNac().toString()  : "—";
-            String sexo     = m.getSexo()     != null ? m.getSexo()                : "—";
-            datos[i] = new Object[]{ m.getNombre(), especie, duenio, fechaNac, sexo };
+            datos[i] = new Object[]{
+                    m.getNombre(),
+                    m.getEspecie()  != null ? m.getEspecie().getNombre()  : "—",
+                    (m.getCaracteristica() != null && !m.getCaracteristica().isBlank()) ? m.getCaracteristica() : "—",
+                    m.getCliente()  != null ? m.getCliente().getNombre()  : "—",
+                    m.getFechaNac() != null ? m.getFechaNac().toString()  : "—",
+                    m.getSexo()     != null ? m.getSexo()                : "—"
+            };
         }
 
         DefaultTableModel modelo = new DefaultTableModel(datos,cols){public boolean isCellEditable(int r,int cc){return false;}};
@@ -118,8 +112,8 @@ public class PanelAdminMascotas {
                 setBorder(BorderFactory.createEmptyBorder(0,14,0,14)); return this;
             }
         };
-        for(int i=0;i<5;i++) tabla.getColumnModel().getColumn(i).setCellRenderer(base);
-        int[] anchos = {140, 120, 180, 110, 80};
+        for(int i=0;i<cols.length;i++) tabla.getColumnModel().getColumn(i).setCellRenderer(base);
+        int[] anchos = {120, 100, 160, 160, 100, 70};
         for(int i=0;i<anchos.length;i++) tabla.getColumnModel().getColumn(i).setPreferredWidth(anchos[i]);
 
         JScrollPane sp = new JScrollPane(tabla); sp.setBorder(null); sp.getViewport().setBackground(C[2]); sp.getVerticalScrollBar().setUnitIncrement(16);
@@ -132,9 +126,95 @@ public class PanelAdminMascotas {
         c.add(outerScroll,BorderLayout.CENTER); return c;
     }
 
-    private void estilizarTema(JButton b){
-        b.setFont(new Font("Arial",Font.PLAIN,13)); b.setBackground(C[2]); b.setForeground(C[6]);
-        b.setOpaque(true); b.setFocusPainted(false); b.setCursor(Main.cursorHover != null ? Main.cursorHover : new Cursor(Cursor.HAND_CURSOR));
-        b.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(C[9],1),BorderFactory.createEmptyBorder(7,14,7,14)));
+    private void abrirDialogoRegistro() {
+        JDialog dlg = new JDialog((Frame) SwingUtilities.getWindowAncestor(panel), "Registrar mascota", true);
+        dlg.setSize(480, 580);
+        dlg.setLocationRelativeTo(panel);
+        dlg.setResizable(false);
+
+        JPanel form = new JPanel();
+        form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
+        form.setBackground(C[2]);
+        form.setBorder(BorderFactory.createEmptyBorder(28,32,28,32));
+
+        form.add(campLbl("Nombre de la mascota *"));
+        JTextField tfNombre = campo(); form.add(tfNombre); form.add(Box.createVerticalStrut(14));
+
+        form.add(campLbl("Especie *"));
+        List<Especies> especies = ctrl.listarEspecies();
+        JComboBox<Especies> cbEspecie = new JComboBox<>();
+        cbEspecie.addItem(null);
+        for (Especies esp : especies) cbEspecie.addItem(esp);
+        cbEspecie.setRenderer(new DefaultListCellRenderer(){
+            public java.awt.Component getListCellRendererComponent(JList<?> l,Object v,int i,boolean s,boolean f){
+                super.getListCellRendererComponent(l,v,i,s,f);
+                setText(v instanceof Especies ? ((Especies)v).getNombre() : "Selecciona una especie...");
+                setBackground(s?C[3]:C[2]); setForeground(C[6]); return this;
+            }
+        });
+        estilizarCombo(cbEspecie); form.add(cbEspecie); form.add(Box.createVerticalStrut(14));
+
+        form.add(campLbl("Dueño *"));
+        List<Cliente> clientes = ctrl.listarClientes();
+        JComboBox<Cliente> cbCliente = new JComboBox<>();
+        cbCliente.addItem(null);
+        for (Cliente cl : clientes) cbCliente.addItem(cl);
+        cbCliente.setRenderer(new DefaultListCellRenderer(){
+            public java.awt.Component getListCellRendererComponent(JList<?> l,Object v,int i,boolean s,boolean f){
+                super.getListCellRendererComponent(l,v,i,s,f);
+                setText(v instanceof Cliente ? ((Cliente)v).getNombre() : "Selecciona un dueño...");
+                setBackground(s?C[3]:C[2]); setForeground(C[6]); return this;
+            }
+        });
+        estilizarCombo(cbCliente); form.add(cbCliente); form.add(Box.createVerticalStrut(14));
+
+        form.add(campLbl("Fecha de nacimiento (yyyy-MM-dd)"));
+        JTextField tfFecha = campo(); tfFecha.setToolTipText("Ejemplo: 2021-03-15");
+        form.add(tfFecha); form.add(Box.createVerticalStrut(14));
+
+        form.add(campLbl("Sexo"));
+        JComboBox<String> cbSexo = new JComboBox<>(new String[]{"","Macho","Hembra"});
+        estilizarCombo(cbSexo); form.add(cbSexo); form.add(Box.createVerticalStrut(14));
+
+        form.add(campLbl("Característica diferenciadora (opcional)"));
+        JTextField tfCar = campo(); tfCar.setToolTipText("Ej: pelaje dorado, collar azul, mancha en la oreja...");
+        form.add(tfCar);
+        JLabel hint = new JLabel("<html><i>Solo requerida si otra mascota tiene el mismo nombre y especie.</i></html>");
+        hint.setFont(new Font("Arial",Font.PLAIN,11)); hint.setForeground(C[7]);
+        hint.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+        form.add(hint); form.add(Box.createVerticalStrut(22));
+
+        JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.RIGHT,10,0));
+        btnRow.setBackground(C[2]); btnRow.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+        JButton btnCancel = new JButton("Cancelar");
+        btnCancel.setBackground(C[0]); btnCancel.setForeground(C[6]);
+        btnCancel.setFont(new Font("Arial",Font.PLAIN,13)); btnCancel.setOpaque(true);
+        btnCancel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(C[9],1),BorderFactory.createEmptyBorder(8,16,8,16)));
+        btnCancel.addActionListener(e -> dlg.dispose());
+
+        JButton btnGuardar = new JButton("Registrar");
+        btnGuardar.setBackground(new Color(22,163,74)); btnGuardar.setForeground(Color.WHITE);
+        btnGuardar.setFont(new Font("Arial",Font.BOLD,13)); btnGuardar.setOpaque(true); btnGuardar.setBorderPainted(false);
+        btnGuardar.setBorder(BorderFactory.createEmptyBorder(8,18,8,18));
+        btnGuardar.addActionListener(e -> {
+            Especies esp = cbEspecie.getSelectedItem() instanceof Especies ? (Especies)cbEspecie.getSelectedItem() : null;
+            Cliente cl   = cbCliente.getSelectedItem() instanceof Cliente  ? (Cliente)cbCliente.getSelectedItem()  : null;
+            String sexo  = (String)cbSexo.getSelectedItem();
+            boolean ok = ctrl.registrarMascota(
+                    tfNombre.getText(), esp, cl,
+                    tfFecha.getText(), (sexo==null||sexo.isBlank())?null:sexo,
+                    tfCar.getText(), form);
+            if (ok) { dlg.dispose(); recargar(); }
+        });
+        btnRow.add(btnCancel); btnRow.add(btnGuardar);
+        form.add(btnRow);
+
+        JScrollPane scroll = new JScrollPane(form); scroll.setBorder(null); scroll.getViewport().setBackground(C[2]);
+        dlg.add(scroll);
+        dlg.setVisible(true);
     }
+
+    private JLabel campLbl(String t){JLabel l=new JLabel(t);l.setFont(new Font("Arial",Font.BOLD,12));l.setForeground(C[6]);l.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);return l;}
+    private JTextField campo(){JTextField tf=new JTextField();tf.setFont(new Font("Arial",Font.PLAIN,13));tf.setBackground(C[0]);tf.setForeground(C[6]);tf.setCaretColor(C[6]);tf.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(C[9],1),BorderFactory.createEmptyBorder(8,10,8,10)));tf.setMaximumSize(new Dimension(Integer.MAX_VALUE,40));tf.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);return tf;}
+    private void estilizarCombo(JComboBox<?> cb){cb.setFont(new Font("Arial",Font.PLAIN,13));cb.setBackground(C[0]);cb.setForeground(C[6]);cb.setMaximumSize(new Dimension(Integer.MAX_VALUE,40));cb.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);}
 }
