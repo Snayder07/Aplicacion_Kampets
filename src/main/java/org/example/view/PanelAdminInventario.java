@@ -187,7 +187,7 @@ public class PanelAdminInventario {
         // ── Renderer + Editor: Eliminar (col 7) ───────────
         tabla.getColumnModel().getColumn(7).setCellRenderer(new TableCellRenderer() {
             public Component getTableCellRendererComponent(JTable t, Object v, boolean s, boolean f, int r, int col) {
-                JButton btn = new JButton("🗑 Eliminar");
+                JButton btn = new JButton(" Eliminar");
                 btn.setFont(new Font("Arial", Font.BOLD, 11));
                 btn.setBackground(new Color(220, 38, 38));
                 btn.setForeground(Color.WHITE);
@@ -198,7 +198,7 @@ public class PanelAdminInventario {
         });
 
         tabla.getColumnModel().getColumn(7).setCellEditor(new DefaultCellEditor(new JCheckBox()) {
-            private JButton btn = new JButton("🗑 Eliminar");
+            private JButton btn = new JButton(" Eliminar");
             {
                 btn.setFont(new Font("Arial", Font.BOLD, 11));
                 btn.setBackground(new Color(220, 38, 38));
