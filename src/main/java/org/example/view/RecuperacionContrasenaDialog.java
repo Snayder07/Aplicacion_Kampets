@@ -193,6 +193,74 @@ public class RecuperacionContrasenaDialog extends JDialog {
         p.add(lblConfirmar);
         p.add(campoConfirmar);
 
+        // ── Ojo para nueva ───────────────────────────
+        JButton btnOjo_nueva = new JButton() {
+            @Override protected void paintComponent(java.awt.Graphics g) {
+                java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getModel().isPressed() ? new java.awt.Color(29,158,117) : new java.awt.Color(150,150,150));
+                int cx=getWidth()/2, cy=getHeight()/2;
+                g2.setStroke(new java.awt.BasicStroke(1.6f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+                g2.drawOval(cx-6, cy-4, 12, 8);
+                g2.fillOval(cx-2, cy-2, 5, 5);
+                if ((Boolean)getClientProperty("oculto") == Boolean.FALSE) {
+                    g2.setStroke(new java.awt.BasicStroke(2f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+                    g2.drawLine(cx-8, cy+5, cx+8, cy-5);
+                }
+                g2.dispose();
+            }
+        };
+        btnOjo_nueva.putClientProperty("oculto", Boolean.TRUE);
+        btnOjo_nueva.setOpaque(false); btnOjo_nueva.setContentAreaFilled(false); btnOjo_nueva.setBorderPainted(false);
+        btnOjo_nueva.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnOjo_nueva.setBounds(352, 124, 28, 28);
+        btnOjo_nueva.addActionListener(ev -> {
+            boolean oculto = (Boolean) btnOjo_nueva.getClientProperty("oculto");
+            if (oculto) {
+                campoNueva.setEchoChar((char)0);
+                btnOjo_nueva.putClientProperty("oculto", Boolean.FALSE);
+            } else {
+                campoNueva.setEchoChar('\u2022');
+                btnOjo_nueva.putClientProperty("oculto", Boolean.TRUE);
+            }
+            btnOjo_nueva.repaint();
+        });
+        p.add(btnOjo_nueva);
+
+        // ── Ojo para confirmar ───────────────────────────
+        JButton btnOjo_confirmar = new JButton() {
+            @Override protected void paintComponent(java.awt.Graphics g) {
+                java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getModel().isPressed() ? new java.awt.Color(29,158,117) : new java.awt.Color(150,150,150));
+                int cx=getWidth()/2, cy=getHeight()/2;
+                g2.setStroke(new java.awt.BasicStroke(1.6f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+                g2.drawOval(cx-6, cy-4, 12, 8);
+                g2.fillOval(cx-2, cy-2, 5, 5);
+                if ((Boolean)getClientProperty("oculto") == Boolean.FALSE) {
+                    g2.setStroke(new java.awt.BasicStroke(2f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+                    g2.drawLine(cx-8, cy+5, cx+8, cy-5);
+                }
+                g2.dispose();
+            }
+        };
+        btnOjo_confirmar.putClientProperty("oculto", Boolean.TRUE);
+        btnOjo_confirmar.setOpaque(false); btnOjo_confirmar.setContentAreaFilled(false); btnOjo_confirmar.setBorderPainted(false);
+        btnOjo_confirmar.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnOjo_confirmar.setBounds(352, 204, 28, 28);
+        btnOjo_confirmar.addActionListener(ev -> {
+            boolean oculto = (Boolean) btnOjo_confirmar.getClientProperty("oculto");
+            if (oculto) {
+                campoConfirmar.setEchoChar((char)0);
+                btnOjo_confirmar.putClientProperty("oculto", Boolean.FALSE);
+            } else {
+                campoConfirmar.setEchoChar('\u2022');
+                btnOjo_confirmar.putClientProperty("oculto", Boolean.TRUE);
+            }
+            btnOjo_confirmar.repaint();
+        });
+        p.add(btnOjo_confirmar);
+
         JButton btnCambiar = boton("Cambiar contraseña", VERDE);
         btnCambiar.setBounds(40, 255, 340, 40);
         p.add(btnCambiar);

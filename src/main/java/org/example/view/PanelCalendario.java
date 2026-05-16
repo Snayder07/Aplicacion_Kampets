@@ -244,17 +244,6 @@ public class PanelCalendario {
         cabecera.setBackground(C[4]);
         cabeceraRef = cabecera;
 
-        cabecera.addComponentListener(new ComponentAdapter(){
-            @Override public void componentResized(ComponentEvent e){
-                anchoDia=calcAnchoDia(cabecera.getWidth());
-                cabecera.repaint();
-                if (grilla!=null) grilla.repaint();
-                reposicionarBloques();
-            }
-        });
-
-        wrapper.add(cabecera, BorderLayout.NORTH);
-
         int altoTotal=(HORA_FIN-HORA_INICIO)*ALTO_HORA;
 
         JLayeredPane capas = new JLayeredPane(){
@@ -282,7 +271,12 @@ public class PanelCalendario {
                 panelBloques.setBounds(0,0,w,altoTotal);
                 grilla.repaint();
                 reposicionarBloques();
-                if (cabeceraRef!=null) cabeceraRef.repaint();
+                // Sincronizar cabecera con viewport (ancho exacto)
+                if (cabeceraRef!=null) {
+                    cabeceraRef.setPreferredSize(new Dimension(w,56));
+                    cabeceraRef.revalidate();
+                    cabeceraRef.repaint();
+                }
             }
         });
 
@@ -293,6 +287,8 @@ public class PanelCalendario {
         scroll.getViewport().setBackground(C[0]);
         scroll.getVerticalScrollBar().setUnitIncrement(ALTO_HORA/2);
         scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        // Cabecera como columnHeader del scroll -> alineacion perfecta con la grilla
+        scroll.setColumnHeaderView(cabecera);
         SwingUtilities.invokeLater(()->
                 scroll.getVerticalScrollBar().setValue((8-HORA_INICIO)*ALTO_HORA));
 

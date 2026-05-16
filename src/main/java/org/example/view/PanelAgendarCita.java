@@ -245,7 +245,7 @@ public class PanelAgendarCita {
                                                           int index, boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof Servicio) {
-                        setText(((Servicio) value).getNombre());
+                    setText(((Servicio) value).getNombre());
                 } else setText("Selecciona un servicio...");
                 return this;
             }
@@ -269,6 +269,21 @@ public class PanelAgendarCita {
         dateChooser.setAlignmentX(Component.LEFT_ALIGNMENT);
         dateChooser.setMaximumSize(new Dimension(Integer.MAX_VALUE, 46));
         colFecha.add(dateChooser);
+
+        // Bloquear domingos: avisar inmediatamente al seleccionar
+        dateChooser.addPropertyChangeListener("date", evt -> {
+            java.util.Date selDate = dateChooser.getDate();
+            if (selDate != null) {
+                java.util.Calendar cal = java.util.Calendar.getInstance();
+                cal.setTime(selDate);
+                if (cal.get(java.util.Calendar.DAY_OF_WEEK) == java.util.Calendar.SUNDAY) {
+                    JOptionPane.showMessageDialog(panel,
+                            "Los domingos no están disponibles para citas.\nPor favor selecciona otro día (lunes a sábado).",
+                            "Día no disponible", JOptionPane.WARNING_MESSAGE);
+                    dateChooser.setDate(null);
+                }
+            }
+        });
 
         JPanel colHora = new JPanel(); colHora.setLayout(new BoxLayout(colHora, BoxLayout.Y_AXIS));
         colHora.setBackground(C[2]);
@@ -370,10 +385,18 @@ public class PanelAgendarCita {
                     return;
                 }
                 String fechaStr = new SimpleDateFormat("yyyy-MM-dd").format(dateChooser.getDate());
-                if (LocalDate.parse(fechaStr).isBefore(LocalDate.now())) {
+                LocalDate fechaSel = LocalDate.parse(fechaStr);
+                if (fechaSel.isBefore(LocalDate.now())) {
                     JOptionPane.showMessageDialog(panel,
                             "La fecha no puede ser en el pasado.",
                             "Fecha invalida", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                if (fechaSel.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) {
+                    JOptionPane.showMessageDialog(panel,
+                            "Los domingos no están disponibles para citas.\nPor favor selecciona un día entre lunes y sábado.",
+                            "Día no disponible", JOptionPane.WARNING_MESSAGE);
+                    dateChooser.setDate(null);
                     return;
                 }
                 Mascotas mascota = (Mascotas) cbMascota.getSelectedItem();
